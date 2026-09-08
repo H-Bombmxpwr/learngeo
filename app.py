@@ -564,9 +564,7 @@ def commas(n):
 
 
 if __name__ == "__main__":
-    if not os.path.exists(os.path.join("data", "countries.json")):
-        raise SystemExit(
-            "data/countries.json is missing. Run:  python scripts/fetch_data.py")
     # PORT is what every host hands you, Railway included. In production the
     # Procfile puts gunicorn in front of this and __main__ never runs.
+    # A missing dataset is reported by learngeo.data, which both paths hit.
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

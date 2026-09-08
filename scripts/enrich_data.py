@@ -40,7 +40,13 @@ FACTBOOK_URL = "https://codeload.github.com/factbook/factbook.json/zip/refs/head
 SPARQL_URL = "https://query.wikidata.org/sparql"
 
 S = requests.Session()
-S.headers.update({"User-Agent": "LearnGeoQuiz/1.0 (personal learning project)"})
+S.headers.update({
+    # Wikimedia asks every client to identify itself and a way to be reached;
+    # requests that do not are the first to be throttled.
+    "User-Agent": "LearnGeoQuiz/1.0 (personal learning project; "
+                  "https://github.com/learngeo) python-requests",
+    "Accept-Encoding": "gzip",
+})
 
 
 FAILED = object()      # told apart from "the query ran and found nothing"
@@ -787,6 +793,71 @@ def first_sentence(text, cap=260):
     return out
 
 
+WIKI_SEARCH = "https://en.wikipedia.org/w/api.php"
+
+
+def _wiki_get(url, params=None, tries=4):
+    """Wikipedia answers 429 to a sustained burst, and a 429 is not a miss.
+
+    Treating one as "no article" is what left two thirds of the curated
+    figures without a sentence after a run that reported success: 16 of every
+    25 requests were being throttled and silently dropped.
+    """
+    for i in range(tries):
+        try:
+            r = S.get(url, params=params, timeout=25)
+        except Exception:
+            time.sleep(2 * (i + 1))
+            continue
+        if r.status_code == 429:
+            time.sleep(float(r.headers.get("Retry-After") or 0) or 3 * (i + 1))
+            continue
+        return r
+    return None
+
+
+def _summary_card(title):
+    r = _wiki_get(WIKI_SUMMARY + title.replace(" ", "_"))
+    if r is None or r.status_code != 200:
+        return None
+    try:
+        d = r.json()
+    except ValueError:
+        return None
+    if "disambiguation" in (d.get("type") or ""):
+        return None
+    line = first_sentence(d.get("extract"))
+    if not line:
+        return None
+    return {"summary": line,
+            "wiki": ((d.get("content_urls") or {}).get("desktop") or {}).get("page"),
+            "image": (d.get("thumbnail") or {}).get("source")}
+
+
+def _summary_for(name):
+    """The article for a person, by title and then by search.
+
+    The curated table is written without accents so it stays readable in
+    source, but Wikipedia titles Juan Peron "Juan Perón" and does not redirect
+    from the plain spelling -- which is why the first pass 404'd on a third of
+    the names. Falling back to a search resolves those.
+    """
+    card = _summary_card(name)
+    if card:
+        return card
+    try:
+        r = S.get(WIKI_SEARCH, timeout=25, params={
+            "action": "query", "list": "search", "srsearch": name,
+            "srlimit": 1, "format": "json"})
+        hits = ((r.json().get("query") or {}).get("search") or []) \
+            if r.status_code == 200 else []
+    except Exception:
+        hits = []
+    if not hits:
+        return None
+    return _summary_card(hits[0]["title"])
+
+
 def stage_figures(countries):
     print("[figures] a sentence on each curated figure, from Wikipedia")
     from learngeo import supplement
@@ -805,22 +876,10 @@ def stage_figures(countries):
     print("      %d already cached, %d to fetch" % (len(cache), len(names)))
 
     for i, name in enumerate(names):
-        try:
-            r = S.get(WIKI_SUMMARY + name.replace(" ", "_"), timeout=25)
-            if r.status_code == 200:
-                d = r.json()
-                if "disambiguation" not in (d.get("type") or ""):
-                    line = first_sentence(d.get("extract"))
-                    if line:
-                        cache[name] = {
-                            "summary": line,
-                            "wiki": ((d.get("content_urls") or {}).get("desktop")
-                                     or {}).get("page"),
-                            "image": ((d.get("thumbnail") or {}).get("source")),
-                        }
-        except Exception:
-            pass
-        time.sleep(0.08)
+        hit = _summary_for(name)
+        if hit:
+            cache[name] = hit
+        time.sleep(0.25)
         if i and i % 50 == 0:
             print("      %d/%d" % (i, len(names)))
             with open(FIGURES_CACHE, "w", encoding="utf-8") as f:

@@ -71,7 +71,16 @@ DERIVED_TOPICS = (
 
 class World(object):
     def __init__(self):
-        with open(os.path.join(DATA_DIR, "countries.json"), encoding="utf-8") as f:
+        path = os.path.join(DATA_DIR, "countries.json")
+        if not os.path.exists(path):
+            # Under gunicorn this is the first thing that touches the dataset,
+            # so it is the only place a deploy missing its data can say so.
+            raise SystemExit(
+                "%s is missing. It is committed to the repository; if this is "
+                "a deploy, check it was not excluded by .gitignore. To rebuild "
+                "it: python scripts/fetch_data.py && python scripts/enrich_data.py"
+                % path)
+        with open(path, encoding="utf-8") as f:
             self.countries = json.load(f)
         with open(os.path.join(DATA_DIR, "countries.geo.json"), encoding="utf-8") as f:
             geo = json.load(f)

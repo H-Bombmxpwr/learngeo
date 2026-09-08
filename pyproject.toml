@@ -8,6 +8,12 @@ dependencies = [
     "flask>=3.1",
     "gunicorn>=23.0",
     "requests>=2.32",
+]
+
+# Only the dataset build needs these. Shapely pulls GEOS, which a deploy has
+# no reason to compile just to serve a JSON file that is already built.
+[project.optional-dependencies]
+build = [
     "shapely>=2.1.2",
 ]
 
