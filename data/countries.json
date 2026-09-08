@@ -939,7 +939,7 @@
    },
    {
     "name": "Spanish",
-    "qid": null,
+    "qid": "Q1321",
     "wiki": "https://en.wikipedia.org/wiki/Spanish_language",
     "speakers": null,
     "share": 3.2,
@@ -947,7 +947,7 @@
    },
    {
     "name": "Punjabi",
-    "qid": null,
+    "qid": "Q58635",
     "wiki": "https://en.wikipedia.org/wiki/Punjabi_language",
     "speakers": null,
     "share": 2.6,
@@ -955,7 +955,7 @@
    },
    {
     "name": "Arabic",
-    "qid": null,
+    "qid": "Q13955",
     "wiki": "https://en.wikipedia.org/wiki/Arabic_language",
     "speakers": null,
     "share": 2.4,
@@ -1431,7 +1431,7 @@
    ]
   },
   "climate_text": "varies from temperate in south to subarctic and arctic in north",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -1680,12 +1680,12 @@
     "official": true
    },
    {
-    "name": "Tamazight , Shawiya , Mzab, Tuareg )",
-    "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Tamazight_,_Shawiya_,_Mzab,_Tuareg_)_language",
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -2794,7 +2794,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 14.2,
@@ -2802,7 +2802,7 @@
    },
    {
     "name": "Tajik",
-    "qid": null,
+    "qid": "Q9260",
     "wiki": "https://en.wikipedia.org/wiki/Tajik_language",
     "speakers": null,
     "share": 4.4,
@@ -3230,7 +3230,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 10.2,
@@ -3572,7 +3572,7 @@
    ]
   },
   "climate_text": "temperate; desert in north; Mediterranean in central region; cool and damp in south",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Temperate",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -3767,7 +3767,7 @@
    },
    {
     "name": "Italian",
-    "qid": null,
+    "qid": "Q652",
     "wiki": "https://en.wikipedia.org/wiki/Italian_language",
     "speakers": null,
     "share": 1.5,
@@ -3775,7 +3775,7 @@
    },
    {
     "name": "Turkish",
-    "qid": null,
+    "qid": "Q256",
     "wiki": "https://en.wikipedia.org/wiki/Turkish_language",
     "speakers": null,
     "share": 1.3,
@@ -3783,7 +3783,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 1.1,
@@ -4238,7 +4238,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 25.3,
@@ -4246,7 +4246,7 @@
    },
    {
     "name": "German",
-    "qid": null,
+    "qid": "Q188",
     "wiki": "https://en.wikipedia.org/wiki/German_language",
     "speakers": null,
     "share": 12.6,
@@ -4254,7 +4254,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 2.1,
@@ -4262,7 +4262,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 1.5,
@@ -4270,7 +4270,7 @@
    },
    {
     "name": "Romanian",
-    "qid": null,
+    "qid": "Q7913",
     "wiki": "https://en.wikipedia.org/wiki/Romanian_language",
     "speakers": null,
     "share": 1.4,
@@ -4992,16 +4992,16 @@
    },
    {
     "name": "Basque",
-    "qid": null,
+    "qid": "Q8752",
     "wiki": "https://en.wikipedia.org/wiki/Basque_language",
     "speakers": null,
     "share": 2.0,
     "official": true
    },
    {
-    "name": "Aranese &lt;5",
+    "name": "Aranese <5",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Aranese_&lt;5_language",
+    "wiki": "https://en.wikipedia.org/wiki/Aranese_<5_language",
     "speakers": null,
     "share": null,
     "official": true
@@ -5400,7 +5400,7 @@
    ]
   },
   "climate_text": "temperate; clear, hot summers in interior, more moderate and cloudy along coast; cloudy, cold winters in interior, partly cloudy and cool along coast",
-  "climate_zone": "Continental",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -5654,7 +5654,7 @@
    },
    {
     "name": "Mandarin",
-    "qid": null,
+    "qid": "Q9192",
     "wiki": "https://en.wikipedia.org/wiki/Mandarin_language",
     "speakers": null,
     "share": 29.9,
@@ -5662,7 +5662,7 @@
    },
    {
     "name": "Malay",
-    "qid": null,
+    "qid": "Q9237",
     "wiki": "https://en.wikipedia.org/wiki/Malay_language",
     "speakers": null,
     "share": 9.2,
@@ -5670,7 +5670,7 @@
    },
    {
     "name": "Tamil",
-    "qid": null,
+    "qid": "Q5885",
     "wiki": "https://en.wikipedia.org/wiki/Tamil_language",
     "speakers": null,
     "share": 2.5,
@@ -6893,14 +6893,6 @@
     "speakers": 100000,
     "share": null,
     "official": true
-   },
-   {
-    "name": "Irish ( , by approximately",
-    "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Irish_(_,_by_approximately_language",
-    "speakers": null,
-    "share": 37.7,
-    "official": true
    }
   ],
   "cities": [
@@ -7555,7 +7547,7 @@
    },
    {
     "name": "Vietnamese",
-    "qid": null,
+    "qid": "Q9199",
     "wiki": "https://en.wikipedia.org/wiki/Vietnamese_language",
     "speakers": null,
     "share": 1.3,
@@ -8989,6 +8981,30 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Farsi",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Farsi_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Urdu",
+    "qid": "Q1617",
+    "wiki": "https://en.wikipedia.org/wiki/Urdu",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -9383,7 +9399,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 1.4,
@@ -9815,7 +9831,7 @@
    },
    {
     "name": "Hungarian",
-    "qid": null,
+    "qid": "Q9067",
     "wiki": "https://en.wikipedia.org/wiki/Hungarian_language",
     "speakers": null,
     "share": 3.4,
@@ -9823,7 +9839,7 @@
    },
    {
     "name": "Bosnian",
-    "qid": null,
+    "qid": "Q9303",
     "wiki": "https://en.wikipedia.org/wiki/Bosnian_language",
     "speakers": null,
     "share": 1.9,
@@ -9831,7 +9847,7 @@
    },
    {
     "name": "Romani",
-    "qid": null,
+    "qid": "Q13201",
     "wiki": "https://en.wikipedia.org/wiki/Romani_language",
     "speakers": null,
     "share": 1.4,
@@ -10018,7 +10034,7 @@
    ]
   },
   "climate_text": "in the north, continental climate (cold winters and hot, humid summers with well-distributed rainfall); in other parts, continental and Mediterranean climate (relatively cold winters with heavy snowfall and hot, dry summers and autumns)",
-  "climate_zone": "Mediterranean",
+  "climate_zone": "Continental",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -10361,15 +10377,15 @@
    },
    {
     "name": "Spanish",
-    "qid": null,
+    "qid": "Q1321",
     "wiki": "https://en.wikipedia.org/wiki/Spanish_language",
     "speakers": null,
     "share": 13.4,
-    "official": true
+    "official": false
    },
    {
     "name": "Chinese",
-    "qid": null,
+    "qid": "Q7850",
     "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
     "speakers": null,
     "share": 1.1,
@@ -10884,7 +10900,7 @@
    ]
   },
   "climate_text": "mostly temperate, but tropical in Hawaii and Florida, arctic in Alaska, semiarid in the great plains west of the Mississippi River, and arid in the Great Basin of the southwest; low winter temperatures in the northwest are ameliorated occasionally in January and February by warm chinook winds from the eastern slopes of the Rocky Mountains",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -11551,7 +11567,7 @@
    ]
   },
   "climate_text": "cold temperate; potentially subarctic but comparatively mild because of moderating influence of the North Atlantic Current, Baltic Sea, and more than 60,000 lakes",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -11796,6 +11812,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Italian",
+    "qid": "Q652",
+    "wiki": "https://en.wikipedia.org/wiki/Italian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "German",
+    "qid": "Q188",
+    "wiki": "https://en.wikipedia.org/wiki/German_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Indigenous",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Indigenous_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -12043,7 +12099,7 @@
     "iron ore"
    ]
   },
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Temperate",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -12604,7 +12660,7 @@
    ]
   },
   "climate_text": "varies from tropical in east to dry desert in west; temperate to frigid in Andes",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -12893,7 +12949,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 15.4,
@@ -12909,7 +12965,7 @@
    },
    {
     "name": "Italian",
-    "qid": null,
+    "qid": "Q652",
     "wiki": "https://en.wikipedia.org/wiki/Italian_language",
     "speakers": null,
     "share": 3.6,
@@ -12917,7 +12973,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 3.6,
@@ -13837,6 +13893,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Sara",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Sara_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -14031,7 +14095,7 @@
    ]
   },
   "climate_text": "tropical in south, desert in north",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -14322,6 +14386,38 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "German",
+    "qid": "Q188",
+    "wiki": "https://en.wikipedia.org/wiki/German_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Slovene",
+    "qid": "Q9063",
+    "wiki": "https://en.wikipedia.org/wiki/Slovene_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Croatian",
+    "qid": "Q6654",
+    "wiki": "https://en.wikipedia.org/wiki/Croatian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -14981,7 +15077,7 @@
    },
    {
     "name": "Chinese",
-    "qid": null,
+    "qid": "Q7850",
     "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
     "speakers": null,
     "share": 0.6,
@@ -14989,7 +15085,7 @@
    },
    {
     "name": "Vietnamese",
-    "qid": null,
+    "qid": "Q9199",
     "wiki": "https://en.wikipedia.org/wiki/Vietnamese_language",
     "speakers": null,
     "share": 0.5,
@@ -15503,7 +15599,7 @@
     "wiki": "https://en.wikipedia.org/wiki/Silesian_language",
     "speakers": null,
     "share": 1.4,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -16187,7 +16283,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 6.8,
@@ -16195,7 +16291,7 @@
    },
    {
     "name": "Polish",
-    "qid": null,
+    "qid": "Q809",
     "wiki": "https://en.wikipedia.org/wiki/Polish_language",
     "speakers": null,
     "share": 5.1,
@@ -16458,7 +16554,7 @@
    ]
   },
   "climate_text": "transitional, between maritime and continental; wet, moderate winters and summers",
-  "climate_zone": "Continental",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -17276,7 +17372,7 @@
   "languages": [
    {
     "name": "Swedish",
-    "qid": null,
+    "qid": "Q9027",
     "wiki": "https://en.wikipedia.org/wiki/Swedish_language",
     "speakers": null,
     "share": null,
@@ -17788,7 +17884,7 @@
    ]
   },
   "climate_text": "temperate in south with cold, cloudy winters and cool, partly cloudy summers; subarctic in north",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -18054,6 +18150,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Faroese",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Faroese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Greenlandic",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Greenlandic_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -18693,7 +18805,7 @@
    },
    {
     "name": "Samoan",
-    "qid": null,
+    "qid": "Q34011",
     "wiki": "https://en.wikipedia.org/wiki/Samoan_language",
     "speakers": null,
     "share": 2.2,
@@ -18709,7 +18821,7 @@
    },
    {
     "name": "Hindi",
-    "qid": null,
+    "qid": "Q1568",
     "wiki": "https://en.wikipedia.org/wiki/Hindi_language",
     "speakers": null,
     "share": 1.5,
@@ -18717,7 +18829,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 1.2,
@@ -19274,7 +19386,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 5.7,
@@ -19282,7 +19394,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 3.5,
@@ -19290,7 +19402,7 @@
    },
    {
     "name": "Albanian",
-    "qid": null,
+    "qid": "Q8748",
     "wiki": "https://en.wikipedia.org/wiki/Albanian_language",
     "speakers": null,
     "share": 3.3,
@@ -19614,7 +19726,7 @@
    ]
   },
   "climate_text": "temperate, but varies with altitude; cold, cloudy, rainy/snowy winters; cool to warm, cloudy, humid summers with occasional showers",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -20910,7 +21022,7 @@
    ]
   },
   "climate_text": "varies from tropical to desert",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -21114,6 +21226,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Numerous indigenous languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Numerous_indigenous_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -21290,7 +21410,7 @@
    ]
   },
   "climate_text": "varies from tropical along coast to arid in interior",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -21620,7 +21740,7 @@
    },
    {
     "name": "Tamil",
-    "qid": null,
+    "qid": "Q5885",
     "wiki": "https://en.wikipedia.org/wiki/Tamil_language",
     "speakers": null,
     "share": 5.7,
@@ -22384,7 +22504,7 @@
    },
    {
     "name": "Turkish",
-    "qid": null,
+    "qid": "Q256",
     "wiki": "https://en.wikipedia.org/wiki/Turkish_language",
     "speakers": null,
     "share": 2.3,
@@ -22392,7 +22512,7 @@
    },
    {
     "name": "Serbian",
-    "qid": null,
+    "qid": "Q9299",
     "wiki": "https://en.wikipedia.org/wiki/Serbian_language",
     "speakers": null,
     "share": 2.2,
@@ -22400,7 +22520,7 @@
    },
    {
     "name": "Croatian",
-    "qid": null,
+    "qid": "Q6654",
     "wiki": "https://en.wikipedia.org/wiki/Croatian_language",
     "speakers": null,
     "share": 1.6,
@@ -22815,7 +22935,7 @@
     "copper"
    ]
   },
-  "climate_zone": "Continental",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -23539,7 +23659,7 @@
   "languages": [
    {
     "name": "Tuvaluan",
-    "qid": null,
+    "qid": "Q34055",
     "wiki": "https://en.wikipedia.org/wiki/Tuvaluan_language",
     "speakers": null,
     "share": null,
@@ -23552,6 +23672,22 @@
     "speakers": 800,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Samoan",
+    "qid": "Q34011",
+    "wiki": "https://en.wikipedia.org/wiki/Samoan_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kiribati",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kiribati_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -23972,6 +24108,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Kurdish",
+    "qid": "Q36368",
+    "wiki": "https://en.wikipedia.org/wiki/Kurdish_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -25072,7 +25216,7 @@
   "languages": [
    {
     "name": "Tongan",
-    "qid": null,
+    "qid": "Q34094",
     "wiki": "https://en.wikipedia.org/wiki/Tongan_language",
     "speakers": null,
     "share": 85.0,
@@ -25084,14 +25228,6 @@
     "wiki": "https://en.wikipedia.org/wiki/Tongan_and_other_language_language",
     "speakers": null,
     "share": 13.9,
-    "official": false
-   },
-   {
-    "name": "Tongan not used at home",
-    "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Tongan_not_used_at_home_language",
-    "speakers": null,
-    "share": 1.1,
     "official": false
    }
   ],
@@ -25414,7 +25550,7 @@
   "languages": [
    {
     "name": "Spanish",
-    "qid": null,
+    "qid": "Q1321",
     "wiki": "https://en.wikipedia.org/wiki/Spanish_language",
     "speakers": null,
     "share": null,
@@ -25756,7 +25892,7 @@
   "languages": [
    {
     "name": "Nauruan",
-    "qid": null,
+    "qid": "Q13307",
     "wiki": "https://en.wikipedia.org/wiki/Nauruan_language",
     "speakers": null,
     "share": 93.0,
@@ -26154,6 +26290,46 @@
     "speakers": 60000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Chuukese",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Chuukese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kosrean",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kosrean_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Pohnpeian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Pohnpeian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Yapese",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Yapese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Ulithian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Ulithian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -27306,7 +27482,7 @@
   "languages": [
    {
     "name": "Samoan",
-    "qid": null,
+    "qid": "Q34011",
     "wiki": "https://en.wikipedia.org/wiki/Samoan_language",
     "speakers": null,
     "share": 91.1,
@@ -27650,7 +27826,7 @@
    },
    {
     "name": "Bislama",
-    "qid": null,
+    "qid": "Q35452",
     "wiki": "https://en.wikipedia.org/wiki/Bislama_language",
     "speakers": null,
     "share": 14.5,
@@ -27666,7 +27842,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 0.8,
@@ -28345,7 +28521,7 @@
    },
    {
     "name": "Somali",
-    "qid": null,
+    "qid": "Q13275",
     "wiki": "https://en.wikipedia.org/wiki/Somali_language",
     "speakers": null,
     "share": 6.2,
@@ -28785,7 +28961,7 @@
    },
    {
     "name": "Fiji Hindi",
-    "qid": null,
+    "qid": "Q46728",
     "wiki": "https://en.wikipedia.org/wiki/Fiji_Hindi_language",
     "speakers": null,
     "share": null,
@@ -29260,44 +29436,44 @@
     "official": true
    },
    {
-    "name": "Yue is in Guangdong",
+    "name": "Yue",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Yue_is_in_Guangdong_language",
+    "wiki": "https://en.wikipedia.org/wiki/Yue_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    },
    {
-    "name": "Mongolian is in Nei Mongol",
+    "name": "Wu",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Mongolian_is_in_Nei_Mongol_language",
+    "wiki": "https://en.wikipedia.org/wiki/Wu_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    },
    {
-    "name": "Uyghur is in Xinjiang Uygur",
+    "name": "Minbei",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Uyghur_is_in_Xinjiang_Uygur_language",
+    "wiki": "https://en.wikipedia.org/wiki/Minbei_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    },
    {
-    "name": "Kyrgyz is in Xinjiang Uyghur",
+    "name": "Minnan",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Kyrgyz_is_in_Xinjiang_Uyghur_language",
+    "wiki": "https://en.wikipedia.org/wiki/Minnan_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    },
    {
-    "name": "And Tibetan is in Xizang",
+    "name": "Xiang",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/And_Tibetan_is_in_Xizang_language",
+    "wiki": "https://en.wikipedia.org/wiki/Xiang_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -29768,7 +29944,7 @@
    ]
   },
   "climate_text": "extremely diverse; tropical in south to subarctic in north",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -30071,8 +30247,32 @@
   "languages": [
    {
     "name": "German",
-    "qid": null,
+    "qid": "Q188",
     "wiki": "https://en.wikipedia.org/wiki/German_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Italian",
+    "qid": "Q652",
+    "wiki": "https://en.wikipedia.org/wiki/Italian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Japanese",
+    "qid": "Q5287",
+    "wiki": "https://en.wikipedia.org/wiki/Japanese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": null,
     "official": false
@@ -30679,7 +30879,7 @@
    },
    {
     "name": "Hiri Motu",
-    "qid": null,
+    "qid": "Q33617",
     "wiki": "https://en.wikipedia.org/wiki/Hiri_Motu_language",
     "speakers": null,
     "share": null,
@@ -30965,7 +31165,7 @@
   "languages": [
    {
     "name": "Palauan",
-    "qid": null,
+    "qid": "Q33776",
     "wiki": "https://en.wikipedia.org/wiki/Palauan_language",
     "speakers": null,
     "share": 65.2,
@@ -30981,7 +31181,7 @@
    },
    {
     "name": "Filipino",
-    "qid": null,
+    "qid": "Q33298",
     "wiki": "https://en.wikipedia.org/wiki/Filipino_language",
     "speakers": null,
     "share": 9.9,
@@ -30989,7 +31189,7 @@
    },
    {
     "name": "Chinese",
-    "qid": null,
+    "qid": "Q7850",
     "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
     "speakers": null,
     "share": 1.2,
@@ -31579,7 +31779,7 @@
    ]
   },
   "climate_text": "tropical; warm and comparatively dry along southeast coast; hot and humid in southwest; hot and dry in north",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -32396,7 +32596,7 @@
    ]
   },
   "climate_text": "metropolitan France: generally cool winters and mild summers, but mild winters and hot summers along the Mediterranean; occasional strong, cold, dry, north-to-northwesterly wind known as the mistral",
-  "climate_zone": "Mediterranean",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -32556,11 +32756,11 @@
   "languages": [
    {
     "name": "Gilbertese",
-    "qid": null,
+    "qid": "Q30898",
     "wiki": "https://en.wikipedia.org/wiki/Gilbertese_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    },
    {
     "name": "English",
@@ -33263,7 +33463,7 @@
   "languages": [
    {
     "name": "Marshallese",
-    "qid": null,
+    "qid": "Q36280",
     "wiki": "https://en.wikipedia.org/wiki/Marshallese_language",
     "speakers": null,
     "share": 98.2,
@@ -33596,7 +33796,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 0.1,
@@ -33765,7 +33965,7 @@
    ]
   },
   "climate_text": "tropical; hot, humid; more moderate in highlands",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -34640,7 +34840,7 @@
    ]
   },
   "climate_text": "ranges from steppes in the south through humid continental in much of European Russia; subarctic in Siberia to tundra climate in the polar north; winters vary from cool along Black Sea coast to frigid in Siberia; summers vary from warm in the steppes to cool along Arctic coast",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Continental",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -34853,6 +35053,38 @@
     "speakers": 650000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Guyanese Creole",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Guyanese_Creole_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Amerindian languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Amerindian_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Indian languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Indian_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Chinese",
+    "qid": "Q7850",
+    "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -35695,6 +35927,38 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Polish",
+    "qid": "Q809",
+    "wiki": "https://en.wikipedia.org/wiki/Polish_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Nordic languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nordic_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "German",
+    "qid": "Q188",
+    "wiki": "https://en.wikipedia.org/wiki/German_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -36125,11 +36389,43 @@
   "languages": [
    {
     "name": "Dutch",
-    "qid": null,
+    "qid": "Q7411",
     "wiki": "https://en.wikipedia.org/wiki/Dutch_language",
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Sranang Tongo",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Sranang_Tongo_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Caribbean Hindustani",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Caribbean_Hindustani_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Javanese",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Javanese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -36455,7 +36751,7 @@
     "wiki": "https://en.wikipedia.org/wiki/Guarani_dialects",
     "speakers": null,
     "share": 34.0,
-    "official": true
+    "official": false
    },
    {
     "name": "Spanish",
@@ -36463,7 +36759,7 @@
     "wiki": "https://en.wikipedia.org/wiki/Spanish_language",
     "speakers": null,
     "share": 15.2,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -36615,7 +36911,7 @@
    ]
   },
   "climate_text": "subtropical to temperate; substantial rainfall in the eastern portions, becoming semiarid in the far west",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": true,
   "has_shape": true,
@@ -36912,12 +37208,52 @@
   ],
   "languages": [
    {
-    "name": "German ; note - Danish",
+    "name": "Frisian",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/German_;_note_-_Danish_language",
+    "wiki": "https://en.wikipedia.org/wiki/Frisian_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
+   },
+   {
+    "name": "Sorbian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Sorbian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Danish",
+    "qid": "Q9035",
+    "wiki": "https://en.wikipedia.org/wiki/Danish_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "North Frisian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/North_Frisian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Sater Frisian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Sater_Frisian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Lower Sorbian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Lower_Sorbian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -38007,7 +38343,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 0.1,
@@ -38244,7 +38580,7 @@
    ]
   },
   "climate_text": "tropical along coast and eastern plains; cooler in highlands",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -38538,7 +38874,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 28.5,
@@ -39024,6 +39360,22 @@
     "speakers": 114000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Vincentian Creole English",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Vincentian_Creole_English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "French patois",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/French_patois_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -39344,6 +39696,14 @@
     "speakers": 40000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Saint Lucian Creole",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Saint_Lucian_Creole_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -39785,7 +40145,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 29.6,
@@ -40136,7 +40496,7 @@
    ]
   },
   "climate_text": "temperate continental; Mediterranean only on the southern Crimean coast; precipitation disproportionately distributed, highest in west and north, lesser in east and southeast; winters vary from cool along the Black Sea to cold farther inland; warm summers across the greater part of the country, hot in the south",
-  "climate_zone": "Mediterranean",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -40425,7 +40785,7 @@
    },
    {
     "name": "Slovak",
-    "qid": null,
+    "qid": "Q9058",
     "wiki": "https://en.wikipedia.org/wiki/Slovak_language",
     "speakers": null,
     "share": 1.5,
@@ -40944,7 +41304,7 @@
    },
    {
     "name": "Quechua",
-    "qid": null,
+    "qid": "Q5218",
     "wiki": "https://en.wikipedia.org/wiki/Quechua_language",
     "speakers": null,
     "share": 17.2,
@@ -41184,7 +41544,7 @@
    ]
   },
   "climate_text": "varies with altitude; humid and tropical to cold and semiarid",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Highland or alpine",
   "hemisphere": "Southern",
   "landlocked": true,
   "has_shape": true,
@@ -41388,6 +41748,46 @@
     "speakers": 1145000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Trinidadian Creole English",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Trinidadian_Creole_English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Tobagonian Creole English",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Tobagonian_Creole_English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Caribbean Hindustani",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Caribbean_Hindustani_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Trinidadian Creole French",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Trinidadian_Creole_French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Spanish",
+    "qid": "Q1321",
+    "wiki": "https://en.wikipedia.org/wiki/Spanish_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -41809,7 +42209,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 33.8,
@@ -42311,7 +42711,7 @@
    },
    {
     "name": "Hungarian",
-    "qid": null,
+    "qid": "Q9067",
     "wiki": "https://en.wikipedia.org/wiki/Hungarian_language",
     "speakers": null,
     "share": 6.3,
@@ -42319,7 +42719,7 @@
    },
    {
     "name": "Romani",
-    "qid": null,
+    "qid": "Q13201",
     "wiki": "https://en.wikipedia.org/wiki/Romani_language",
     "speakers": null,
     "share": 1.2,
@@ -42879,7 +43279,7 @@
    },
    {
     "name": "Turkish",
-    "qid": null,
+    "qid": "Q256",
     "wiki": "https://en.wikipedia.org/wiki/Turkish_language",
     "speakers": null,
     "share": 7.9,
@@ -42887,7 +43287,7 @@
    },
    {
     "name": "Romani",
-    "qid": null,
+    "qid": "Q13201",
     "wiki": "https://en.wikipedia.org/wiki/Romani_language",
     "speakers": null,
     "share": 3.5,
@@ -43380,7 +43780,7 @@
    },
    {
     "name": "Turkish",
-    "qid": null,
+    "qid": "Q256",
     "wiki": "https://en.wikipedia.org/wiki/Turkish_language",
     "speakers": null,
     "share": 3.4,
@@ -43388,7 +43788,7 @@
    },
    {
     "name": "Romani",
-    "qid": null,
+    "qid": "Q13201",
     "wiki": "https://en.wikipedia.org/wiki/Romani_language",
     "speakers": null,
     "share": 1.7,
@@ -44143,6 +44543,14 @@
     "speakers": 2600000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Jamaican patois",
+    "qid": "Q35939",
+    "wiki": "https://en.wikipedia.org/wiki/Jamaican_Patois",
+    "speakers": null,
+    "share": null,
+    "official": true
    }
   ],
   "cities": [
@@ -44561,7 +44969,7 @@
    },
    {
     "name": "Hungarian",
-    "qid": null,
+    "qid": "Q9067",
     "wiki": "https://en.wikipedia.org/wiki/Hungarian_language",
     "speakers": null,
     "share": 8.5,
@@ -45469,6 +45877,14 @@
     "speakers": 60000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "French patois",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/French_patois_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -45891,7 +46307,7 @@
    },
    {
     "name": "Greek",
-    "qid": null,
+    "qid": "Q9129",
     "wiki": "https://en.wikipedia.org/wiki/Greek_language",
     "speakers": null,
     "share": 0.5,
@@ -46302,7 +46718,7 @@
    },
    {
     "name": "Serbian",
-    "qid": null,
+    "qid": "Q9299",
     "wiki": "https://en.wikipedia.org/wiki/Serbian_language",
     "speakers": null,
     "share": 1.2,
@@ -46745,6 +47161,14 @@
     "speakers": 100000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "French patois",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/French_patois_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -47336,7 +47760,7 @@
    ]
   },
   "climate_text": "tropical; hot, humid in lowlands; cooler in highlands",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -47591,7 +48015,7 @@
    },
    {
     "name": "Croatian",
-    "qid": null,
+    "qid": "Q6654",
     "wiki": "https://en.wikipedia.org/wiki/Croatian_language",
     "speakers": null,
     "share": 2.8,
@@ -47607,7 +48031,7 @@
    },
    {
     "name": "Bosnian",
-    "qid": null,
+    "qid": "Q9303",
     "wiki": "https://en.wikipedia.org/wiki/Bosnian_language",
     "speakers": null,
     "share": 1.6,
@@ -47615,7 +48039,7 @@
    },
    {
     "name": "Serbian",
-    "qid": null,
+    "qid": "Q9299",
     "wiki": "https://en.wikipedia.org/wiki/Serbian_language",
     "speakers": null,
     "share": 1.6,
@@ -47627,7 +48051,7 @@
     "wiki": "https://en.wikipedia.org/wiki/Hungarian_language",
     "speakers": null,
     "share": 0.4,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -48086,7 +48510,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 9.7,
@@ -48102,7 +48526,7 @@
    },
    {
     "name": "Ukrainian",
-    "qid": null,
+    "qid": "Q8798",
     "wiki": "https://en.wikipedia.org/wiki/Ukrainian_language",
     "speakers": null,
     "share": 3.9,
@@ -48110,7 +48534,7 @@
    },
    {
     "name": "Bulgarian",
-    "qid": null,
+    "qid": "Q7918",
     "wiki": "https://en.wikipedia.org/wiki/Bulgarian_language",
     "speakers": null,
     "share": 1.5,
@@ -48118,7 +48542,7 @@
    },
    {
     "name": "Romani",
-    "qid": null,
+    "qid": "Q13201",
     "wiki": "https://en.wikipedia.org/wiki/Romani_language",
     "speakers": null,
     "share": 0.3,
@@ -48596,6 +49020,14 @@
     "speakers": 260000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Creole",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Creole_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -48973,6 +49405,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Amerindian dialects",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Amerindian_dialects_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -49398,6 +49838,14 @@
     "speakers": 66000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Antiguan Creole",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Antiguan_Creole_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -49957,7 +50405,7 @@
    ]
   },
   "climate_text": "tropical; semiarid where mountains in east cut off trade winds",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -50687,6 +51135,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Kurdish",
+    "qid": "Q36368",
+    "wiki": "https://en.wikipedia.org/wiki/Kurdish_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Gilaki and Mazandarani",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Gilaki_and_Mazandarani_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Luri",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Luri_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Balochi",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Balochi_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Arabic",
+    "qid": "Q13955",
+    "wiki": "https://en.wikipedia.org/wiki/Arabic",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -51674,6 +52162,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -51878,7 +52374,7 @@
    ]
   },
   "climate_text": "tropical and subtropical; dry season (December to April); rainy season (May to November); cooler in highlands",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -52099,7 +52595,7 @@
   "languages": [
    {
     "name": "Greek",
-    "qid": null,
+    "qid": "Q9129",
     "wiki": "https://en.wikipedia.org/wiki/Greek_language",
     "speakers": null,
     "share": 80.9,
@@ -52115,7 +52611,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 4.1,
@@ -52123,7 +52619,7 @@
    },
    {
     "name": "Romanian",
-    "qid": null,
+    "qid": "Q7913",
     "wiki": "https://en.wikipedia.org/wiki/Romanian_language",
     "speakers": null,
     "share": 2.9,
@@ -52131,7 +52627,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 2.5,
@@ -52139,7 +52635,7 @@
    },
    {
     "name": "Bulgarian",
-    "qid": null,
+    "qid": "Q7918",
     "wiki": "https://en.wikipedia.org/wiki/Bulgarian_language",
     "speakers": null,
     "share": 2.2,
@@ -52315,7 +52811,7 @@
    ]
   },
   "climate_text": "temperate; Mediterranean with hot, dry summers and cool winters",
-  "climate_zone": "Mediterranean",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -52526,6 +53022,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Nawat",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nawat_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -53313,7 +53817,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 13.5,
@@ -53321,7 +53825,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 10.0,
@@ -53329,7 +53833,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 3.0,
@@ -53456,7 +53960,7 @@
     "lead"
    ]
   },
-  "climate_zone": "Continental",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": false,
@@ -53662,6 +54166,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Arabic",
+    "qid": "Q13955",
+    "wiki": "https://en.wikipedia.org/wiki/Arabic",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -54128,7 +54648,7 @@
   },
   "climate_text": "temperate; hot and dry in southern and eastern desert areas",
   "summary": "Israel, officially the State of Israel, is a country in the Southern Levant region of West Asia. It is bordered by Lebanon to the north, Syria to the northeast, Jordan to the east, and Egypt to the southwest. Israel's western coast lies on the Mediterranean Sea, its southern tip reaches the Red Sea, and to the east is Earth's lowest point near the Dead Sea. Jerusalem is the government seat and proclaimed capital, while Tel Aviv is Israel's largest urban area and economic centre.",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -54330,6 +54850,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Panamanian English Creole",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Panamanian_English_Creole_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Chinese",
+    "qid": "Q7850",
+    "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Arabic",
+    "qid": "Q13955",
+    "wiki": "https://en.wikipedia.org/wiki/Arabic",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "French Creole",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/French_Creole_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -54791,7 +55351,7 @@
    },
    {
     "name": "Armenian",
-    "qid": null,
+    "qid": "Q8785",
     "wiki": "https://en.wikipedia.org/wiki/Armenian_language",
     "speakers": null,
     "share": 3.9,
@@ -54799,7 +55359,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 1.2,
@@ -55287,6 +55847,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -55700,7 +56268,7 @@
    },
    {
     "name": "Portuguese",
-    "qid": null,
+    "qid": "Q5146",
     "wiki": "https://en.wikipedia.org/wiki/Portuguese_language",
     "speakers": null,
     "share": 0.1,
@@ -55904,7 +56472,7 @@
     "zinc"
    ]
   },
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -56133,7 +56701,7 @@
   "languages": [
    {
     "name": "Maltese",
-    "qid": null,
+    "qid": "Q9166",
     "wiki": "https://en.wikipedia.org/wiki/Maltese_language",
     "speakers": null,
     "share": 90.1,
@@ -56541,6 +57109,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -56908,6 +57492,30 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Armenian",
+    "qid": "Q8785",
+    "wiki": "https://en.wikipedia.org/wiki/Armenian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -57237,6 +57845,22 @@
     "name": "Italian",
     "qid": "Q652",
     "wiki": "https://en.wikipedia.org/wiki/Italian_language",
+    "speakers": null,
+    "share": null,
+    "official": true
+   },
+   {
+    "name": "Latin",
+    "qid": "Q397",
+    "wiki": "https://en.wikipedia.org/wiki/Latin",
+    "speakers": null,
+    "share": null,
+    "official": true
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": null,
     "official": true
@@ -58089,11 +58713,11 @@
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 83.7,
-    "official": true
+    "official": false
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 35.1,
@@ -58295,7 +58919,7 @@
    ]
   },
   "climate_text": "continental, cold winters and hot summers, arid and semiarid",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Continental",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -58467,6 +59091,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -59665,11 +60297,11 @@
     "wiki": "https://en.wikipedia.org/wiki/Kyrgyz_language",
     "speakers": null,
     "share": 71.4,
-    "official": true
+    "official": false
    },
    {
     "name": "Uzbek",
-    "qid": null,
+    "qid": "Q9264",
     "wiki": "https://en.wikipedia.org/wiki/Uzbek_language",
     "speakers": null,
     "share": 14.4,
@@ -59938,7 +60570,7 @@
    ]
   },
   "climate_text": "dry continental to polar in high Tien Shan Mountains; subtropical in southwest (Fergana Valley); temperate in northern foothill zone",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Continental",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -60145,6 +60777,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -60466,6 +61106,30 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Italian",
+    "qid": "Q652",
+    "wiki": "https://en.wikipedia.org/wiki/Italian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Monegasque",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Monegasque_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -60846,11 +61510,11 @@
     "wiki": "https://en.wikipedia.org/wiki/Serbian_language",
     "speakers": null,
     "share": 42.9,
-    "official": true
+    "official": false
    },
    {
     "name": "Montenegrin",
-    "qid": null,
+    "qid": "Q8821",
     "wiki": "https://en.wikipedia.org/wiki/Montenegrin_language",
     "speakers": null,
     "share": 37.0,
@@ -60862,15 +61526,15 @@
     "wiki": "https://en.wikipedia.org/wiki/Bosnian_language",
     "speakers": null,
     "share": 5.3,
-    "official": true
+    "official": false
    },
    {
     "name": "Albanian",
-    "qid": null,
+    "qid": "Q8748",
     "wiki": "https://en.wikipedia.org/wiki/Albanian_language",
     "speakers": null,
     "share": 5.3,
-    "official": true
+    "official": false
    },
    {
     "name": "Serbo-Croat",
@@ -61348,6 +62012,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Chinese",
+    "qid": "Q7850",
+    "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Tamil",
+    "qid": "Q5885",
+    "wiki": "https://en.wikipedia.org/wiki/Tamil_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Telugu",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Telugu_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Malayalam",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Malayalam_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -62224,7 +62928,7 @@
    },
    {
     "name": "Spanish",
-    "qid": null,
+    "qid": "Q1321",
     "wiki": "https://en.wikipedia.org/wiki/Spanish_language",
     "speakers": null,
     "share": 56.6,
@@ -62248,7 +62952,7 @@
    },
    {
     "name": "German",
-    "qid": null,
+    "qid": "Q188",
     "wiki": "https://en.wikipedia.org/wiki/German_language",
     "speakers": null,
     "share": 3.2,
@@ -63010,6 +63714,30 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Tigre",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Tigre_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kunama",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kunama_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Afar",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Afar_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -63405,11 +64133,51 @@
   "languages": [
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Fang",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Fang_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Myene",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Myene_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Nzebi",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nzebi_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Bapounou/Eschira",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Bapounou/Eschira_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Bandjabi",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Bandjabi_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -63811,7 +64579,7 @@
   "languages": [
    {
     "name": "Nepali",
-    "qid": null,
+    "qid": "Q33823",
     "wiki": "https://en.wikipedia.org/wiki/Nepali_language",
     "speakers": null,
     "share": 44.9,
@@ -64321,6 +65089,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Baluchi",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Baluchi_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Swahili",
+    "qid": "Q7838",
+    "wiki": "https://en.wikipedia.org/wiki/Swahili",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Urdu",
+    "qid": "Q1617",
+    "wiki": "https://en.wikipedia.org/wiki/Urdu",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Indian dialects",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Indian_dialects_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -64689,6 +65497,14 @@
     "speakers": 262000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Bajan",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Bajan_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -65105,6 +65921,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Dutch",
+    "qid": "Q7411",
+    "wiki": "https://en.wikipedia.org/wiki/Dutch_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -65397,7 +66229,7 @@
    ]
   },
   "climate_text": "tropical; hot, humid; more moderate in highlands",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -65648,7 +66480,7 @@
    },
    {
     "name": "Pashto",
-    "qid": null,
+    "qid": "Q58680",
     "wiki": "https://en.wikipedia.org/wiki/Pashto_language",
     "speakers": null,
     "share": 18.2,
@@ -65672,7 +66504,7 @@
    },
    {
     "name": "Urdu",
-    "qid": null,
+    "qid": "Q1617",
     "wiki": "https://en.wikipedia.org/wiki/Urdu_language",
     "speakers": null,
     "share": 7.1,
@@ -66000,7 +66832,7 @@
     "copper"
    ]
   },
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Desert or arid",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -66610,6 +67442,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Comorian",
+    "qid": "Q33077",
+    "wiki": "https://en.wikipedia.org/wiki/Comorian_languages",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -66948,6 +67788,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "French Lingala and Monokutuba",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/French_Lingala_and_Monokutuba_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -67316,6 +68164,38 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Lingala",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Lingala_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kingwana",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kingwana_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kikongo",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kikongo_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Tshiluba",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Tshiluba_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -67494,7 +68374,7 @@
    ]
   },
   "climate_text": "tropical; hot and humid in equatorial river basin; cooler and drier in southern highlands; cooler and wetter in eastern highlands; north of Equator - wet season (April to October), dry season (December to February); south of Equator - wet season (November to March), dry season (April to October)",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -67710,6 +68590,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Somali",
+    "qid": "Q13275",
+    "wiki": "https://en.wikipedia.org/wiki/Somali_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Afar",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Afar_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -68089,7 +68985,7 @@
    },
    {
     "name": "Uzbek",
-    "qid": null,
+    "qid": "Q9264",
     "wiki": "https://en.wikipedia.org/wiki/Uzbek_language",
     "speakers": null,
     "share": 11.9,
@@ -68097,7 +68993,7 @@
    },
    {
     "name": "Kyrgyz",
-    "qid": null,
+    "qid": "Q9255",
     "wiki": "https://en.wikipedia.org/wiki/Kyrgyz_language",
     "speakers": null,
     "share": 0.8,
@@ -68109,7 +69005,7 @@
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 0.5,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -68264,7 +69160,7 @@
    ]
   },
   "climate_text": "mid-latitude continental, hot summers, mild winters; semiarid to polar in Pamir Mountains",
-  "climate_zone": "Polar or subpolar",
+  "climate_zone": "Continental",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -68495,6 +69391,30 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Pular",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Pular_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Maninka",
+    "qid": "Q36186",
+    "wiki": "https://en.wikipedia.org/wiki/Maninka_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Susu",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Susu_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -68856,6 +69776,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Pular",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Pular_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Mandingo",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Mandingo_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -69221,6 +70157,30 @@
     "speakers": 40000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Mandinka",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Mandinka_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Wolof",
+    "qid": "Q34257",
+    "wiki": "https://en.wikipedia.org/wiki/Wolof_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Fula",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Fula_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -69558,11 +70518,35 @@
   "languages": [
    {
     "name": "Mandarin",
-    "qid": null,
+    "qid": "Q9192",
     "wiki": "https://en.wikipedia.org/wiki/Mandarin_language",
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Min Nan",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Min_Nan_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Hakka dialects",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Hakka_dialects_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Approximately 16 indigenous languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Approximately_16_indigenous_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -70446,14 +71430,6 @@
   ],
   "languages": [
    {
-    "name": "24 major African language groups",
-    "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/24_major_African_language_groups_language",
-    "speakers": null,
-    "share": null,
-    "official": false
-   },
-   {
     "name": "English",
     "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
@@ -70463,7 +71439,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": null,
@@ -70632,7 +71608,7 @@
    ]
   },
   "climate_text": "varies with terrain, from tropical along coast to semiarid and hot in north",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -71434,7 +72410,7 @@
   "languages": [
    {
     "name": "Sinhala",
-    "qid": null,
+    "qid": "Q13267",
     "wiki": "https://en.wikipedia.org/wiki/Sinhala_language",
     "speakers": null,
     "share": 87.0,
@@ -71442,7 +72418,7 @@
    },
    {
     "name": "Tamil",
-    "qid": null,
+    "qid": "Q5885",
     "wiki": "https://en.wikipedia.org/wiki/Tamil_language",
     "speakers": null,
     "share": 28.5,
@@ -71871,6 +72847,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Kurdish",
+    "qid": "Q36368",
+    "wiki": "https://en.wikipedia.org/wiki/Kurdish_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Armenian",
+    "qid": "Q8785",
+    "wiki": "https://en.wikipedia.org/wiki/Armenian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Aramaic",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Aramaic_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Circassian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Circassian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -72738,7 +73754,7 @@
    },
    {
     "name": "Russian",
-    "qid": null,
+    "qid": "Q7737",
     "wiki": "https://en.wikipedia.org/wiki/Russian_language",
     "speakers": null,
     "share": 12.0,
@@ -72746,7 +73762,7 @@
    },
    {
     "name": "Uzbek",
-    "qid": null,
+    "qid": "Q9264",
     "wiki": "https://en.wikipedia.org/wiki/Uzbek_language",
     "speakers": null,
     "share": 9.0,
@@ -72892,7 +73908,7 @@
    ]
   },
   "climate_text": "subtropical desert",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -73161,6 +74177,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Crioulo",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Crioulo_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -73595,7 +74619,7 @@
   "languages": [
    {
     "name": "Bangla",
-    "qid": null,
+    "qid": "Q9610",
     "wiki": "https://en.wikipedia.org/wiki/Bangla_language",
     "speakers": null,
     "share": 98.8,
@@ -74092,6 +75116,38 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Pular",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Pular_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Soninke",
+    "qid": "Q36660",
+    "wiki": "https://en.wikipedia.org/wiki/Soninke_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Wolof",
+    "qid": "Q34257",
+    "wiki": "https://en.wikipedia.org/wiki/Wolof_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -74562,6 +75618,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Hindi",
+    "qid": "Q1568",
+    "wiki": "https://en.wikipedia.org/wiki/Hindi",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Malayalam",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Malayalam_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Urdu",
+    "qid": "Q1617",
+    "wiki": "https://en.wikipedia.org/wiki/Urdu",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Pashto",
+    "qid": "Q58680",
+    "wiki": "https://en.wikipedia.org/wiki/Pashto",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -75365,7 +76461,7 @@
   "languages": [
    {
     "name": "Sesotho",
-    "qid": null,
+    "qid": "Q34340",
     "wiki": "https://en.wikipedia.org/wiki/Sesotho_language",
     "speakers": null,
     "share": null,
@@ -75378,6 +76474,30 @@
     "speakers": 500000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Phuthi",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Phuthi_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Xhosa",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Xhosa_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Zulu",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Zulu_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -75796,6 +76916,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -76178,7 +77306,7 @@
    ]
   },
   "climate_text": "temperate, with rainfall heavier in summer than winter; cold winters",
-  "climate_zone": "Continental",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -76431,7 +77559,7 @@
    },
    {
     "name": "Pashto",
-    "qid": null,
+    "qid": "Q58680",
     "wiki": "https://en.wikipedia.org/wiki/Pashto_language",
     "speakers": null,
     "share": 48.0,
@@ -76447,7 +77575,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 6.0,
@@ -76463,7 +77591,7 @@
    },
    {
     "name": "Urdu",
-    "qid": null,
+    "qid": "Q1617",
     "wiki": "https://en.wikipedia.org/wiki/Urdu_language",
     "speakers": null,
     "share": 3.0,
@@ -76911,6 +78039,46 @@
     "speakers": 540000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Chewa",
+    "qid": "Q33273",
+    "wiki": "https://en.wikipedia.org/wiki/Chewa_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Lambya",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Lambya_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Lomwe",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Lomwe_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Ngoni",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Ngoni_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Nkhonde",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nkhonde_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -77288,12 +78456,20 @@
   ],
   "languages": [
    {
-    "name": "Vietnamese ; English ; some French",
-    "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Vietnamese_;_English_;_some_French_language",
+    "name": "Chinese",
+    "qid": "Q7850",
+    "wiki": "https://en.wikipedia.org/wiki/Chinese_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
+   },
+   {
+    "name": "And Khmer; mountain-area languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/And_Khmer;_mountain-area_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -77769,7 +78945,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 8.2,
@@ -77943,7 +79119,7 @@
    ]
   },
   "climate_text": "tropical along coast, temperate inland, arid in south",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -78159,6 +79335,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Italian",
+    "qid": "Q652",
+    "wiki": "https://en.wikipedia.org/wiki/Italian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English ; Tamazight",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/English_;_Tamazight_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -78317,7 +79509,7 @@
    ]
   },
   "climate_text": "Mediterranean along coast; dry, extreme desert interior",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Mediterranean",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -78568,7 +79760,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 17.2,
@@ -78807,7 +79999,7 @@
    ]
   },
   "climate_text": "subtropical to arid; hot and dry (February to June); rainy, humid, and mild (June to November); cool and dry (November to February)",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -79042,7 +80234,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 4.1,
@@ -79474,12 +80666,12 @@
     "official": true
    },
    {
-    "name": "Tamazight languages , Tachelhit, Tarifit)",
-    "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Tamazight_languages_,_Tachelhit,_Tarifit)_language",
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -79656,7 +80848,7 @@
    ]
   },
   "climate_text": "Mediterranean in the north, becoming more extreme in the interior; in the south, hot, dry desert; rain is rare; cold offshore air currents produce fog and heavy dew",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Mediterranean",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -79869,7 +81061,7 @@
    },
    {
     "name": "Tsonga",
-    "qid": null,
+    "qid": "Q34327",
     "wiki": "https://en.wikipedia.org/wiki/Tsonga_language",
     "speakers": null,
     "share": 8.6,
@@ -81577,11 +82769,27 @@
   "languages": [
    {
     "name": "Malay",
-    "qid": null,
+    "qid": "Q9237",
     "wiki": "https://en.wikipedia.org/wiki/Malay_language",
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Chinese dialects",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Chinese_dialects_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -81958,15 +83166,47 @@
     "wiki": "https://en.wikipedia.org/wiki/Hausa_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
+   },
+   {
+    "name": "Zarma",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Zarma_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Fufulde",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Fufulde_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Tamashek",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Tamashek_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kanuri",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kanuri_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -82460,6 +83700,38 @@
     "speakers": 60000000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Hausa",
+    "qid": "Q56475",
+    "wiki": "https://en.wikipedia.org/wiki/Hausa_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Yoruba",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Yoruba_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Igbo",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Igbo_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Fulani",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Fulani_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -82699,7 +83971,7 @@
    ]
   },
   "climate_text": "varies; equatorial in south, tropical in center, arid in north",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -82926,6 +84198,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Sangho",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Sangho_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Tribal languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Tribal_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -83348,7 +84636,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 6.8,
@@ -83364,7 +84652,7 @@
    },
    {
     "name": "English",
-    "qid": null,
+    "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": null,
     "share": 4.9,
@@ -83720,25 +85008,25 @@
     "official": true
    },
    {
-    "name": "French &lt",
+    "name": "French <",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/French_&lt_language",
+    "wiki": "https://en.wikipedia.org/wiki/French_<_language",
     "speakers": null,
     "share": 0.1,
     "official": true
    },
    {
-    "name": "English &lt",
+    "name": "English <",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/English_&lt_language",
+    "wiki": "https://en.wikipedia.org/wiki/English_<_language",
     "speakers": null,
     "share": 0.1,
     "official": true
    },
    {
-    "name": "Swahili/Kiswahili &lt",
+    "name": "Swahili/Kiswahili <",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/Swahili/Kiswahili_&lt_language",
+    "wiki": "https://en.wikipedia.org/wiki/Swahili/Kiswahili_<_language",
     "speakers": null,
     "share": 0.1,
     "official": true
@@ -84163,12 +85451,36 @@
     "official": true
    },
    {
+    "name": "Kiunguja",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kiunguja_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
     "name": "English",
     "qid": "Q1860",
     "wiki": "https://en.wikipedia.org/wiki/English_language",
     "speakers": 4000000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Arabic",
+    "qid": "Q13955",
+    "wiki": "https://en.wikipedia.org/wiki/Arabic",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Many local languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Many_local_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -84314,7 +85626,7 @@
    ]
   },
   "climate_text": "varies from tropical along coast to temperate in highlands",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": false,
   "has_shape": true,
@@ -85101,12 +86413,36 @@
     "official": true
    },
    {
-    "name": "Swahili",
+    "name": "Ganda or Luganda",
     "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Ganda_or_Luganda_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Nilo-Saharan languages",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nilo-Saharan_languages_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Swahili",
+    "qid": "Q7838",
     "wiki": "https://en.wikipedia.org/wiki/Swahili_language",
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Arabic",
+    "qid": "Q13955",
+    "wiki": "https://en.wikipedia.org/wiki/Arabic",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -85303,7 +86639,7 @@
    ]
   },
   "climate_text": "tropical; generally rainy with two dry seasons (December to February, June to August); semiarid in northeast",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
@@ -85522,6 +86858,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Ewe and Mina",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Ewe_and_Mina_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Kabye and Dagomba",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Kabye_and_Dagomba_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -85664,7 +87016,7 @@
    ]
   },
   "climate_text": "tropical; hot, humid in south; semiarid in north",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -85864,7 +87216,7 @@
   "languages": [
    {
     "name": "Seychellois Creole",
-    "qid": null,
+    "qid": "Q34015",
     "wiki": "https://en.wikipedia.org/wiki/Seychellois_Creole_language",
     "speakers": null,
     "share": 89.1,
@@ -85880,7 +87232,7 @@
    },
    {
     "name": "French",
-    "qid": null,
+    "qid": "Q150",
     "wiki": "https://en.wikipedia.org/wiki/French_language",
     "speakers": null,
     "share": 0.7,
@@ -86264,6 +87616,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Wolof",
+    "qid": "Q34257",
+    "wiki": "https://en.wikipedia.org/wiki/Wolof_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Pulaar",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Pulaar_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Jola",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Jola_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Mandinka",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Mandinka_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Serer",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Serer_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -86666,6 +88058,22 @@
     "speakers": 4400000,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Mende",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Mende_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Temne",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Temne_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -87101,6 +88509,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "French",
+    "qid": "Q150",
+    "wiki": "https://en.wikipedia.org/wiki/French_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Tamazight",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Tamazight_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -87343,7 +88767,7 @@
    ]
   },
   "climate_text": "temperate in north with mild, rainy winters and hot, dry summers; desert in south",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Temperate",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -87553,6 +88977,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Italian",
+    "qid": "Q652",
+    "wiki": "https://en.wikipedia.org/wiki/Italian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -87962,6 +89402,30 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Nubian",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nubian_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Ta Bedawie",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Ta_Bedawie_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Fur",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Fur_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -88894,7 +90358,7 @@
    },
    {
     "name": "Tonga",
-    "qid": null,
+    "qid": "Q34101",
     "wiki": "https://en.wikipedia.org/wiki/Tonga_language",
     "speakers": null,
     "share": 11.4,
@@ -88910,7 +90374,7 @@
    },
    {
     "name": "Chewa",
-    "qid": null,
+    "qid": "Q33273",
     "wiki": "https://en.wikipedia.org/wiki/Chewa_language",
     "speakers": null,
     "share": 4.5,
@@ -89671,6 +91135,46 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Arabic",
+    "qid": "Q13955",
+    "wiki": "https://en.wikipedia.org/wiki/Arabic",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Ethnic languages include Dinka",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Ethnic_languages_include_Dinka_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Nuer",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Nuer_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Bari",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Bari_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "Zande",
+    "qid": null,
+    "wiki": "https://en.wikipedia.org/wiki/Zande_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -90030,12 +91534,12 @@
   ],
   "languages": [
    {
-    "name": "55 languages; French ; Fon",
+    "name": "Including Bariba and Fulfulde",
     "qid": null,
-    "wiki": "https://en.wikipedia.org/wiki/55_languages;_French_;_Fon_language",
+    "wiki": "https://en.wikipedia.org/wiki/Including_Bariba_and_Fulfulde_language",
     "speakers": null,
     "share": null,
-    "official": true
+    "official": false
    }
   ],
   "cities": [
@@ -90225,7 +91729,7 @@
    ]
   },
   "climate_text": "tropical; hot, humid in south; semiarid in north",
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": false,
   "has_shape": true,
@@ -90315,7 +91819,7 @@
    },
    {
     "name": "Bosnian",
-    "qid": null,
+    "qid": "Q9303",
     "wiki": "https://en.wikipedia.org/wiki/Bosnian_language",
     "speakers": null,
     "share": 1.7,
@@ -90331,7 +91835,7 @@
    },
    {
     "name": "Turkish",
-    "qid": null,
+    "qid": "Q256",
     "wiki": "https://en.wikipedia.org/wiki/Turkish_language",
     "speakers": null,
     "share": 1.1,
@@ -90546,7 +92050,7 @@
    ]
   },
   "climate_text": "influenced by continental air masses resulting in relatively cold winters with heavy snowfall and hot, dry summers and autumns; Mediterranean and alpine influences create regional variation; maximum rainfall between October and December",
-  "climate_zone": "Mediterranean",
+  "climate_zone": "Continental",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": false,
@@ -91363,6 +92867,22 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Hebrew",
+    "qid": "Q9288",
+    "wiki": "https://en.wikipedia.org/wiki/Hebrew_language",
+    "speakers": null,
+    "share": null,
+    "official": false
+   },
+   {
+    "name": "English",
+    "qid": "Q1860",
+    "wiki": "https://en.wikipedia.org/wiki/English_language",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -92228,6 +93748,14 @@
     "speakers": null,
     "share": null,
     "official": true
+   },
+   {
+    "name": "Swahili",
+    "qid": "Q7838",
+    "wiki": "https://en.wikipedia.org/wiki/Swahili",
+    "speakers": null,
+    "share": null,
+    "official": false
    }
   ],
   "cities": [
@@ -92409,7 +93937,7 @@
    ]
   },
   "climate_text": "equatorial; high plateau with considerable altitude variation (772 m to 2,670 m above sea level); average annual temperature varies with altitude from 23 to 17 degrees Celsius but is generally moderate; average annual rainfall is about 150 cm with two wet seasons (February to May and September to November) and two dry seasons (June to August and December to January)",
-  "climate_zone": "Highland or alpine",
+  "climate_zone": "Tropical",
   "hemisphere": "Southern",
   "landlocked": true,
   "has_shape": true,
@@ -92688,7 +94216,7 @@
     "wiki": "https://en.wikipedia.org/wiki/Bissa_language",
     "speakers": null,
     "share": 3.3,
-    "official": true
+    "official": false
    },
    {
     "name": "Gurunsi",
@@ -92945,7 +94473,7 @@
     "phosphates"
    ]
   },
-  "climate_zone": "Desert or arid",
+  "climate_zone": "Tropical",
   "hemisphere": "Northern",
   "landlocked": true,
   "has_shape": true,
