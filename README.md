@@ -1,17 +1,19 @@
 # LearnGeo
 
 A world-knowledge quiz show and a linked encyclopaedia in one. Flags, outlines,
-land borders, capitals, largest cities, leaders past and present, famous faces,
-wars, languages, climate and politics for 197 countries — and a fact card with
-photos after **every** answer, right or wrong.
+land borders, capitals, largest cities, leaders past and present, historical
+figures, wars, languages with the share of the country that speaks each, what a
+country sells and to whom, climate and politics for 197 countries — and a fact
+card after every answer you get wrong.
 
 The idea: quiz games test you, encyclopaedias teach you. This does both. You
 play on a dark stage; the answer arrives on atlas paper.
 
-**Everything is linked.** Click a language and see all 64 countries that speak
-it, with speaker counts. Click a war and see everyone who fought in it. Click a
-form of government and see who has used it, and when. Start at a country and
-wander — the way a Wikipedia evening actually goes.
+**Everything is linked.** Click a language and see every country that speaks
+it, with percentages. Click a war and see everyone who fought in it. Click a
+form of government and see who has used it, and when. Search from any page and
+the box answers as you type — countries, languages, wars, currencies, people.
+Start anywhere and wander.
 
 ## Run it
 
@@ -27,27 +29,41 @@ The dataset is already built, so it starts immediately.
 ## Rebuild the dataset
 
 ```bash
-uv run python scripts/fetch_data.py
+uv run python scripts/fetch_data.py     # Wikidata + Wikipedia, ~10 minutes
+uv run python scripts/enrich_data.py    # the Factbook pass and the repairs
 ```
 
-Pulls from Wikidata and Wikipedia into `data/countries.json`. It resumes from a
-checkpoint, so it is safe to interrupt and rerun. Nothing hits the network at
-request time — once built, the app works offline apart from the images.
+`fetch_data.py` resumes from a checkpoint, so it is safe to interrupt.
+`enrich_data.py` takes stage names (`languages`, `economy`, `climate`,
+`government`, `leaders`, `people`, `famous`) if you only want one. Nothing hits
+the network at request time — once built, the app works offline apart from the
+photographs.
 
 ## How it works
 
 | File | What it does |
 | --- | --- |
-| `app.py` | Routes, run state, scoring, fact cards |
-| `learngeo/data.py` | Loads the dataset, shapes, and the topic index |
+| `app.py` | Routes, run state, scoring, fact cards, search |
+| `learngeo/data.py` | Loads the dataset, shapes, the topic index, the search index |
+| `learngeo/supplement.py` | Hand-written wars and historical figures, merged at load |
 | `learngeo/questions.py` | 19 question generators |
 | `learngeo/store.py` | SQLite progress and the spaced-repetition picker |
 | `scripts/fetch_data.py` | Builds the dataset from Wikidata |
+| `scripts/enrich_data.py` | Layers the World Factbook on top and repairs the rest |
 | `data/countries.geo.json` | Country outlines, for silhouettes and the map |
+
+**Two ways to play.** A scored run is twelve questions and three lives, with a
+streak multiplier and points for answering fast. Casual is the same questions
+with no lives and no end. Every game offers both, at `/games`.
 
 **Adaptive.** Every (country, question type) pair is a flashcard. Get one right
 and it comes back later; get it wrong and it returns within minutes. Difficulty
 opens up as you improve — you start on France and Japan, not Eswatini.
+
+**Right and wrong are treated differently.** A correct answer gets a line under
+the choices and a Next button; the full card is one click away if you want it.
+A wrong answer raises the card, because that is the moment you will actually
+read it.
 
 **Progress is visible.** The flag wall on the home page is dim at first and
 lights up country by country. The Atlas shades what you know using the
@@ -55,21 +71,20 @@ elevation tints of a physical map: sea, lowland green, ochre, sienna.
 
 ## Where the data comes from
 
-- **Wikidata** (SPARQL) — everything structured, plus photos of people
-- **Wikipedia REST API** — the prose blurbs on fact cards
-- **flagcdn.com** — flags
-- **[johan/world.geo.json](https://github.com/johan/world.geo.json)** — outlines
-- **[GeoNames](https://www.geonames.org/)** — largest cities by population
-
-All free, no API keys.
+Wikidata, Wikipedia, the CIA World Factbook, GeoNames, world.geo.json,
+flagcdn.com and Wikimedia Commons — all free, no API keys. `/sources` explains
+what each is used for, and which of them is wrong about what.
 
 ## Pages
 
 | Route | What it is |
 | --- | --- |
 | `/` | Flag wall, question categories, your stats |
+| `/games` | Every game, scored or casual |
 | `/play/<category>` | The quiz show |
-| `/atlas` | All 197 countries, shaded by what you know |
+| `/atlas` | All 197 countries, searchable and sortable |
 | `/country/<ISO2>` | The full dossier, everything clickable |
 | `/topics` | Follow a language, war, currency or form of government |
+| `/search` | Countries, topics and people |
+| `/sources` | Where every field comes from |
 | `/progress` | Accuracy, weak spots, recent runs |

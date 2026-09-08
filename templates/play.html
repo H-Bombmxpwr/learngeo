@@ -24,6 +24,11 @@
     <p class="hint" id="hint"></p>
     <div class="choices text" id="choices"></div>
 
+    {# Where a correct answer lands: in the flow, directly under the choices
+       (or under the map, which has none), not pinned to the bottom of the
+       window where it sat outside the eye's path. #}
+    <div id="answerSlot"></div>
+
     <div class="lifelines" id="lifelines">
       <button class="lifeline" data-kind="fifty">Cut two answers</button>
       <button class="lifeline" data-kind="peek">Peek at a fact</button>

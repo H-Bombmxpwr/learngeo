@@ -1,15 +1,30 @@
 {% extends "base.html" %}
 {% block title %}{{ c.name }} - LearnGeo{% endblock %}
 
-{% macro chips(items, kind) -%}
-  <div class="neighbours">
-    {% for e in items %}
-      <a class="neighbour" href="{{ url_for('topic', kind=e.kind or kind, key=e.key) }}">
-        <span>{{ e.name }}</span>
-        {%- if e.speakers %}<small style="color:#857a68">{{ e.speakers | commas }}</small>{% endif %}
-        {%- if e.start or e.end %}<small style="color:#857a68">{{ e.start or '?' }}&ndash;{{ e.end or 'now' }}</small>{% endif %}
-      </a>
-    {% endfor %}
+{# Each kind of thing gets its own mark, so a wall of chips reads as several
+   short lists rather than one long one. Text glyphs, not an icon font: they
+   inherit the colour and need nothing loaded. #}
+{% set MARKS = {'currency': '¤', 'religion': '☾', 'organization': '⬡',
+                'war': '⚔', 'government': '⚖', 'language': '¶',
+                'continent': '◴', 'peak': '▲', 'landmark': '⛰',
+                'export': '↗', 'import': '↘', 'resource': '⛏',
+                'industry': '⚙', 'partner': '⇄', 'climate': '☀',
+                'govtype': '⚖'} %}
+
+{% macro chips(items, kind, title=None) -%}
+  <div class="chip-group">
+    {% if title %}<h3>{{ title }}</h3>{% endif %}
+    <div class="chipset">
+      {% for e in items %}
+        <a class="neighbour" href="{{ url_for('topic', kind=e.kind or kind, key=e.key) }}">
+          <span class="mark" aria-hidden="true">{{ e.mark or MARKS.get(e.kind or kind, '•') }}</span>
+          <span>{{ e.name }}</span>
+          {%- if e.share %}<small class="yrs">{{ e.share }}%</small>
+          {%- elif e.speakers %}<small>{{ e.speakers | commas }}</small>{% endif %}
+          {%- if e.start or e.end %}<small class="yrs">{{ e.start or '?' }}&ndash;{{ e.end or 'now' }}</small>{% endif %}
+        </a>
+      {% endfor %}
+    </div>
   </div>
 {%- endmacro %}
 
@@ -23,6 +38,11 @@
     </div>
   </a>
 {%- endmacro %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+{% endblock %}
 
 {% block body %}
 <div class="wrap">
@@ -64,6 +84,13 @@
       {% if c.hemisphere %}<div class="fact"><dt>Hemisphere</dt><dd>{{ c.hemisphere }}</dd></div>{% endif %}
     </div>
 
+    {% if c.has_shape %}
+      <div class="section">
+        <h2>Where it is</h2>
+        <div id="locator" data-iso3="{{ c.iso3 }}"></div>
+      </div>
+    {% endif %}
+
     {% if languages %}
       <div class="section">
         <h2>Languages</h2>
@@ -93,66 +120,42 @@
     {% if economy %}
       <div class="section">
         <h2>What it sells, and to whom</h2>
-        <div class="econ">
-          {% if economy.exports %}
-            <div>
-              <h3>Exports{% if economy.exports_value %} &mdash; {{ economy.exports_value }}{% endif %}</h3>
-              <ul>{% for x in economy.exports %}<li>{{ x }}</li>{% endfor %}</ul>
-            </div>
-          {% endif %}
-          {% if economy.export_partners %}
-            <div>
-              <h3>Sells to</h3>
-              {% for p in economy.export_partners %}
-                <div class="partner"><span>{{ p.name }}</span>
-                  <span>{% if p.share %}{{ p.share }}%{% endif %}</span></div>
-              {% endfor %}
-            </div>
-          {% endif %}
-          {% if economy.imports %}
-            <div>
-              <h3>Imports{% if economy.imports_value %} &mdash; {{ economy.imports_value }}{% endif %}</h3>
-              <ul>{% for x in economy.imports %}<li>{{ x }}</li>{% endfor %}</ul>
-            </div>
-          {% endif %}
-          {% if economy.import_partners %}
-            <div>
-              <h3>Buys from</h3>
-              {% for p in economy.import_partners %}
-                <div class="partner"><span>{{ p.name }}</span>
-                  <span>{% if p.share %}{{ p.share }}%{% endif %}</span></div>
-              {% endfor %}
-            </div>
-          {% endif %}
-          {% if economy.resources %}
-            <div>
-              <h3>Natural resources</h3>
-              <ul>{% for x in economy.resources %}<li>{{ x }}</li>{% endfor %}</ul>
-            </div>
-          {% endif %}
-          {% if economy.industries %}
-            <div>
-              <h3>Industries</h3>
-              <ul>{% for x in economy.industries %}<li>{{ x }}</li>{% endfor %}</ul>
-            </div>
-          {% endif %}
-          {% if economy.agriculture %}
-            <div>
-              <h3>Farms and fisheries</h3>
-              <ul>{% for x in economy.agriculture %}<li>{{ x }}</li>{% endfor %}</ul>
-            </div>
-          {% endif %}
-          {% if economy.gdp or economy.gdp_per_capita or economy.unemployment %}
-            <div>
-              <h3>Size of the economy</h3>
-              <ul>
-                {% if economy.gdp %}<li>{{ economy.gdp }} at purchasing power parity</li>{% endif %}
-                {% if economy.gdp_per_capita %}<li>{{ economy.gdp_per_capita }} per head</li>{% endif %}
-                {% if economy.unemployment %}<li>{{ economy.unemployment }} unemployment</li>{% endif %}
-              </ul>
-            </div>
-          {% endif %}
-        </div>
+        <p style="color:#6b6255;margin-top:0">
+          Every line is a thread: click a commodity or a partner to see who
+          else trades in it.
+        </p>
+        {% if linked.exports_t %}
+          {{ chips(linked.exports_t, 'export',
+                   'Exports' ~ (' — ' ~ economy.exports_value if economy.exports_value else '')) }}
+        {% endif %}
+        {% if linked.imports_t %}
+          {{ chips(linked.imports_t, 'import',
+                   'Imports' ~ (' — ' ~ economy.imports_value if economy.imports_value else '')) }}
+        {% endif %}
+        {% if linked.partners_t %}{{ chips(linked.partners_t, 'partner', 'Trades with') }}{% endif %}
+        {% if linked.resources_t %}{{ chips(linked.resources_t, 'resource', 'Natural resources') }}{% endif %}
+        {% if linked.industries_t %}{{ chips(linked.industries_t, 'industry', 'Industries') }}{% endif %}
+
+        {% if economy.agriculture or economy.gdp or economy.gdp_per_capita or economy.unemployment %}
+          <div class="econ" style="margin-top:14px">
+            {% if economy.agriculture %}
+              <div>
+                <h3>Farms and fisheries</h3>
+                <ul>{% for x in economy.agriculture %}<li>{{ x }}</li>{% endfor %}</ul>
+              </div>
+            {% endif %}
+            {% if economy.gdp or economy.gdp_per_capita or economy.unemployment %}
+              <div>
+                <h3>Size of the economy</h3>
+                <ul>
+                  {% if economy.gdp %}<li>{{ economy.gdp }} at purchasing power parity</li>{% endif %}
+                  {% if economy.gdp_per_capita %}<li>{{ economy.gdp_per_capita }} per head</li>{% endif %}
+                  {% if economy.unemployment %}<li>{{ economy.unemployment }} unemployment</li>{% endif %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     {% endif %}
 
@@ -178,11 +181,12 @@
       <div class="section">
         <h2>Wars and conflicts</h2>
         <p style="color:#6b6255;margin-top:0">Click one to see everyone else who fought in it.</p>
-        <div class="neighbours">
+        <div class="chipset">
           {% for wr in c.wars %}
             <a class="neighbour" href="{{ url_for('topic', kind='war', key=wr.qid or wr.name|lower|replace(' ','-')) }}">
+              <span class="mark" aria-hidden="true">⚔</span>
               <span>{{ wr.name }}</span>
-              {%- if wr.start %}<small style="color:#857a68">{{ wr.start }}</small>{% endif %}
+              {%- if wr.start %}<small class="yrs">{{ wr.start }}{% if wr.end and wr.end != wr.start %}&ndash;{{ wr.end }}{% elif not wr.end %}&ndash;now{% endif %}</small>{% endif %}
             </a>
           {% endfor %}
         </div>
@@ -200,16 +204,27 @@
     {% if linked.currencies or linked.religions or linked.member_of %}
       <div class="section">
         <h2>Money, belief and alliances</h2>
-        {% if linked.currencies %}{{ chips(linked.currencies, 'currency') }}{% endif %}
-        {% if linked.religions %}{{ chips(linked.religions, 'religion') }}{% endif %}
-        {% if linked.member_of %}{{ chips(linked.member_of[:14], 'organization') }}{% endif %}
+        {% if linked.currencies %}{{ chips(linked.currencies, 'currency', 'Money') }}{% endif %}
+        {% if linked.religions %}{{ chips(linked.religions, 'religion', 'Belief') }}{% endif %}
+        {% if linked.member_of %}{{ chips(linked.member_of[:16], 'organization', 'Belongs to') }}{% endif %}
+        {% if linked.highest_point %}{{ chips(linked.highest_point, 'peak', 'Highest point') }}{% endif %}
       </div>
     {% endif %}
 
-    {% if c.climate_text %}
+    {% if c.climate_text or linked.landmarks or linked.climate_t %}
       <div class="section">
-        <h2>Climate</h2>
-        <p style="max-width:66ch">{{ c.climate_text }}</p>
+        <h2>Climate and geography</h2>
+        {% if c.climate_text %}<p style="max-width:66ch">{{ c.climate_text }}</p>{% endif %}
+        {% if linked.climate_t %}{{ chips(linked.climate_t, 'climate', 'Climate zone') }}{% endif %}
+        {% if linked.landmarks %}
+          {{ chips(linked.landmarks, 'landmark', 'Landmarks and landscapes') }}
+        {% endif %}
+        {% if c.landlocked or c.hemisphere %}
+          <p style="color:#6b6255;font-size:.93rem">
+            {% if c.landlocked %}Landlocked.{% endif %}
+            {% if c.hemisphere %}{{ c.hemisphere }} hemisphere.{% endif %}
+          </p>
+        {% endif %}
       </div>
     {% endif %}
 
@@ -241,8 +256,12 @@
         <div class="figure-row">
           {% for p in c.key_figures %}
             <div class="figure">
-              <b><a href="{{ p.wiki }}" target="_blank" rel="noopener">{{ p.name }}</a></b>
-              {% if p.note %}<small>{{ p.note }}</small>{% endif %}
+              {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
+              <div>
+                <b><a href="{{ p.wiki }}" target="_blank" rel="noopener">{{ p.name }}</a></b>
+                {% if p.note %}<em>{{ p.note }}</em>{% endif %}
+                {% if p.summary %}<small>{{ p.summary }}</small>{% endif %}
+              </div>
             </div>
           {% endfor %}
         </div>
@@ -260,6 +279,12 @@
       </div>
     {% endif %}
 
+    {#  "Faces from here" is off for now. Wikidata ranks by sitelink count,
+        which puts the sitting president and the last three prime ministers at
+        the top of the list -- so the row repeated the two sections above it
+        almost exactly. It needs to exclude anyone already shown as a leader,
+        and to weight towards the arts and sciences, before it earns the space.
+
     {% if c.famous %}
       <div class="section">
         <h2>Faces from here</h2>
@@ -274,6 +299,7 @@
         </div>
       </div>
     {% endif %}
+    #}
 
     <div class="section">
       <a class="btn" href="{{ url_for('play', category='grand_tour') }}">Quiz me</a>
@@ -283,4 +309,36 @@
 
   </div>
 </div>
+
+<script>
+/* The locator map: the country lit against a dimmed world, so you can see
+   where it sits rather than only what it is next to. */
+(function () {
+  var host = document.getElementById("locator");
+  if (!host || !window.L) return;
+  var iso3 = host.dataset.iso3;
+
+  var map = L.map(host, {
+    attributionControl: false, worldCopyJump: false,
+    minZoom: 1, maxZoom: 7, zoomControl: true,
+    scrollWheelZoom: false        // the page still scrolls over the map
+  }).setView([20, 10], 2);
+
+  fetch("/api/geo").then(function (r) { return r.json(); }).then(function (geo) {
+    var target = null;
+    L.geoJSON(geo, {
+      style: function (f) {
+        return f.id === iso3
+          ? { color: "#e0a33c", weight: 2, fillColor: "#b8623a", fillOpacity: .92 }
+          : { color: "#23566c", weight: .6, fillColor: "#12303f", fillOpacity: 1 };
+      },
+      onEachFeature: function (f, layer) {
+        if (f.id === iso3) target = layer;
+      }
+    }).addTo(map);
+    if (target) map.fitBounds(target.getBounds().pad(1.1));
+    setTimeout(function () { map.invalidateSize(); }, 60);
+  });
+})();
+</script>
 {% endblock %}

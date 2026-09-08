@@ -257,6 +257,37 @@ def games():
                            stats=store.overview(world()))
 
 
+@app.route("/map")
+def world_map():
+    """The atlas as a map rather than a list: click a country, read about it.
+
+    The panel is filled from a lookup the page already has, so hovering and
+    clicking cost nothing; only the link out to the full dossier is a page
+    load.
+    """
+    w = world()
+    stats = store.overview(w)
+    # Keyed by ISO3 because that is the id on every GeoJSON feature.
+    info = {}
+    for iso in w.all_isos:
+        c = w.get(iso)
+        if not c.get("iso3"):
+            continue
+        info[c["iso3"]] = {
+            "iso2": iso, "name": c["name"], "flag": c["flag_thumb"],
+            "capital": ent_name((c.get("capitals") or [None])[0]),
+            "continent": w.continent_of(iso),
+            "population": c.get("population"),
+            "area": int(c["area"]) if c.get("area") else None,
+            "languages": [l["name"] for l in language_rows(c, 3)],
+            "government": c.get("government_type"),
+            "currency": ent_name((c.get("currencies") or [None])[0]),
+            "blurb": w.summary_line(iso),
+            "level": stats["mastery"].get(iso, {}).get("level", 0),
+        }
+    return render_template("map.html", info=info, stats=stats)
+
+
 @app.route("/sources")
 def sources():
     w = world()
@@ -536,4 +567,6 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join("data", "countries.json")):
         raise SystemExit(
             "data/countries.json is missing. Run:  python scripts/fetch_data.py")
-    app.run(debug=True, port=5000)
+    # PORT is what every host hands you, Railway included. In production the
+    # Procfile puts gunicorn in front of this and __main__ never runs.
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

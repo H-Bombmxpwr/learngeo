@@ -8,10 +8,12 @@ venv/
 # uv
 .uv/
 
-# Generated dataset -- rebuild with: uv run python scripts/fetch_data.py
-data/countries.json
+# The built dataset is committed: it is what the app serves, it takes ten
+# minutes and several hundred queries to rebuild, and a deploy has no way to
+# run the fetch. The checkpoint and logs behind it are not.
 data/_checkpoint.json
-data/fetch.log
+data/*.log
+data/countries.json.bak
 
 # Local progress (your scores and spaced-repetition schedule)
 data/progress.db
@@ -22,5 +24,6 @@ data/progress.db
 .DS_Store
 Thumbs.db
 
-# Cached GeoNames city dump
+# Cached source dumps, re-downloaded on demand by the build scripts
 data/cities15000.zip
+data/factbook.zip

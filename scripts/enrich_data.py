@@ -32,6 +32,7 @@ import zipfile
 import requests
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)          # so the curated tables can be imported
 DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(DATA, "countries.json")
 FACTBOOK_ZIP = os.path.join(DATA, "factbook.zip")
@@ -241,16 +242,22 @@ def stage_languages(countries):
             missed += 1
             continue
         # Keep what Wikidata knew -- QIDs, Wikipedia links, speaker counts --
-        # and layer the shares on top, matching on name. P37 (official
-        # language) is a second source for official status: the Factbook
-        # sometimes states it in a note the parser cannot see.
+        # and layer the shares on top, matching on name.
         known = {}
         for old in c.get("languages") or []:
             if isinstance(old, dict) and old.get("name"):
                 known[old["name"].lower()] = old
-        official_names = {(x.get("name") or "").lower()
-                          for x in (c.get("official_languages") or [])
-                          if isinstance(x, dict)}
+        # Wikidata's P37 is a fallback for official status and nothing more.
+        # For the United States it lists Spanish, Hawaiian, Chamorro and
+        # Carolinian -- languages official in a state or a territory, not
+        # federally -- so trusting it alongside the Factbook had the US with
+        # two official languages when it has one. It is only consulted when
+        # the Factbook marks nothing official at all.
+        official_names = set()
+        if not any(r["official"] for r in rows):
+            official_names = {(x.get("name") or "").lower()
+                              for x in (c.get("official_languages") or [])
+                              if isinstance(x, dict)}
         merged = []
         for row in rows[:6]:
             old = known.get(row["name"].lower(), {})
@@ -416,10 +423,18 @@ SELECT ?lbl ?qid ?wp ?sl WHERE {
 TODAY = time.strftime("%Y-%m-%d")
 
 
-def _country_statements(iso):
+# These run for a batch of countries at a time, not one each. 197 sequential
+# queries is what the endpoint starts answering 429 to, and the whole pass
+# then takes longer than the fetch it is meant to repair. A batch of 25 asks
+# the same question with a VALUES clause and returns in a few seconds.
+
+def _country_statements(isos):
+    """Leaders as recorded on the country item: P35 head of state, P6 head of
+    government, with the dates of each term."""
     return """
-SELECT ?role ?plbl ?qid ?wp ?img ?start ?ended ?sl WHERE {
-  ?c wdt:P297 "%s" .
+SELECT ?iso2 ?role ?plbl ?qid ?wp ?img ?start ?ended ?sl WHERE {
+  VALUES ?iso2 { %s }
+  ?c wdt:P297 ?iso2 .
   { ?c p:P35 ?st . ?st ps:P35 ?person . BIND("head_of_state" AS ?role) }
   UNION
   { ?c p:P6 ?st . ?st ps:P6 ?person . BIND("head_of_government" AS ?role) }
@@ -431,11 +446,22 @@ SELECT ?role ?plbl ?qid ?wp ?img ?start ?ended ?sl WHERE {
   OPTIONAL { ?st pq:P580 ?start }
   OPTIONAL { ?st pq:P582 ?ended }
 }
-LIMIT 200
-""" % iso
+""" % " ".join('"%s"' % i for i in isos)
 
 
 def _office_holders(iso):
+    """The other way round: find the office whose jurisdiction is this country
+    and ask who holds it with no end date.
+
+    India's country item still names Manmohan Singh as its last head of
+    government, so Narendra Modi -- in office since 2014 -- was nowhere. The
+    office is the reliable side of the relationship.
+
+    One country at a time, deliberately. The `wdt:P279*` subclass walk is what
+    makes this query expensive, and batching countries into it multiplies the
+    walk rather than sharing it: fifteen countries at once times out at 70
+    seconds, one country answers in two.
+    """
     return """
 SELECT ?role ?plbl ?qid ?wp ?img ?start ?sl WHERE {
   ?c wdt:P297 "%s" .
@@ -477,57 +503,94 @@ def _merge_person(bucket, entry):
     bucket.append(entry)
 
 
+def _rank_past(people):
+    """The last three to hold office, then the most notable of the rest.
+
+    Sorting purely by fame gave India a list led by Nehru and Indira Gandhi
+    with no sign of who actually ran the country last decade; sorting purely
+    by date gave a run of caretakers nobody has heard of. Recency first, then
+    fame, is the list a reader wants.
+    """
+    dated = [p for p in people if p.get("start")]
+    dated.sort(key=lambda p: (p.get("end") or p.get("start") or ""), reverse=True)
+    recent = dated[:3]
+    rest = [p for p in people if p not in recent]
+    rest.sort(key=lambda p: (-(p.get("fame") or 0), p.get("name") or ""))
+    return recent + rest
+
+
 def stage_leaders(countries):
     print("[leaders] current and past, with parties")
     isos = sorted(countries)
+    found = {}          # iso -> ([current], [past]), only for isos we heard about
+    reached = set()
+
+    # The country-statement query batches cleanly (no subclass walk), so it
+    # goes 25 at a time.
+    for i in range(0, len(isos), 25):
+        batch = isos[i:i + 25]
+        result = sparql(_country_statements(batch), tries=3)
+        if result is not FAILED:
+            reached.update(batch)
+            for b in result:
+                iso = v(b, "iso2")
+                if iso not in countries or not v(b, "plbl"):
+                    continue
+                cur, past = found.setdefault(iso, ([], []))
+                ended = v(b, "ended")
+                # Still in office if there is no end date, or it has not
+                # arrived yet: Wikidata records scheduled ends for sitting
+                # leaders, which is why France used to have no president.
+                _merge_person(cur if (not ended or ended[:10] > TODAY) else past,
+                              _entry(b, ended))
+        print("      statements %d/%d" % (min(i + 25, len(isos)), len(isos)))
+        time.sleep(1)
+
+    # The office query cannot batch, so it goes one at a time and its failures
+    # only cost that country its office-derived leaders.
     for n, iso in enumerate(isos):
-        current, past = [], []
-        a = sparql(_country_statements(iso), tries=3)
-        for b in rows_of(a):
-            if not v(b, "plbl"):
-                continue
-            ended = v(b, "ended")
-            entry = _entry(b, ended)
-            # Still in office if there is no end date, or it has not arrived
-            # yet: Wikidata records scheduled ends for sitting leaders.
-            _merge_person(current if (not ended or ended[:10] > TODAY) else past,
-                          entry)
-        time.sleep(0.5)                 # the endpoint starts answering 429
-        bq = sparql(_office_holders(iso), tries=3)
-        for b in rows_of(bq):
-            if v(b, "plbl"):
-                _merge_person(current, _entry(b))
-        time.sleep(0.5)
-        if a is FAILED and bq is FAILED:
-            print("      %s: both queries failed, keeping what we had" % iso)
+        result = sparql(_office_holders(iso), tries=2)
+        if result is FAILED:
             continue
-        # Merge with what is already on disk rather than replacing it: a
-        # partial answer should add leaders, never remove them.
+        reached.add(iso)
+        cur, _past = found.setdefault(iso, ([], []))
+        for b in result:
+            if v(b, "plbl"):
+                _merge_person(cur, _entry(b))
+        time.sleep(0.4)
+        if n % 25 == 0:
+            print("      offices %d/%d" % (n, len(isos)))
+            save(countries)
+
+    for iso in isos:
+        if iso not in reached:
+            continue        # both queries failed; keep whatever is on disk
+        current, past = found.get(iso, ([], []))
+        # Merge with what is already there rather than replacing it: a partial
+        # answer should add leaders, never remove them.
         for old in countries[iso].get("leaders") or []:
             if old.get("name"):
                 _merge_person(current, dict(old))
         for old in countries[iso].get("past_leaders") or []:
             if old.get("name"):
                 _merge_person(past, dict(old))
-        current.sort(key=lambda x: (-(x["fame"]), x["name"]))
-        past.sort(key=lambda x: (-(x["fame"]), x["name"]))
-        # One person can hold both offices (most presidential systems); keep
-        # the pair, but never the same office twice.
-        seen = set()
-        keep = []
+        current.sort(key=lambda x: (-(x["fame"] or 0), x["name"]))
+        # One person can hold both offices (most presidential systems); the
+        # pair is kept, but never the same office twice.
+        seen, keep = set(), []
         for p in current:
-            if p["role"] in seen and p["name"] not in {k["name"] for k in keep}:
-                continue
             if (p["name"], p["role"]) in {(k["name"], k["role"]) for k in keep}:
+                continue
+            if p["role"] in seen and p["name"] not in {k["name"] for k in keep}:
                 continue
             seen.add(p["role"])
             keep.append(p)
+        # Somebody still in office is not a past leader.
+        names_now = {p["name"] for p in keep}
+        past = [p for p in past if p["name"] not in names_now]
         countries[iso]["leaders"] = keep[:4]
-        countries[iso]["past_leaders"] = past[:12]
-        if n % 20 == 0:
-            print("      %d/%d (%s: %d current, %d past)"
-                  % (n, len(isos), iso, len(keep), len(past)))
-            save(countries)
+        countries[iso]["past_leaders"] = _rank_past(past)[:12]
+    print("      reached %d of %d countries" % (len(reached), len(isos)))
     return stage_parties(countries)
 
 
@@ -691,7 +754,86 @@ def stage_climate(countries):
 
 
 # --------------------------------------------------------------------------
-# 7. One government type per country
+# 7. A sentence on each curated figure, from their own Wikipedia article
+# --------------------------------------------------------------------------
+# The hand-written note next to each historical figure is a label -- "Ruler,
+# 1969-2011" -- which says when but not why. Wikipedia's opening sentence says
+# why, in the encyclopaedia's own words, and there is one for every name in
+# the table. Cached to data/figures.json and merged at load time, so this only
+# has to run when the table changes.
+
+WIKI_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/"
+FIGURES_CACHE = os.path.join(DATA, "figures.json")
+
+
+def first_sentence(text, cap=260):
+    """Wikipedia's first sentence, without breaking on the abbreviations and
+    dates that litter a biography's opening line."""
+    text = re.sub(r"\s+", " ", text or "").strip()
+    if not text:
+        return None
+    # Protect the full stops that are not sentence ends before splitting.
+    guarded = re.sub(r"\b((?:[A-Z]\.)+|Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|c|approx|"
+                     r"b|d|r|fl|ca|no|vs|etc|al)\.", r"\1<DOT>", text)
+    parts = re.split(r"(?<=\.)\s+(?=[A-Z(])", guarded)
+    out = parts[0].replace("<DOT>", ".")
+    # A very short opener is usually just the name and dates; take the next
+    # sentence too rather than showing "Napoleon (1769-1821) was French."
+    if len(out) < 70 and len(parts) > 1:
+        out += " " + parts[1].replace("<DOT>", ".")
+    out = out.strip()
+    if len(out) > cap:
+        out = out[:cap].rsplit(" ", 1)[0].rstrip(",;:") + "..."
+    return out
+
+
+def stage_figures(countries):
+    print("[figures] a sentence on each curated figure, from Wikipedia")
+    from learngeo import supplement
+
+    cache = {}
+    if os.path.exists(FIGURES_CACHE):
+        with open(FIGURES_CACHE, encoding="utf-8") as f:
+            cache = json.load(f)
+
+    names = []
+    for entries in supplement.FIGURES.values():
+        for entry in entries:
+            name = entry.split("|")[0]
+            if name not in cache and name not in names:
+                names.append(name)
+    print("      %d already cached, %d to fetch" % (len(cache), len(names)))
+
+    for i, name in enumerate(names):
+        try:
+            r = S.get(WIKI_SUMMARY + name.replace(" ", "_"), timeout=25)
+            if r.status_code == 200:
+                d = r.json()
+                if "disambiguation" not in (d.get("type") or ""):
+                    line = first_sentence(d.get("extract"))
+                    if line:
+                        cache[name] = {
+                            "summary": line,
+                            "wiki": ((d.get("content_urls") or {}).get("desktop")
+                                     or {}).get("page"),
+                            "image": ((d.get("thumbnail") or {}).get("source")),
+                        }
+        except Exception:
+            pass
+        time.sleep(0.08)
+        if i and i % 50 == 0:
+            print("      %d/%d" % (i, len(names)))
+            with open(FIGURES_CACHE, "w", encoding="utf-8") as f:
+                json.dump(cache, f, ensure_ascii=False, indent=1)
+
+    with open(FIGURES_CACHE, "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, indent=1)
+    print("      %d figures have a sentence -> %s" % (len(cache), FIGURES_CACHE))
+    return countries
+
+
+# --------------------------------------------------------------------------
+# 8. One government type per country
 # --------------------------------------------------------------------------
 # Wikidata's P122 lists every form that applies, which for China is communist
 # state, socialist state, unitary state and one-party state -- so the quiz
@@ -719,8 +861,8 @@ def stage_government(countries):
 
 STAGES = {"languages": stage_languages, "economy": stage_economy,
           "climate": stage_climate, "government": stage_government,
-          "people": stage_people, "leaders": stage_leaders,
-          "famous": stage_famous}
+          "figures": stage_figures, "people": stage_people,
+          "leaders": stage_leaders, "famous": stage_famous}
 
 
 def main():

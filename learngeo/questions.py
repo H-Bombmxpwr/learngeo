@@ -69,7 +69,12 @@ def country_to_flag(world, iso, rng):
     opts = [iso] + distractors(world, iso, 3)
     if len(opts) < 4:
         return None
-    choices = [{"key": i, "label": None, "image": world.get(i)["flag_url"]} for i in opts]
+    # `caption` is the answer to "so whose flag was that one, then?" -- the
+    # browser keeps it hidden while the question is live and prints it under
+    # every flag once you have answered. Labelling only the right one teaches
+    # you a quarter of what the question had on screen.
+    choices = [{"key": i, "label": None, "image": world.get(i)["flag_url"],
+                "caption": world.name(i)} for i in opts]
     rng.shuffle(choices)
     return _q("country_to_flag", iso, "Which of these is the flag of %s?" % world.name(iso),
               choices, iso)

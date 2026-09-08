@@ -34,6 +34,12 @@ def ent_name(x):
 
 
 # field on a country  ->  (url kind, human label, singular noun)
+#
+# Anything listed here becomes a page of its own listing every country
+# attached to it, and every mention of it anywhere on the site becomes a link
+# to that page. The rule is that if a fact is shared between countries it is a
+# thread worth pulling -- which is as true of "crude petroleum" and "tropical"
+# as it is of "Spanish".
 TOPIC_FIELDS = {
     "languages":    ("language", "Languages", "language"),
     "currencies":   ("currency", "Currencies", "currency"),
@@ -43,7 +49,24 @@ TOPIC_FIELDS = {
     "member_of":    ("organization", "Organizations", "organization"),
     "wars":         ("war", "Wars and conflicts", "war"),
     "highest_point": ("peak", "Highest points", "peak"),
+    "exports_t":    ("export", "Exports", "export"),
+    "imports_t":    ("import", "Imports", "import"),
+    "resources_t":  ("resource", "Natural resources", "natural resource"),
+    "industries_t": ("industry", "Industries", "industry"),
+    "partners_t":   ("partner", "Trading partners", "trading partner"),
+    "climate_t":    ("climate", "Climates", "climate"),
+    "landmarks":    ("landmark", "Landmarks and landscapes", "landmark"),
+    "govtype_t":    ("govtype", "Government types", "government type"),
 }
+
+# Which of those are derived at load time from a plain list of strings rather
+# than stored as entities by the fetch scripts.
+DERIVED_TOPICS = (
+    ("exports_t", "exports"),
+    ("imports_t", "imports"),
+    ("resources_t", "resources"),
+    ("industries_t", "industries"),
+)
 
 
 class World(object):
@@ -60,9 +83,11 @@ class World(object):
                 self.shapes[feat["id"]] = feat["geometry"]
         self.geojson = geo
 
-        # Curated wars and historical figures, layered on top of the fetched
-        # data. See supplement.py for why they cannot come from a query.
+        # Curated wars, historical figures and landmarks, layered on top of
+        # the fetched data. See supplement.py for why they cannot come from a
+        # query.
         supplement.apply(self.countries)
+        self._derive_topics()
 
         self.by_iso3 = {}
         for c in self.countries.values():
@@ -85,6 +110,39 @@ class World(object):
 
         self._build_topics()
         self._build_search()
+
+    def _derive_topics(self):
+        """Turn the plain string lists into linkable entities.
+
+        The economy fields arrive from the Factbook as bare strings -- "crude
+        petroleum", "coffee" -- and the climate zone as one word. Wrapping
+        each in the same {name, key} shape the fetched entities use means the
+        existing topic index picks them up with no special cases, so every
+        export on a country page is a door to every other country that sells
+        the same thing.
+        """
+        for c in self.countries.values():
+            econ = c.get("economy") or {}
+            for field, source in DERIVED_TOPICS:
+                c[field] = [{"name": x} for x in (econ.get(source) or [])]
+            # Both directions of trade collapse into one "partner" thread:
+            # what you want from it is who a country trades with at all.
+            partners = {}
+            for key, direction in (("export_partners", "sells to"),
+                                   ("import_partners", "buys from")):
+                for p in econ.get(key) or []:
+                    node = partners.setdefault(p["name"], {"name": p["name"],
+                                                           "ways": []})
+                    node["ways"].append(direction)
+                    if p.get("share") and not node.get("share"):
+                        node["share"] = p["share"]
+            for node in partners.values():
+                node["detail"] = " and ".join(node.pop("ways"))
+            c["partners_t"] = list(partners.values())
+            c["climate_t"] = ([{"name": c["climate_zone"]}]
+                              if c.get("climate_zone") else [])
+            c["govtype_t"] = ([{"name": c["government_type"]}]
+                              if c.get("government_type") else [])
 
     @staticmethod
     def people_of(c):
@@ -211,7 +269,8 @@ class World(object):
             if not ent.get("name"):
                 continue
             out.append(dict(ent, kind=kind,
-                            key=ent.get("qid") or slug(ent["name"])))
+                            key=ent.get("qid") or slug(ent["name"]),
+                            mark=supplement.mark_for(kind, ent["name"])))
         return out
 
     # -- lookups ---------------------------------------------------------

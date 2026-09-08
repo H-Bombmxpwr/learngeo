@@ -21,6 +21,9 @@ the two or three people you would expect to see on each country's page.
 Both are merged on top of the fetched data at load time, never written into
 `countries.json`, so re-running the fetch scripts cannot wipe them.
 """
+import json
+import os
+
 from .data_util import wiki_url
 
 
@@ -580,12 +583,278 @@ FIGURES = {
 }
 
 
+# --------------------------------------------------------------------------
+# Landmarks and landscapes
+# --------------------------------------------------------------------------
+# Wikidata has no property for "the thing this country is known for looking
+# like". The highest point is the closest it gets, which gives you Nepal's
+# Everest but not China's Great Wall or Britain's Stonehenge. One to three per
+# country, each the title of its own Wikipedia article.
+LANDMARKS = {
+    "AE": "Burj Khalifa; Sheikh Zayed Mosque; Rub' al Khali",
+    "AF": "Band-e Amir National Park; Buddhas of Bamiyan; Hindu Kush",
+    "AR": "Iguazu Falls; Perito Moreno Glacier; Aconcagua; Patagonia",
+    "AT": "Schonbrunn Palace; Hallstatt; Grossglockner",
+    "AU": "Uluru; Great Barrier Reef; Sydney Opera House; Outback",
+    "AZ": "Flame Towers; Gobustan Rock Art",
+    "BD": "Sundarbans; Cox's Bazar",
+    "BE": "Grand-Place, Brussels; Atomium; Bruges",
+    "BO": "Salar de Uyuni; Lake Titicaca; Tiwanaku",
+    "BR": "Christ the Redeemer; Amazon rainforest; Iguazu Falls; Sugarloaf Mountain",
+    "BT": "Paro Taktsang; Punakha Dzong",
+    "BW": "Okavango Delta; Kalahari Desert; Makgadikgadi Pan",
+    "CA": "Niagara Falls; Banff National Park; CN Tower; Canadian Rockies",
+    "CH": "Matterhorn; Jungfrau; Lake Geneva; Chapel Bridge",
+    "CL": "Atacama Desert; Torres del Paine; Easter Island",
+    "CN": "Great Wall of China; Forbidden City; Terracotta Army; Yangtze; Mount Everest",
+    "CO": "Cartagena; Cocora Valley; Lost City",
+    "CR": "Arenal Volcano; Monteverde Cloud Forest",
+    "CU": "Old Havana; Vinales Valley",
+    "CZ": "Prague Castle; Charles Bridge; Cesky Krumlov",
+    "DE": "Brandenburg Gate; Neuschwanstein Castle; Cologne Cathedral; Black Forest",
+    "DK": "Nyhavn; The Little Mermaid; Kronborg",
+    "DZ": "Sahara; Casbah of Algiers; Tassili n'Ajjer",
+    "EC": "Galapagos Islands; Cotopaxi; Quito",
+    "EG": "Great Pyramid of Giza; Great Sphinx of Giza; Nile; Valley of the Kings; Abu Simbel",
+    "ES": "Sagrada Familia; Alhambra; Camino de Santiago; Park Guell",
+    "ET": "Rock-hewn churches, Lalibela; Simien Mountains; Danakil Depression",
+    "FI": "Lapland; Suomenlinna; Finnish Lakeland",
+    "FR": "Eiffel Tower; Louvre; Mont-Saint-Michel; Palace of Versailles; Mont Blanc",
+    "GB": "Stonehenge; Tower of London; Big Ben; Lake District; Giant's Causeway",
+    "GR": "Acropolis of Athens; Santorini; Meteora; Delphi",
+    "GT": "Tikal; Lake Atitlan; Antigua Guatemala",
+    "HR": "Plitvice Lakes National Park; Dubrovnik; Diocletian's Palace",
+    "HU": "Hungarian Parliament Building; Lake Balaton; Buda Castle",
+    "ID": "Borobudur; Komodo National Park; Mount Bromo; Bali",
+    "IE": "Cliffs of Moher; Giant's Causeway; Ring of Kerry; Newgrange",
+    "IL": "Western Wall; Dead Sea; Masada; Church of the Holy Sepulchre",
+    "IN": "Taj Mahal; Ganges; Varanasi; Hawa Mahal; Ajanta Caves; Thar Desert",
+    "IQ": "Babylon; Ziggurat of Ur; Tigris",
+    "IR": "Persepolis; Naqsh-e Jahan Square; Golestan Palace",
+    "IS": "Blue Lagoon; Gullfoss; Thingvellir; Vatnajokull",
+    "IT": "Colosseum; Leaning Tower of Pisa; Venice; Pompeii; Mount Vesuvius; Amalfi Coast",
+    "JO": "Petra; Wadi Rum; Dead Sea",
+    "JP": "Mount Fuji; Fushimi Inari-taisha; Itsukushima Shrine; Kinkaku-ji",
+    "KE": "Maasai Mara; Mount Kenya; Great Rift Valley",
+    "KH": "Angkor Wat; Tonle Sap",
+    "KR": "Gyeongbokgung; Jeju Island; Bukhansan",
+    "KZ": "Baikonur Cosmodrome; Charyn Canyon; Kazakh Steppe",
+    "LA": "Luang Prabang; Plain of Jars; Kuang Si Falls",
+    "LB": "Baalbek; Jeita Grotto; Cedars of God",
+    "LK": "Sigiriya; Temple of the Tooth; Adam's Peak",
+    "MA": "Jemaa el-Fnaa; Hassan II Mosque; Atlas Mountains; Chefchaouen",
+    "MM": "Shwedagon Pagoda; Bagan; Inle Lake",
+    "MN": "Gobi Desert; Orkhon Valley; Lake Khovsgol",
+    "MV": "Maldivian atolls",
+    "MX": "Chichen Itza; Teotihuacan; Copper Canyon; Cenotes of Yucatan",
+    "MY": "Petronas Towers; Mount Kinabalu; Batu Caves",
+    "NA": "Sossusvlei; Namib Desert; Etosha National Park; Skeleton Coast",
+    "NG": "Zuma Rock; Yankari National Park; Niger Delta",
+    "NL": "Kinderdijk windmills; Keukenhof; Amsterdam canals",
+    "NO": "Geirangerfjord; Preikestolen; North Cape; Lofoten",
+    "NP": "Mount Everest; Annapurna; Boudhanath; Lumbini",
+    "NZ": "Milford Sound; Tongariro National Park; Southern Alps",
+    "OM": "Grand Mosque, Muscat; Wahiba Sands; Jebel Shams",
+    "PE": "Machu Picchu; Nazca Lines; Lake Titicaca; Colca Canyon",
+    "PH": "Banaue Rice Terraces; Chocolate Hills; Puerto Princesa Underground River",
+    "PK": "K2; Badshahi Mosque; Mohenjo-daro; Karakoram",
+    "PL": "Wieliczka Salt Mine; Auschwitz concentration camp; Bialowieza Forest; Wawel Castle",
+    "PT": "Belem Tower; Douro Valley; Sintra; Algarve",
+    "RO": "Bran Castle; Palace of the Parliament; Danube Delta; Transfagarasan",
+    "RU": "Red Square; Saint Basil's Cathedral; Lake Baikal; Trans-Siberian Railway; Hermitage Museum",
+    "SA": "Great Mosque of Mecca; Kaaba; Al-Masjid an-Nabawi; Hegra; Rub' al Khali",
+    "SE": "Vasa Museum; Icehotel; Stockholm archipelago",
+    "SG": "Marina Bay Sands; Gardens by the Bay; Merlion",
+    "SI": "Lake Bled; Postojna Cave; Triglav",
+    "SK": "Spis Castle; High Tatras",
+    "SY": "Palmyra; Umayyad Mosque; Krak des Chevaliers",
+    "TH": "Grand Palace; Wat Arun; Ayutthaya; Phi Phi Islands",
+    "TR": "Hagia Sophia; Cappadocia; Pamukkale; Ephesus; Bosphorus",
+    "TW": "Taipei 101; Taroko National Park; Sun Moon Lake",
+    "TZ": "Mount Kilimanjaro; Serengeti; Ngorongoro Crater; Zanzibar",
+    "UA": "Kyiv Pechersk Lavra; Chernobyl Exclusion Zone; Carpathian Mountains",
+    "UG": "Bwindi Impenetrable Forest; Murchison Falls; Rwenzori Mountains",
+    "US": "Grand Canyon; Statue of Liberty; Yellowstone National Park; Golden Gate Bridge; Mount Rushmore; Niagara Falls",
+    "UZ": "Registan; Samarkand; Bukhara; Aral Sea",
+    "VA": "St. Peter's Basilica; Sistine Chapel; Vatican Museums",
+    "VE": "Angel Falls; Mount Roraima; Orinoco",
+    "VN": "Ha Long Bay; Hoi An; Phong Nha-Ke Bang National Park",
+    "YE": "Old City of Sana'a; Socotra",
+    "ZA": "Table Mountain; Kruger National Park; Cape of Good Hope; Drakensberg",
+    "ZM": "Victoria Falls; Zambezi",
+    "ZW": "Victoria Falls; Great Zimbabwe; Hwange National Park",
+    "AL": "Butrint; Albanian Riviera",
+    "AM": "Mount Ararat; Geghard; Lake Sevan",
+    "AO": "Kalandula Falls; Tundavala",
+    "BA": "Stari Most; Kravice",
+    "BG": "Rila Monastery; Black Sea coast",
+    "BF": "Ruins of Loropeni; Sindou Peaks",
+    "BI": "Lake Tanganyika",
+    "BJ": "Royal Palaces of Abomey; Ganvie",
+    "BN": "Omar Ali Saifuddien Mosque; Ulu Temburong National Park",
+    "BS": "Exuma Cays; Blue Holes of the Bahamas",
+    "BY": "Bialowieza Forest; Mir Castle",
+    "BZ": "Great Blue Hole; Caracol",
+    "CD": "Virunga National Park; Congo River",
+    "CF": "Dzanga-Sangha",
+    "CG": "Odzala-Kokoua National Park",
+    "CI": "Basilica of Our Lady of Peace; Tai National Park",
+    "CM": "Mount Cameroon; Waza National Park",
+    "CY": "Paphos; Troodos Mountains",
+    "DO": "Zona Colonial; Pico Duarte",
+    "EE": "Tallinn Old Town; Lahemaa National Park",
+    "ER": "Asmara",
+    "FJ": "Mamanuca Islands; Bouma Falls",
+    "GE": "Gergeti Trinity Church; Uplistsikhe; Caucasus Mountains",
+    "GH": "Cape Coast Castle; Lake Volta; Elmina Castle",
+    "GM": "Kunta Kinteh Island; River Gambia",
+    "GN": "Mount Nimba; Fouta Djallon",
+    "GY": "Kaieteur Falls",
+    "HN": "Copan; Bay Islands",
+    "HT": "Citadelle Laferriere; Sans-Souci Palace",
+    "JM": "Blue Mountains; Dunn's River Falls",
+    "KG": "Issyk-Kul; Tian Shan",
+    "KP": "Mount Paektu; Juche Tower",
+    "KW": "Kuwait Towers",
+    "LT": "Hill of Crosses; Curonian Spit; Trakai Island Castle",
+    "LU": "Bock Casemates; Luxembourg City fortifications",
+    "LV": "Riga Old Town; Gauja National Park",
+    "LY": "Leptis Magna; Sabratha; Sahara",
+    "MD": "Orheiul Vechi; Cricova",
+    "ME": "Bay of Kotor; Durmitor",
+    "MG": "Avenue of the Baobabs; Tsingy de Bemaraha",
+    "MK": "Lake Ohrid; Matka Canyon",
+    "ML": "Great Mosque of Djenne; Timbuktu; Bandiagara Escarpment",
+    "MT": "Megalithic Temples of Malta; Valletta; Blue Grotto",
+    "MU": "Le Morne Brabant; Chamarel",
+    "MW": "Lake Malawi; Mount Mulanje",
+    "MZ": "Bazaruto Archipelago; Ilha de Mocambique",
+    "NE": "Air Mountains; W National Park",
+    "NI": "Lake Nicaragua; Granada; Masaya Volcano",
+    "PA": "Panama Canal; San Blas Islands; Darien Gap",
+    "PG": "Kokoda Track; Mount Wilhelm",
+    "PS": "Church of the Nativity; Dome of the Rock; Hisham's Palace",
+    "PY": "Jesuit Missions of La Santisima Trinidad; Itaipu Dam",
+    "QA": "Museum of Islamic Art; Souq Waqif",
+    "RS": "Belgrade Fortress; Djavolja Varos; Studenica Monastery",
+    "RW": "Volcanoes National Park; Lake Kivu",
+    "SD": "Meroe pyramids; Nile confluence",
+    "SN": "Goree Island; Lake Retba; Djoudj National Bird Sanctuary",
+    "SO": "Laas Geel; Somali coast",
+    "SS": "Sudd; Boma National Park",
+    "SV": "Joya de Ceren; Santa Ana Volcano",
+    "TD": "Lakes of Ounianga; Lake Chad; Zakouma National Park",
+    "TG": "Koutammakou",
+    "TJ": "Pamir Mountains; Iskanderkul",
+    "TM": "Darvaza gas crater; Merv",
+    "TN": "Carthage; El Djem; Sahara",
+    "TT": "Pitch Lake; Caroni Swamp",
+    "UY": "Colonia del Sacramento; Punta del Este",
+}
+
+
+# --------------------------------------------------------------------------
+# Marks: a glyph for a religion, a currency or an organisation
+# --------------------------------------------------------------------------
+# A wall of identical chips reads as one long list; a mark per row turns it
+# into several short ones you can scan. Unicode rather than an icon font, so
+# nothing has to load and the glyph inherits the surrounding colour.
+RELIGION_MARKS = [
+    ("catholic", "✝"), ("orthodox", "☦"), ("protestant", "✝"),
+    ("christian", "✝"), ("anglican", "✝"), ("lutheran", "✝"),
+    ("islam", "☪"), ("muslim", "☪"), ("sunni", "☪"), ("shia", "☪"),
+    ("judaism", "✡"), ("jewish", "✡"),
+    ("hindu", "ॐ"), ("buddh", "☸"), ("sikh", "☬"), ("jain", "卍"),
+    ("shinto", "⛩"), ("taois", "☯"), ("confucian", "☯"),
+    ("bahai", "✷"), ("baha'i", "✷"), ("zoroastr", "🜂"),
+    ("atheis", "○"), ("irreligion", "○"), ("secular", "○"),
+    ("animis", "❂"), ("folk", "❂"), ("traditional", "❂"),
+]
+
+CURRENCY_MARKS = [
+    ("euro", "€"), ("dollar", "$"), ("pound", "£"), ("yen", "¥"),
+    ("yuan", "¥"), ("renminbi", "¥"), ("rupee", "₹"), ("won", "₩"),
+    ("ruble", "₽"), ("rouble", "₽"), ("lira", "₺"), ("franc", "₣"),
+    ("peso", "₱"), ("naira", "₦"), ("shekel", "₪"), ("dong", "₫"),
+    ("hryvnia", "₴"), ("tenge", "₸"), ("baht", "฿"), ("riyal", "﷼"),
+    ("rial", "﷼"), ("dinar", "د"), ("dirham", "د"), ("krona", "kr"),
+    ("krone", "kr"), ("rand", "R"), ("real", "R$"), ("rupiah", "Rp"),
+    ("taka", "৳"), ("kip", "₭"), ("tugrik", "₮"), ("guarani", "₲"),
+    ("cedi", "₵"), ("colon", "₡"), ("lari", "₾"), ("manat", "₼"),
+    ("som", "⃀"), ("afghani", "؋"), ("riel", "៛"), ("peseta", "₧"),
+]
+
+ORG_MARKS = [
+    ("united nations", "🌐"), ("european union", "🇪🇺"),
+    ("nato", "⚔"), ("north atlantic treaty", "⚔"),
+    ("african union", "🌍"), ("arab league", "☪"),
+    ("commonwealth", "👑"), ("asean", "🌏"), ("opec", "🛢"),
+    ("world trade", "⚖"), ("world health", "⚕"), ("unesco", "📜"),
+    ("world bank", "🏦"), ("monetary fund", "🏦"),
+    ("olympic", "🏅"), ("fifa", "⚽"), ("red cross", "✚"),
+    ("interpol", "🛡"), ("mercosur", "🌎"), ("caricom", "🌴"),
+    ("organisation of islamic", "☪"), ("organization of islamic", "☪"),
+    ("francophonie", "¶"), ("shanghai cooperation", "🌏"),
+    ("council of europe", "🇪🇺"), ("schengen", "🛂"),
+    ("space", "🚀"), ("atomic", "⚛"), ("nuclear", "⚛"),
+    ("labour", "⚒"), ("labor", "⚒"), ("maritime", "⚓"), ("postal", "✉"),
+    ("telecommunication", "📡"), ("meteorolog", "🌦"),
+    ("civil aviation", "✈"), ("refugee", "🕊"), ("agricultur", "🌾"),
+    ("bank", "🏦"), ("court", "⚖"), ("criminal", "⚖"),
+]
+
+
+def mark_for(kind, name):
+    """The glyph for one chip, or None to fall back to the kind's default."""
+    table = {"religion": RELIGION_MARKS, "currency": CURRENCY_MARKS,
+             "organization": ORG_MARKS}.get(kind)
+    if not table:
+        return None
+    low = (name or "").lower()
+    for needle, glyph in table:
+        if needle in low:
+            return glyph
+    return None
+
+
+def _landmarks_for(iso):
+    raw = LANDMARKS.get(iso)
+    if not raw:
+        return []
+    return [{"name": n.strip(), "wiki": wiki_url(n.strip())}
+            for n in raw.split(";") if n.strip()]
+
+
+# Wikipedia's opening sentence for each curated figure, fetched once by
+# `enrich_data.py figures` and cached. The hand-written note says when; this
+# says why, in the encyclopaedia's own words. Missing entries just fall back
+# to the note.
+_SUMMARIES = None
+
+
+def _summaries():
+    global _SUMMARIES
+    if _SUMMARIES is None:
+        path = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), "data", "figures.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                _SUMMARIES = json.load(f)
+        except (IOError, ValueError):
+            _SUMMARIES = {}
+    return _SUMMARIES
+
+
 def _people_for(iso):
     out = []
     for entry in FIGURES.get(iso, []):
         name, _, note = entry.partition("|")
+        extra = _summaries().get(name) or {}
         out.append({"name": name, "note": note or None,
-                    "wiki": wiki_url(name), "source": "curated"})
+                    "summary": extra.get("summary"),
+                    "image": extra.get("image"),
+                    "wiki": extra.get("wiki") or wiki_url(name),
+                    "source": "curated"})
     return out
 
 
@@ -621,4 +890,16 @@ def apply(countries):
 
     for iso, c in countries.items():
         c["key_figures"] = _people_for(iso)
+        # The highest point is a landmark too, and belongs in the same list
+        # rather than filed under money and alliances.
+        marks = _landmarks_for(iso)
+        have = {m["name"].lower() for m in marks}
+        for peak in c.get("highest_point") or []:
+            nm = peak.get("name") if isinstance(peak, dict) else peak
+            if nm and nm.lower() not in have:
+                marks.append({"name": nm, "peak": True,
+                              "wiki": (peak.get("wiki")
+                                       if isinstance(peak, dict) else None)
+                              or wiki_url(nm)})
+        c["landmarks"] = marks
     return countries

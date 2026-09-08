@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}World map - LearnGeo{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+    <h1>The world, to poke at</h1>
+    <p style="max-width:62ch;margin-bottom:20px">
+      Click any country to read about it. Shading is what you know, on the same
+      scale as the Atlas &mdash; the map fills in as you play.
+    </p>
+
+    <div class="maplayout">
+      <div id="wmap"></div>
+      <aside class="mapinfo" id="panel">
+        <p class="empty" id="prompt">Pick a country.</p>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script id="mapdata" type="application/json">{{ info | tojson }}</script>
+<script>
+(function () {
+  var info = JSON.parse(document.getElementById("mapdata").textContent);
+  var panel = document.getElementById("panel");
+
+  // The same elevation tints the Atlas uses: sea, lowland, ochre, sienna.
+  var TINT = ["#12303f", "#2c5f6d", "#5d7a45", "#c08d38"];
+
+  var map = L.map("wmap", {
+    worldCopyJump: false, attributionControl: false,
+    minZoom: 1, maxZoom: 7, zoomControl: true
+  }).setView([25, 8], 2);
+
+  var layer = null, chosen = null;
+
+  function style(feature) {
+    var d = info[feature.id];
+    return {
+      color: "#23566c", weight: 0.7,
+      fillColor: d ? TINT[d.level || 0] : "#0f2836",
+      fillOpacity: 1
+    };
+  }
+
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+
+  function fact(label, value) {
+    if (!value) return null;
+    return el("div", { class: "fact" }, [
+      el("dt", { text: label }), el("dd", { text: value })
+    ]);
+  }
+
+  function num(n) {
+    return typeof n === "number" ? n.toLocaleString() : null;
+  }
+
+  function show(d) {
+    panel.innerHTML = "";
+    panel.appendChild(el("div", { class: "mapinfo-head" }, [
+      el("img", { src: d.flag, alt: "" }),
+      el("div", {}, [
+        el("h2", { text: d.name }),
+        el("small", { text: d.continent })
+      ])
+    ]));
+    // The link out goes above the reading, not below it: on a phone the
+    // facts push it off the bottom of the panel.
+    panel.appendChild(el("a", {
+      class: "btn", href: "/country/" + d.iso2, text: "Read the full page"
+    }));
+    if (d.blurb) panel.appendChild(el("p", { text: d.blurb }));
+    var facts = el("dl", { class: "facts" }, [
+      fact("Capital", d.capital),
+      fact("Population", num(d.population)),
+      fact("Area", d.area ? num(d.area) + " km2" : null),
+      fact("Languages", (d.languages || []).join(", ")),
+      fact("Government", d.government),
+      fact("Currency", d.currency)
+    ]);
+    panel.appendChild(facts);
+  }
+
+  fetch("/api/geo").then(function (r) { return r.json(); }).then(function (geo) {
+    layer = L.geoJSON(geo, {
+      style: style,
+      onEachFeature: function (feature, lyr) {
+        var d = info[feature.id];
+        if (d) lyr.bindTooltip(d.name, { sticky: true, direction: "top" });
+        lyr.on("mouseover", function () {
+          if (lyr !== chosen) lyr.setStyle({ color: "#e0a33c", weight: 1.6 });
+        });
+        lyr.on("mouseout", function () {
+          if (lyr !== chosen) layer.resetStyle(lyr);
+        });
+        lyr.on("click", function () {
+          if (chosen) layer.resetStyle(chosen);
+          chosen = lyr;
+          lyr.setStyle({ color: "#e0a33c", weight: 2.2 });
+          if (d) show(d);
+          else panel.innerHTML = "<p class='empty'>Nothing on file for that one.</p>";
+        });
+      }
+    }).addTo(map);
+    setTimeout(function () { map.invalidateSize(); }, 60);
+  });
+})();
+</script>
+{% endblock %}

@@ -15,6 +15,7 @@
     hint: document.getElementById("hint"),
     choices: document.getElementById("choices"),
     lifelines: document.getElementById("lifelines"),
+    answerSlot: document.getElementById("answerSlot"),
     sheetHost: document.getElementById("sheetHost")
   };
 
@@ -142,8 +143,15 @@
   }
 
   function renderMedia(q) {
+    // Leaflet keeps listeners and tiles alive on a container that is merely
+    // emptied, and the old layer's green and red kept its colours -- so the
+    // next map question opened already showing the previous answer.
+    if (map) {
+      map.remove();
+      map = null;
+      mapLayer = null;
+    }
     el.media.innerHTML = "";
-    map = null;
     var m = q.media || {};
     if (m.type === "image") {
       el.media.appendChild(h("img", {
@@ -173,8 +181,9 @@
       if (c.label) kids.push(h("span", { text: c.label }));
       var btn = h("button", {
         class: "choice", "data-key": c.key,
-        "aria-label": c.label || ("Option " + (i + 1))
+        "aria-label": c.label || c.caption || ("Option " + (i + 1))
       }, kids);
+      if (c.caption) btn.dataset.caption = c.caption;
       btn.addEventListener("click", function () { answer(c.key); });
       el.choices.appendChild(btn);
     });
@@ -184,6 +193,7 @@
   function nextQuestion() {
     locked = false;
     el.sheetHost.innerHTML = "";
+    el.answerSlot.innerHTML = "";
     fetch("/api/next").then(function (r) { return r.json(); }).then(function (q) {
       if (q.error) { el.prompt.textContent = q.error; return; }
       if (q.done) { return; }
@@ -212,6 +222,14 @@
         markChoices(res, key);
         paintRun(res.run);
         lastAnswer = res;
+        // A wrong map click is the one case where the card is the wrong
+        // response: what you needed was to see where the country actually
+        // was. The map stays up with the answer flown to and lit, and the
+        // card waits behind a button.
+        if (!res.finished && !res.correct && map) {
+          showBar(res);
+          return;
+        }
         if (res.finished) {
           showGameOver(res);
         } else if (res.correct) {
@@ -230,6 +248,11 @@
       var k = btn.dataset.key;
       if (String(k) === String(res.answer)) btn.classList.add("right");
       else if (String(k) === String(given) && !res.correct) btn.classList.add("wrong");
+      // Name every flag, not just the right one: four unlabelled flags on
+      // screen is four things you could have learned.
+      if (btn.dataset.caption && !btn.querySelector(".caption")) {
+        btn.appendChild(h("span", { class: "caption", text: btn.dataset.caption }));
+      }
     });
     if (map && mapLayer) {
       mapLayer.eachLayer(function (layer) {
@@ -246,17 +269,20 @@
   // ---- what shows after a correct answer -------------------------------
   function showBar(res) {
     var bar = h("div", { class: "answerbar" }, [
-      h("span", { class: "said right", text: "Correct" }),
-      h("span", { text: res.card.name }),
-      h("span", { class: "gained", text: "+" + pointsGained(res) }),
-      h("span", { class: "spacer" })
+      h("span", { class: "said " + (res.correct ? "right" : "wrong"),
+                  text: res.correct ? "Correct" : "Not quite" }),
+      h("span", { class: "was", text: res.card.name }),
+      h("span", { class: "gained",
+                  text: res.correct ? ("+" + pointsGained(res))
+                                    : "shown in green on the map" })
     ]);
     bar.appendChild(button("Next question", "btn big", nextQuestion));
     bar.appendChild(button("See the card", "btn ghost", function () {
       showSheet(res);
     }));
     el.sheetHost.innerHTML = "";
-    el.sheetHost.appendChild(bar);
+    el.answerSlot.innerHTML = "";
+    el.answerSlot.appendChild(bar);
     bar.querySelector(".btn.big").focus();
   }
 
@@ -400,12 +426,16 @@
     // bar after a correct answer -- then it goes back to the bar.
     back.addEventListener("click", function (e) {
       if (e.target !== back) return;
-      if (res.correct) showBar(res); else nextQuestion();
+      if (res.correct || map) showBar(res); else nextQuestion();
     });
     el.sheetHost.innerHTML = "";
     el.sheetHost.appendChild(back);
-    var first = sheet.querySelector(".btn");
-    if (first) first.focus();
+    // Focusing the first button dragged the card to its own bottom, so a
+    // wrong answer opened on the row of buttons rather than on the country.
+    // The card itself takes focus, at the top, where the reading starts.
+    sheet.scrollTop = 0;
+    sheet.setAttribute("tabindex", "-1");
+    sheet.focus({ preventScroll: true });
   }
 
   function pointsGained(res) {
@@ -480,7 +510,8 @@
 
   // ---- keyboard: 1-4 to answer, Enter/Space to advance -------------------
   document.addEventListener("keydown", function (e) {
-    var sheetBtn = el.sheetHost.querySelector(".btn.big");
+    var sheetBtn = el.sheetHost.querySelector(".btn.big") ||
+                   el.answerSlot.querySelector(".btn.big");
     if (sheetBtn && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault(); sheetBtn.click(); return;
     }

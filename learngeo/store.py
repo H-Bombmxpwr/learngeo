@@ -122,7 +122,24 @@ def unlocked_tier(conn):
     question three."""
     n = conn.execute(
         "SELECT COUNT(DISTINCT iso2) AS n FROM mastery WHERE correct > 0").fetchone()["n"]
-    return min(4, 1 + n // 22)
+    return min(4, 1 + n // 15)
+
+
+# A game needs this many distinct (country, mode) pairs before it stops
+# feeling like a loop. The tier ceiling alone cannot guarantee it: there are
+# only 22 tier-1 countries, so a single-mode game like Find It on the Map had
+# 22 possible questions in total and repeated inside a single run.
+MIN_POOL = 90
+
+
+def _pool(world, modes, ceiling):
+    """Countries inside the ceiling, widened until there is enough to ask."""
+    tiers = sorted({(world.get(i).get("tier") or 4) for i in world.all_isos})
+    for limit in [t for t in tiers if t >= ceiling] or tiers[-1:]:
+        isos = [i for i in world.all_isos if (world.get(i).get("tier") or 4) <= limit]
+        if len(isos) * max(1, len(modes)) >= MIN_POOL:
+            return isos
+    return list(world.all_isos)
 
 
 def pick(world, modes, rng=None, avoid=()):
@@ -130,34 +147,47 @@ def pick(world, modes, rng=None, avoid=()):
     rng = rng or random
     avoid = set(avoid)
     now = time.time()
+    modes = list(modes)
 
     with connect() as conn:
         ceiling = unlocked_tier(conn)
         placeholders = ",".join("?" * len(modes))
+        # Overdue by a real margin, not merely past a ten-minute interval in
+        # the same sitting -- otherwise everything answered early in a session
+        # becomes "due" again before the session ends, and review crowds out
+        # everything else.
         due = conn.execute(
             "SELECT iso2, mode FROM mastery WHERE due_at <= ? AND mode IN (%s)"
             " ORDER BY due_at LIMIT 40" % placeholders,
-            [now] + list(modes)).fetchall()
-        seen_pairs = {(r["iso2"], r["mode"]) for r in
-                      conn.execute("SELECT iso2, mode FROM mastery").fetchall()}
+            [now - 5 * MINUTE] + modes).fetchall()
+        last = {(r["iso2"], r["mode"]): r["last_seen"] for r in
+                conn.execute("SELECT iso2, mode, last_seen FROM mastery").fetchall()}
 
     due = [(r["iso2"], r["mode"]) for r in due if (r["iso2"], r["mode"]) not in avoid]
-    # Weighted toward review, but never only review -- you still need new material.
-    if due and rng.random() < 0.55:
+
+    candidates = _pool(world, modes, ceiling)
+    unseen = [(i, m) for i in candidates for m in modes
+              if (i, m) not in last and (i, m) not in avoid]
+
+    # Review earns its turn, but never at the cost of new material: while
+    # anything is still unseen the review share stays low.
+    review_odds = 0.5 if not unseen else 0.25
+    if due and rng.random() < review_odds:
         return rng.choice(due[:12])
-
-    # Otherwise pick fresh material inside the unlocked tiers, preferring
-    # countries and modes you have not met yet.
-    candidates = [i for i in world.all_isos if (world.get(i).get("tier") or 4) <= ceiling]
-    if not candidates:
-        candidates = world.all_isos
-    rng.shuffle(candidates)
-
-    unseen = [(i, m) for i in candidates[:80] for m in modes
-              if (i, m) not in seen_pairs and (i, m) not in avoid]
     if unseen:
         return rng.choice(unseen)
-    return rng.choice(candidates), rng.choice(modes)
+
+    # Everything has been seen at least once. Go round in order of longest
+    # untouched rather than uniformly at random, which is what actually
+    # stopped the same handful coming back.
+    stale = [(i, m) for i in candidates for m in modes if (i, m) not in avoid]
+    if not stale:
+        stale = [(i, m) for i in candidates for m in modes] or [
+            (rng.choice(world.all_isos), rng.choice(modes))]
+    stale.sort(key=lambda p: last.get(p, 0.0))
+    # A little jitter over the oldest quarter, so the order is not identical
+    # every run.
+    return rng.choice(stale[:max(8, len(stale) // 4)])
 
 
 # --------------------------------------------------------------------------
