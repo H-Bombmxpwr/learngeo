@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ label }} - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+    <p style="margin:0 0 6px"><a href="{{ url_for('topics_index') }}">All topics</a></p>
+    <h1>{{ label }}</h1>
+    <p style="color:#6b6255">{{ nodes | length }} of them, most widely shared first.</p>
+
+    <div class="filters">
+      <input id="search" type="search" placeholder="Find one" aria-label="Find one">
+    </div>
+
+    <div class="country-grid" id="grid">
+      {% for n in nodes %}
+        <a class="country-cell" href="{{ url_for('topic', kind=kind, key=n.key) }}"
+           data-name="{{ n.name | lower }}">
+          <span>
+            <b>{{ n.name }}</b>
+            <small>{{ n.countries | length }} countr{% if n.countries | length == 1 %}y{% else %}ies{% endif %}</small>
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+    <p class="empty" id="noresults" hidden>Nothing matches that.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cells = Array.prototype.slice.call(document.getElementById("grid").children);
+  var search = document.getElementById("search");
+  var none = document.getElementById("noresults");
+  search.addEventListener("input", function () {
+    var q = search.value.trim().toLowerCase(), shown = 0;
+    cells.forEach(function (cell) {
+      var ok = !q || cell.dataset.name.indexOf(q) !== -1;
+      cell.hidden = !ok;
+      if (ok) shown++;
+    });
+    none.hidden = shown > 0;
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# uv
+.uv/
+
+# Generated dataset -- rebuild with: uv run python scripts/fetch_data.py
+data/countries.json
+data/_checkpoint.json
+data/fetch.log
+
+# Local progress (your scores and spaced-repetition schedule)
+data/progress.db
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Cached GeoNames city dump
+data/cities15000.zip

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}{{ c.name }} - LearnGeo{% endblock %}
+
+{% macro chips(items, kind) -%}
+  <div class="neighbours">
+    {% for e in items %}
+      <a class="neighbour" href="{{ url_for('topic', kind=e.kind or kind, key=e.key) }}">
+        <span>{{ e.name }}</span>
+        {%- if e.speakers %}<small style="color:#857a68">{{ e.speakers | commas }}</small>{% endif %}
+        {%- if e.start or e.end %}<small style="color:#857a68">{{ e.start or '?' }}&ndash;{{ e.end or 'now' }}</small>{% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{%- endmacro %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+
+    <div class="dossier-head">
+      <img class="flag" src="{{ c.flag_url }}" alt="Flag of {{ c.name }}">
+      <div class="blurb">
+        <h1 style="margin-bottom:.15em">{{ c.name }}</h1>
+        <div class="code" style="color:#857a68;margin-bottom:14px">
+          {{ c.iso2 }} / {{ c.iso3 }}
+          {%- if c.lat is not none %} &nbsp; {{ c.lat | round(1) }}&deg;, {{ c.lon | round(1) }}&deg;{% endif %}
+        </div>
+        {% if c.summary %}<p>{{ c.summary }}</p>{% endif %}
+        {% if c.wiki_url %}
+          <p><a href="{{ c.wiki_url }}" target="_blank" rel="noopener">Read {{ c.name }} on Wikipedia</a></p>
+        {% endif %}
+        {% if mastery %}
+          <div style="max-width:280px;margin-top:16px">
+            <div class="bar"><i style="width:{{ (mastery.accuracy * 100) | round | int }}%"></i></div>
+            <small style="color:#857a68">{{ mastery.correct }} right out of {{ mastery.seen }} questions</small>
+          </div>
+        {% else %}
+          <p class="empty">You have not been asked about {{ c.name }} yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="facts" style="margin-inline:0">
+      {% for label, value in card.bullets %}
+        <div class="fact"><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+      {% endfor %}
+      {% if c.drives_on %}<div class="fact"><dt>Drives on the</dt><dd>{{ c.drives_on }}</dd></div>{% endif %}
+      {% if c.calling_code %}<div class="fact"><dt>Calling code</dt><dd>{{ c.calling_code }}</dd></div>{% endif %}
+      {% if c.founded %}<div class="fact"><dt>Founded</dt><dd>{{ c.founded }}</dd></div>{% endif %}
+      {% if c.hemisphere %}<div class="fact"><dt>Hemisphere</dt><dd>{{ c.hemisphere }}</dd></div>{% endif %}
+    </div>
+
+    {% if c.cities %}
+      <div class="section">
+        <h2>Largest cities</h2>
+        <table class="plain" style="max-width:520px">
+          <tbody>
+            {% for city in c.cities %}
+              <tr>
+                <td><a href="{{ city.wiki }}" target="_blank" rel="noopener">{{ city.name }}</a>
+                  {%- if c.capitals and city.name == c.capitals[0].name %}
+                    <small style="color:#857a68">&nbsp;capital</small>{% endif %}</td>
+                <td class="num">{{ city.population | commas }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {% if linked.languages %}
+      <div class="section">
+        <h2>Most spoken languages</h2>
+        <p style="color:#6b6255;margin-top:0">Click one to see every country that speaks it.</p>
+        {{ chips(linked.languages, 'language') }}
+      </div>
+    {% endif %}
+
+    {% if c.wars %}
+      <div class="section">
+        <h2>Wars and conflicts</h2>
+        <p style="color:#6b6255;margin-top:0">Click one to see everyone else who fought in it.</p>
+        <div class="neighbours">
+          {% for wr in c.wars %}
+            <a class="neighbour" href="{{ url_for('topic', kind='war', key=wr.qid or wr.name|lower|replace(' ','-')) }}">
+              <span>{{ wr.name }}</span>
+              {%- if wr.start %}<small style="color:#857a68">{{ wr.start }}</small>{% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if linked.government %}
+      <div class="section">
+        <h2>Form of government</h2>
+        {{ chips(linked.government, 'government') }}
+      </div>
+    {% endif %}
+
+    {% if linked.currencies or linked.religions or linked.member_of %}
+      <div class="section">
+        <h2>Money, belief and alliances</h2>
+        {% if linked.currencies %}{{ chips(linked.currencies, 'currency') }}{% endif %}
+        {% if linked.religions %}{{ chips(linked.religions, 'religion') }}{% endif %}
+        {% if linked.member_of %}{{ chips(linked.member_of[:14], 'organization') }}{% endif %}
+      </div>
+    {% endif %}
+
+    {% if c.climate_text %}
+      <div class="section">
+        <h2>Climate</h2>
+        <p style="max-width:66ch">{{ c.climate_text }}</p>
+      </div>
+    {% endif %}
+
+    {% if neighbours %}
+      <div class="section">
+        <h2>Land borders <small style="font-weight:400;color:#857a68">({{ neighbours | length }})</small></h2>
+        <div class="neighbours">
+          {% for n in neighbours %}
+            <a class="neighbour" href="{{ url_for('country', iso2=n.iso2) }}">
+              <img src="{{ n.flag_thumb }}" alt=""><span>{{ n.name }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if c.leaders %}
+      <div class="section">
+        <h2>In charge right now</h2>
+        <div class="leader-row">
+          {% for p in c.leaders[:4] %}
+            <div class="leader">
+              {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
+              <div>
+                <b>{{ p.name }}</b>
+                <small>{{ 'Head of state' if p.role == 'head_of_state' else 'Head of government' }}</small><br>
+                {% if p.start %}<small>since {{ p.start }}</small>{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if c.past_leaders %}
+      <div class="section">
+        <h2>Leaders before them</h2>
+        <div class="leader-row">
+          {% for p in c.past_leaders[:8] %}
+            <div class="leader">
+              {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
+              <div>
+                <b>{{ p.name }}</b>
+                <small>{{ 'Head of state' if p.role == 'head_of_state' else 'Head of government' }}</small><br>
+                <small>{{ p.start or '?' }} to {{ p.end or '?' }}</small>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if c.famous %}
+      <div class="section">
+        <h2>Faces from here</h2>
+        <div class="people" style="flex-wrap:wrap">
+          {% for p in c.famous[:14] %}
+            <div class="person">
+              {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
+              <b>{{ p.name }}</b>
+              <small>{{ p.occupations[:2] | join(', ') }}{% if p.born %}, b. {{ p.born }}{% endif %}</small>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="section">
+      <a class="btn" href="{{ url_for('play', category='grand_tour') }}">Quiz me</a>
+      <a class="btn ghost" href="{{ url_for('atlas') }}">Back to the atlas</a>
+      <a class="btn ghost" href="{{ url_for('topics_index') }}">Follow a thread</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

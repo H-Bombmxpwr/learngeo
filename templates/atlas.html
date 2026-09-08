@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Atlas - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+    <h1>The Atlas</h1>
+    <p style="max-width:60ch">
+      Every country you can be asked about. The bar on the left rises with what
+      you know, the way an atlas shades altitude.
+    </p>
+
+    <div class="legend">
+      <span><i style="background:var(--paper-2)"></i>not met yet</span>
+      <span><i style="background:var(--sea)"></i>seen it</span>
+      <span><i style="background:var(--moss)"></i>getting it right</span>
+      <span><i style="background:var(--ochre)"></i>known</span>
+    </div>
+
+    <div class="filters">
+      <input id="search" type="search" placeholder="Find a country" aria-label="Find a country">
+      <button class="chip" data-continent="" aria-pressed="true">All</button>
+      {% for cont in continents %}
+        <button class="chip" data-continent="{{ cont }}" aria-pressed="false">{{ cont }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="country-grid" id="grid">
+      {% for r in rows %}
+        <a class="country-cell" href="{{ url_for('country', iso2=r.iso2) }}"
+           data-level="{{ r.level }}" data-continent="{{ r.continent }}"
+           data-name="{{ r.name | lower }}">
+          <img src="{{ r.flag }}" alt="" loading="lazy" width="34" height="23">
+          <span>
+            <b>{{ r.name }}</b>
+            <small class="code">{{ r.iso2 }}</small>
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+    <p class="empty" id="noresults" hidden>No country matches that.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var grid = document.getElementById("grid");
+  var cells = Array.prototype.slice.call(grid.children);
+  var search = document.getElementById("search");
+  var none = document.getElementById("noresults");
+  var continent = "";
+
+  function apply() {
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    cells.forEach(function (cell) {
+      var ok = (!q || cell.dataset.name.indexOf(q) !== -1) &&
+               (!continent || cell.dataset.continent === continent);
+      cell.hidden = !ok;
+      if (ok) shown++;
+    });
+    none.hidden = shown > 0;
+  }
+
+  search.addEventListener("input", apply);
+  document.querySelectorAll(".chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      continent = chip.dataset.continent;
+      document.querySelectorAll(".chip").forEach(function (c) {
+        c.setAttribute("aria-pressed", c === chip ? "true" : "false");
+      });
+      apply();
+    });
+  });
+})();
+</script>
+{% endblock %}

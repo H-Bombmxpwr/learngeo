@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ node.name }} - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+
+    <p style="margin:0 0 6px"><a href="{{ url_for('topic_kind', kind=kind) }}">All {{ kind }}s</a></p>
+    <h1 style="margin-bottom:.1em">{{ node.name }}</h1>
+    <p style="color:#6b6255;margin-top:0">
+      {{ rows | length }}
+      {%- if rows | length == 1 %} country{% else %} countries{% endif %}
+      {%- if kind == 'war' %} took part{% elif kind == 'language' %} speak it
+      {%- elif kind == 'government' %} have used this form{% else %} linked{% endif %}.
+    </p>
+
+    {% if node.wiki %}
+      <p><a href="{{ node.wiki }}" target="_blank" rel="noopener">Read about {{ node.name }} on Wikipedia</a></p>
+    {% endif %}
+
+    <div class="section" style="border-top:none;padding-top:6px">
+      <table class="plain">
+        <thead>
+          <tr>
+            <th>Country</th>
+            {% if kind == 'language' %}<th class="num">Speakers</th>
+            {% elif kind == 'government' %}<th>Years</th>
+            {% elif kind == 'war' %}<th>Years</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>
+                <a class="neighbour" href="{{ url_for('country', iso2=r.iso2) }}">
+                  <img src="{{ r.flag }}" alt=""><span>{{ r.name }}</span>
+                </a>
+              </td>
+              {% if kind == 'language' %}
+                <td class="num">
+                  {%- if r.detail.speakers %}{{ r.detail.speakers | commas }}
+                  {%- else %}<span class="empty">not recorded</span>{% endif %}
+                </td>
+              {% elif kind in ('government', 'war') %}
+                <td>
+                  {%- if r.detail.start or r.detail.end -%}
+                    {{ r.detail.start or '?' }} to {{ r.detail.end or 'now' }}
+                  {%- else %}<span class="empty">-</span>{% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

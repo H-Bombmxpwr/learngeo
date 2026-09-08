@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Topics - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+    <h1>Follow a thread</h1>
+    <p style="max-width:62ch">
+      Countries are not the only way in. Pick a language and see everyone who
+      speaks it; pick a war and see everyone who fought in it; pick a form of
+      government and see who has used it, and when.
+    </p>
+
+    {% for k in kinds %}
+      <div class="section">
+        <h2><a href="{{ url_for('topic_kind', kind=k.kind) }}">{{ k.label }}</a>
+          <small style="font-weight:400;color:#857a68">({{ k.count }})</small></h2>
+        <div class="neighbours">
+          {% for n in k.top %}
+            <a class="neighbour" href="{{ url_for('topic', kind=k.kind, key=n.key) }}">
+              <span>{{ n.name }}</span>
+              <small style="color:#857a68">{{ n.countries | length }}</small>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

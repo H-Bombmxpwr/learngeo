@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - LearnGeo{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" defer></script>
+{% endblock %}
+
+{% block body %}
+<div class="wrap">
+
+  <div class="rail">
+    <div class="lives" id="lives" aria-label="Lives remaining"></div>
+    <span id="railTitle">{{ title }}</span>
+    <span id="railCount"></span>
+    <span class="streak" id="railStreak"></span>
+    <span class="score" id="score">0</span>
+  </div>
+
+  <section class="stage" id="stage" aria-live="polite">
+    <div class="media" id="media"></div>
+    <p class="prompt" id="prompt">Loading the first question...</p>
+    <p class="hint" id="hint"></p>
+    <div class="choices text" id="choices"></div>
+
+    <div class="lifelines" id="lifelines">
+      <button class="lifeline" data-kind="fifty">Cut two answers</button>
+      <button class="lifeline" data-kind="peek">Peek at a fact</button>
+      <button class="lifeline" data-kind="skip">Skip</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="sheetHost"></div>
+
+<script>
+  window.LEARNGEO = { category: {{ category | tojson }}, endless: {{ endless | tojson }} };
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/play.js') }}"></script>
+{% endblock %}

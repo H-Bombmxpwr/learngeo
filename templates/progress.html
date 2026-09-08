@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Progress - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+    <h1>Progress</h1>
+
+    <div class="facts" style="margin-inline:0">
+      <div class="fact"><dt>Countries known</dt>
+        <dd>{{ stats.countries_known }} of {{ stats.countries_total }}</dd></div>
+      <div class="fact"><dt>Countries met</dt>
+        <dd>{{ stats.countries_touched }}</dd></div>
+      <div class="fact"><dt>Questions answered</dt>
+        <dd>{{ stats.answered }}</dd></div>
+      <div class="fact"><dt>Accuracy</dt>
+        <dd>{{ (stats.accuracy * 100) | round | int }}%</dd></div>
+      <div class="fact"><dt>Difficulty unlocked</dt>
+        <dd>Tier {{ stats.tier }} of 4</dd></div>
+    </div>
+
+    <div class="section">
+      <h2>Worth another look</h2>
+      <p style="max-width:60ch;color:#6b6255">
+        These come back sooner than the rest. Getting one right pushes it
+        further away; getting it wrong brings it back within minutes.
+      </p>
+      {% if weak %}
+        <table class="plain">
+          <thead><tr><th>Country</th><th>Question type</th><th class="num">Right</th></tr></thead>
+          <tbody>
+            {% for w in weak %}
+              <tr>
+                <td><a href="{{ url_for('country', iso2=w.iso2) }}">{{ w.name }}</a></td>
+                <td>{{ w.mode }}</td>
+                <td class="num">{{ w.correct }} / {{ w.seen }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty">Nothing here yet. Play a round and the misses collect here.</p>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <h2>By question type</h2>
+      {% if by_mode %}
+        <table class="plain">
+          <thead><tr><th>Type</th><th class="num">Asked</th><th class="num">Right</th><th style="width:150px"></th></tr></thead>
+          <tbody>
+            {% for m in by_mode %}
+              <tr>
+                <td>{{ m.label }}</td>
+                <td class="num">{{ m.seen }}</td>
+                <td class="num">{{ m.pct }}%</td>
+                <td><div class="bar"><i style="width:{{ m.pct }}%"></i></div></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty">No questions answered yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <h2>Recent runs</h2>
+      {% if stats.runs %}
+        <table class="plain">
+          <thead><tr><th>Round</th><th class="num">Score</th><th class="num">Right</th><th class="num">Best streak</th></tr></thead>
+          <tbody>
+            {% for r in stats.runs %}
+              <tr>
+                <td>{{ r.category | replace('_', ' ') | title }}</td>
+                <td class="num">{{ r.score | commas }}</td>
+                <td class="num">{{ r.correct }} / {{ r.asked }}</td>
+                <td class="num">{{ r.best_streak }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty">No finished runs yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      <a class="btn" href="{{ url_for('play', category='grand_tour') }}">Play a round</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Learn the world,<br>one question at a time.</h1>
+    <p class="lede">
+      Every answer -- right or wrong -- comes back with the flag, the map, the
+      neighbours and the people. Miss a country once and it returns until you
+      know it.
+    </p>
+  </header>
+
+  {# The flag wall is the hero image: all 195 countries, dim until you know them. #}
+  <div class="flagwall">
+    {% for iso, c in stats.mastery_wall %}
+      <a href="{{ url_for('country', iso2=iso) }}" data-level="{{ c.level }}" title="{{ c.name }}">
+        <img src="{{ c.flag }}" alt="{{ c.name }}" loading="lazy" width="60" height="40">
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="modes">
+    {% for key, name, blurb, modes in categories %}
+      <a class="mode{% if loop.first %} feature{% endif %}" href="{{ url_for('play', category=key) }}">
+        <strong>{{ name }}</strong>
+        <span>{{ blurb }}</span>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="statline">
+    <div>
+      <b>{{ stats.countries_known }}<small style="color:var(--stage-dim);font-size:1rem"> / {{ stats.countries_total }}</small></b>
+      <small>countries you know</small>
+    </div>
+    <div>
+      <b>{{ stats.answered }}</b>
+      <small>questions answered</small>
+    </div>
+    <div>
+      <b>{{ (stats.accuracy * 100) | round | int }}%</b>
+      <small>accuracy</small>
+    </div>
+    <div>
+      <b>{{ stats.tier }}</b>
+      <small>difficulty tier unlocked</small>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
