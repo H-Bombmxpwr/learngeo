@@ -387,7 +387,9 @@ def topic(kind, key):
             continue
         rows.append({"iso2": r["iso2"], "name": c["name"], "flag": c["flag_thumb"],
                      "detail": r["detail"]})
-    return render_template("topic.html", node=node, rows=rows, kind=kind)
+    label = next((lbl for _, (k, lbl, _) in TOPIC_FIELDS.items() if k == kind), kind)
+    return render_template("topic.html", node=node, rows=rows, kind=kind,
+                           label=label)
 
 
 @app.route("/progress")

@@ -5,13 +5,25 @@
 <div class="wrap">
   <div class="paper-page">
 
-    <p style="margin:0 0 6px"><a href="{{ url_for('topic_kind', kind=kind) }}">All {{ kind }}s</a></p>
+    <p style="margin:0 0 6px"><a href="{{ url_for('topic_kind', kind=kind) }}">All {{ label | lower }}</a></p>
     <h1 style="margin-bottom:.1em">{{ node.name }}</h1>
     <p style="color:#6b6255;margin-top:0">
       {{ rows | length }}
       {%- if rows | length == 1 %} country{% else %} countries{% endif %}
-      {%- if kind == 'war' %} took part{% elif kind == 'language' %} speak it
-      {%- elif kind == 'government' %} have used this form{% else %} linked{% endif %}.
+      {%- if kind == 'war' %} took part
+      {%- elif kind == 'language' %} speak it
+      {%- elif kind == 'government' or kind == 'govtype' %} are governed this way
+      {%- elif kind == 'export' %} sell it
+      {%- elif kind == 'import' %} buy it
+      {%- elif kind == 'resource' %} have it in the ground
+      {%- elif kind == 'industry' %} have this industry
+      {%- elif kind == 'partner' %} trade with it
+      {%- elif kind == 'climate' %} have this climate
+      {%- elif kind == 'landmark' %} claim it
+      {%- elif kind == 'religion' %} practise it
+      {%- elif kind == 'currency' %} use it
+      {%- elif kind == 'organization' %} are members
+      {%- else %} linked{% endif %}.
     </p>
 
     {% if node.wiki %}
@@ -24,8 +36,9 @@
           <tr>
             <th>Country</th>
             {% if kind == 'language' %}<th class="num">Share of the country</th>
-            {% elif kind == 'government' %}<th>Years</th>
-            {% elif kind == 'war' %}<th>Years</th>{% endif %}
+            {% elif kind in ('government', 'war') %}<th>Years</th>
+            {% elif kind == 'partner' %}<th>Direction</th>
+            {% elif kind == 'landmark' %}<th>Also</th>{% endif %}
           </tr>
         </thead>
         <tbody>
@@ -48,6 +61,16 @@
                 <td>
                   {%- if r.detail.start or r.detail.end -%}
                     {{ r.detail.start or '?' }} to {{ r.detail.end or 'now' }}
+                  {%- else %}<span class="empty">-</span>{% endif %}
+                </td>
+              {% elif kind == 'partner' %}
+                <td>
+                  {{ r.detail.detail or 'trades' }}
+                  {%- if r.detail.share %} <small style="color:#857a68">{{ r.detail.share }}%</small>{% endif %}
+                </td>
+              {% elif kind == 'landmark' %}
+                <td>
+                  {%- if r.detail.peak %}<span class="badge">highest point</span>
                   {%- else %}<span class="empty">-</span>{% endif %}
                 </td>
               {% endif %}

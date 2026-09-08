@@ -9,11 +9,12 @@ card after every answer you get wrong.
 The idea: quiz games test you, encyclopaedias teach you. This does both. You
 play on a dark stage; the answer arrives on atlas paper.
 
-**Everything is linked.** Click a language and see every country that speaks
-it, with percentages. Click a war and see everyone who fought in it. Click a
-form of government and see who has used it, and when. Search from any page and
-the box answers as you type — countries, languages, wars, currencies, people.
-Start anywhere and wander.
+**Everything is linked.** Sixteen kinds of thing have a page of their own:
+languages, wars, currencies, religions, organisations, forms of government,
+climates, landmarks, and every commodity a country buys, sells, mines or
+makes. Click "crude petroleum" on Nigeria's page and you get everyone else
+who sells it; click Ha Long Bay and you get Vietnam. Search from any page and
+the box answers as you type. Start anywhere and wander.
 
 ## Run it
 
@@ -29,13 +30,14 @@ The dataset is already built, so it starts immediately.
 ## Rebuild the dataset
 
 ```bash
+uv sync --extra build                   # shapely, for the border check
 uv run python scripts/fetch_data.py     # Wikidata + Wikipedia, ~10 minutes
 uv run python scripts/enrich_data.py    # the Factbook pass and the repairs
 ```
 
 `fetch_data.py` resumes from a checkpoint, so it is safe to interrupt.
 `enrich_data.py` takes stage names (`languages`, `economy`, `climate`,
-`government`, `leaders`, `people`, `famous`) if you only want one. Nothing hits
+`government`, `figures`, `leaders`, `people`, `famous`) if you only want one. Nothing hits
 the network at request time — once built, the app works offline apart from the
 photographs.
 
@@ -86,5 +88,21 @@ what each is used for, and which of them is wrong about what.
 | `/country/<ISO2>` | The full dossier, everything clickable |
 | `/topics` | Follow a language, war, currency or form of government |
 | `/search` | Countries, topics and people |
+| `/map` | The world, clickable, shaded by what you know |
 | `/sources` | Where every field comes from |
 | `/progress` | Accuracy, weak spots, recent runs |
+
+## Deploying it
+
+The built dataset is committed, so a host only has to install and start:
+
+```
+gunicorn app:app --bind 0.0.0.0:$PORT
+```
+
+which is what both `Procfile` and `railway.json` say. Set `LEARNGEO_SECRET`
+to anything private — it signs the session cookie holding your score and the
+answer to the question on screen. Progress lives in `data/progress.db`, which
+is a local SQLite file, so on a host with an ephemeral filesystem it resets
+with every deploy; it would need a mounted volume or a real database to
+survive.
