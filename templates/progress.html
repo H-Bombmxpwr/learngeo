@@ -88,6 +88,57 @@
     <div class="section">
       <a class="btn" href="{{ url_for('play', category='grand_tour') }}">Play a round</a>
     </div>
-  </div>
+  
+    <div class="section">
+      <h2>Learning</h2>
+      <p style="max-width:64ch;margin-top:0">
+        The quiz adapts: countries you miss come back within minutes, ones you
+        have proved you know are asked about far less, and the difficulty opens
+        up as you improve. All of it lives in a cookie in this browser and a
+        row keyed to it &mdash; there is no account, and nothing about you is
+        stored beyond a random id this browser was handed.
+      </p>
+      <div class="filters" style="gap:12px">
+        <button class="chip" id="learnToggle" aria-pressed="true">Adapting</button>
+        <button class="chip" id="forgetBtn">Forget everything</button>
+        <span class="count" id="learnState"></span>
+      </div>
+      <p style="color:#857a68;font-size:.9rem;max-width:64ch">
+        With adapting off, questions come at random from the whole world and
+        nothing you answer is written down.
+      </p>
+    </div>
+
+    <script>
+    (function () {
+      var toggle = document.getElementById("learnToggle");
+      var forget = document.getElementById("forgetBtn");
+      var state = document.getElementById("learnState");
+      function on() {
+        return document.cookie.indexOf("learngeo_learning=off") === -1;
+      }
+      function paint() {
+        var v = on();
+        toggle.textContent = v ? "Adapting" : "Not adapting";
+        toggle.setAttribute("aria-pressed", v ? "true" : "false");
+        state.textContent = v ? "questions follow what you get wrong"
+                              : "questions are drawn at random";
+      }
+      function send(value, wipe) {
+        return fetch("/api/learning", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ on: value, forget: !!wipe })
+        }).then(function () { paint(); });
+      }
+      toggle.addEventListener("click", function () { send(!on()); });
+      forget.addEventListener("click", function () {
+        if (confirm("Erase every answer this browser has recorded?")) {
+          send(on(), true).then(function () { location.reload(); });
+        }
+      });
+      paint();
+    })();
+    </script>
+</div>
 </div>
 {% endblock %}

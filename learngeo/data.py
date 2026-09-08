@@ -112,6 +112,8 @@ class World(object):
                 if not person.get("wiki") and person.get("name"):
                     person["wiki"] = wiki_url(person["name"])
 
+        self._people = None          # built on first lookup, see person()
+        self._domains = {}           # answer sets for the challenge type-ahead
         self.all_isos = sorted(self.countries)
         self.by_continent = {}
         for iso in self.all_isos:
@@ -157,6 +159,31 @@ class World(object):
     def people_of(c):
         return ((c.get("famous") or []) + (c.get("leaders") or [])
                 + (c.get("past_leaders") or []) + (c.get("key_figures") or []))
+
+    def person(self, name):
+        """Everything known about one person, by name.
+
+        Built lazily because most sessions never ask for it. A name can appear
+        under several fields for the same country -- Indira Gandhi is a past
+        leader and a famous face -- so the entries are merged, with the
+        richest value for each field winning.
+        """
+        if self._people is None:
+            self._people = {}
+            for iso in self.all_isos:
+                c = self.countries[iso]
+                for field in ("leaders", "past_leaders", "famous", "key_figures"):
+                    for p in c.get(field) or []:
+                        if not p.get("name"):
+                            continue
+                        node = self._people.setdefault(
+                            p["name"], {"name": p["name"], "iso2": iso,
+                                        "fields": set()})
+                        node["fields"].add(field)
+                        for k, v in p.items():
+                            if v and not node.get(k):
+                                node[k] = v
+        return self._people.get(name)
 
     # -- topic index -----------------------------------------------------
     def _build_topics(self):
@@ -259,6 +286,59 @@ class World(object):
         hits.sort(key=lambda h: h[:3])
         return [{k: v for k, v in r.items() if not k.startswith("_")}
                 for _, _, _, r in hits[:limit]]
+
+    # -- answer domains, for the challenge-mode type-ahead ----------------
+    # Typing a country name unaided is a spelling test, not a geography one,
+    # so the box offers the names it will accept. Each domain is the full set
+    # of possible answers for one kind of question, built once.
+    DOMAIN_FIELD = {
+        "capital": "capitals", "currency": "currencies",
+        "language": "languages", "continent": "continents",
+        "government": "government",
+    }
+
+    def domain(self, kind):
+        if kind in self._domains:
+            return self._domains[kind]
+        names = set()
+        if kind == "country":
+            names = {self.countries[i]["name"] for i in self.all_isos}
+        elif kind == "city":
+            for iso in self.all_isos:
+                names.update(c["name"] for c in self.countries[iso].get("cities") or []
+                             if c.get("name"))
+        elif kind == "person":
+            names = {r["label"] for r in self.search_rows if r["kind"] == "person"}
+        elif kind == "climate":
+            names = {c["climate_zone"] for c in self.countries.values()
+                     if c.get("climate_zone")}
+        elif kind == "govtype":
+            names = {c["government_type"] for c in self.countries.values()
+                     if c.get("government_type")}
+        elif kind in self.DOMAIN_FIELD:
+            field = self.DOMAIN_FIELD[kind]
+            for c in self.countries.values():
+                for ent in c.get(field) or []:
+                    nm = ent_name(ent)
+                    if nm:
+                        names.add(nm)
+        rows = sorted(names)
+        self._domains[kind] = [{"name": n, "_f": fold(n)} for n in rows]
+        return self._domains[kind]
+
+    def suggest(self, kind, query, limit=8):
+        q = fold(query).strip()
+        if not q:
+            return []
+        starts, inside = [], []
+        for row in self.domain(kind):
+            if row["_f"].startswith(q):
+                starts.append(row["name"])
+            elif q in row["_f"]:
+                inside.append(row["name"])
+            if len(starts) >= limit:
+                break
+        return (starts + inside)[:limit]
 
     def topic(self, kind, key):
         return (self.topics.get(kind) or {}).get(key)

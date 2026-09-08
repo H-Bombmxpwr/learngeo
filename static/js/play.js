@@ -164,9 +164,117 @@
     }
   }
 
+  /* Challenge mode: no options, a box you type into.
+
+     The box suggests the names it will accept, scoped to what the question is
+     asking for -- capitals for a capitals question, not all 197 countries.
+     Without that it is a spelling test. The judging is still done on the
+     server and is generous about accents, aliases and one-character typos, so
+     you can also just type and press Enter without touching the list. */
+  function renderTypeIn(q) {
+    var wrap = h("div", { class: "typein" });
+    var input = h("input", {
+      type: "text", id: "answerBox", autocomplete: "off",
+      spellcheck: "false", placeholder: placeholderFor(q),
+      "aria-label": "Type your answer"
+    });
+    var box = h("div", { class: "ac ac-answer", hidden: "hidden" });
+    var send = h("button", { class: "btn", text: "Answer" });
+
+    var rows = [], active = -1, timer = null;
+
+    function close() { box.hidden = true; box.innerHTML = ""; rows = []; active = -1; }
+
+    function open(list) {
+      box.innerHTML = "";
+      rows = list;
+      active = -1;
+      if (!list.length) { close(); return; }
+      list.forEach(function (name, i) {
+        var row = h("div", { class: "ac-row", role: "option" },
+                    [h("b", { text: name })]);
+        row.addEventListener("mousedown", function (e) {
+          e.preventDefault();          // do not blur the box before we read it
+          input.value = name;
+          close();
+          submit();
+        });
+        row.addEventListener("mouseenter", function () { mark(i); });
+        box.appendChild(row);
+      });
+      box.hidden = false;
+    }
+
+    function mark(i) {
+      Array.prototype.forEach.call(box.children, function (n, j) {
+        n.classList.toggle("on", j === i);
+      });
+      active = i;
+    }
+
+    function look() {
+      var v = input.value.trim();
+      if (v.length < 1) { close(); return; }
+      fetch("/api/suggest?mode=" + encodeURIComponent(q.mode) +
+            "&q=" + encodeURIComponent(v))
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (input.value.trim() !== v || locked) return;
+          open(d.results || []);
+        }).catch(close);
+    }
+
+    function submit() {
+      if (locked) return;
+      var v = input.value.trim();
+      if (!v) return;
+      close();
+      answer(null, false, v);
+    }
+
+    input.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(look, 90);
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (box.hidden || !rows.length) return;
+        e.preventDefault();
+        var n = active + (e.key === "ArrowDown" ? 1 : -1);
+        if (n < 0) n = rows.length - 1;
+        if (n >= rows.length) n = 0;
+        mark(n);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (active >= 0 && rows[active]) input.value = rows[active];
+        submit();
+      } else if (e.key === "Escape") {
+        close();
+      }
+    });
+    send.addEventListener("click", submit);
+
+    wrap.appendChild(input);
+    wrap.appendChild(send);
+    wrap.appendChild(box);
+    el.choices.className = "choices";
+    el.choices.appendChild(wrap);
+    if (q.input === "text+map") {
+      el.choices.appendChild(h("p", { class: "orclick",
+        text: "… or just click it on the map." }));
+    }
+    setTimeout(function () { input.focus(); }, 40);
+  }
+
+  function placeholderFor(q) {
+    return { country: "Type the country", capital: "Type the capital",
+             city: "Type the city" }[q.answer_kind] || "Type your answer";
+  }
+
   // ---- choices ----------------------------------------------------------
   function renderChoices(q) {
     el.choices.innerHTML = "";
+    if (q.challenge) { renderTypeIn(q); return; }
     if (!q.choices.length) {                 // map questions answer by clicking
       el.choices.className = "choices";
       return;
@@ -211,12 +319,13 @@
     });
   }
 
-  function answer(key, skipped) {
+  function answer(key, skipped, typed) {
     if (locked || !current) return;
     locked = true;
     scoreBefore = current.run.score;
     var ms = Date.now() - askedAt;
-    post("/api/answer", { qid: current.qid, choice: key, ms: ms, skipped: !!skipped })
+    post("/api/answer", { qid: current.qid, choice: key, text: typed,
+                          ms: ms, skipped: !!skipped })
       .then(function (res) {
         if (res.error) { el.prompt.textContent = res.error; return; }
         markChoices(res, key);
@@ -232,6 +341,10 @@
         }
         if (res.finished) {
           showGameOver(res);
+        } else if (!res.correct && res.focus) {
+          // The question was about a person or a city, so that is what comes
+          // up. The country is a button away.
+          showFocus(res);
         } else if (res.correct) {
           // Getting it right does not need a full page of teaching thrown at
           // you. The card is one click away for anyone who wants it.
@@ -268,14 +381,20 @@
 
   // ---- what shows after a correct answer -------------------------------
   function showBar(res) {
+    // Getting it right is not proof you knew it, so the bar still says what
+    // the thing was -- one line, in case the fourth option was a guess.
+    var f = res.focus;
+    var note = f ? (f.blurb || factLine(f)) : (res.card.blurb || "");
     var bar = h("div", { class: "answerbar" }, [
       h("span", { class: "said " + (res.correct ? "right" : "wrong"),
                   text: res.correct ? "Correct" : "Not quite" }),
-      h("span", { class: "was", text: res.card.name }),
+      h("span", { class: "was",
+                  text: res.answer_text || (f && f.title) || res.card.name }),
       h("span", { class: "gained",
                   text: res.correct ? ("+" + pointsGained(res))
                                     : "shown in green on the map" })
     ]);
+    if (note) bar.appendChild(h("p", { class: "note", text: trim(note, 200) }));
     bar.appendChild(button("Next question", "btn big", nextQuestion));
     bar.appendChild(button("See the card", "btn ghost", function () {
       showSheet(res);
@@ -322,6 +441,93 @@
     sheet.querySelector(".btn").focus();
   }
 
+  // ---- the focus card: a person, or a city -----------------------------
+  function showFocus(res) {
+    var f = res.focus;
+    var body = [];
+
+    body.push(h("div", { class: "verdict wrong" }, [
+      h("span", { text: res.skipped ? "Skipped" : "Not quite" }),
+      h("span", { class: "pts",
+                  text: "It was " + (res.answer_text || res.card.name) })
+    ]));
+
+    var head = [
+      h("h2", { text: f.title }),
+      f.subtitle ? h("div", { class: "from" }, [
+        f.flag ? h("img", { src: f.flag, alt: "" }) : null,
+        h("span", { text: f.subtitle })
+      ]) : null,
+      f.blurb ? h("p", { text: f.blurb }) : null
+    ];
+    body.push(h("div", { class: "card-head focus-head" }, [
+      f.image ? h("img", { src: f.image, class: "focus-portrait", alt: f.title })
+              : h("div", { class: "focus-blank", text: f.kind === "city" ? "◉" : "○" }),
+      h("div", {}, head)
+    ]));
+
+    if (f.facts && f.facts.length) {
+      var facts = h("dl", { class: "facts" });
+      f.facts.forEach(function (row) {
+        facts.appendChild(h("div", { class: "fact" }, [
+          h("dt", { text: row[0] }), h("dd", { text: row[1] })
+        ]));
+      });
+      body.push(facts);
+    }
+
+    var actions = h("div", { class: "sheet-actions" });
+    actions.appendChild(button("Next question", "btn big", nextQuestion));
+    actions.appendChild(button("About " + res.card.name, "btn ghost", function () {
+      showSheet(res);
+    }));
+    if (f.wiki_url) {
+      actions.appendChild(h("a", {
+        class: "btn ghost", href: f.wiki_url, target: "_blank", rel: "noopener",
+        text: "Wikipedia"
+      }));
+    }
+    body.push(actions);
+
+    var sheet = h("div", { class: "sheet focus", role: "dialog",
+                           "aria-label": f.title }, body);
+    var back = h("div", { class: "sheet-back" }, [sheet]);
+    back.addEventListener("click", function (e) {
+      if (e.target === back) nextQuestion();
+    });
+    el.sheetHost.innerHTML = "";
+    el.sheetHost.appendChild(back);
+    sheet.scrollTop = 0;
+    sheet.setAttribute("tabindex", "-1");
+    sheet.focus({ preventScroll: true });
+  }
+
+  /* Mark the line on the country card that the question turned on, and bring
+     it into view. Without this a wrong answer opens a page of facts with no
+     sign of which one you needed. */
+  function markHighlight(sheet, res) {
+    var hl = res.highlight;
+    if (!hl || res.correct) return;
+    var kind = hl[0], value = String(hl[1]);
+    var found = null;
+    if (kind === "fact") {
+      Array.prototype.forEach.call(sheet.querySelectorAll(".fact"), function (n) {
+        var dt = n.querySelector("dt");
+        if (!found && dt && dt.textContent === value) found = n;
+      });
+    } else {
+      Array.prototype.forEach.call(sheet.querySelectorAll("[data-name]"), function (n) {
+        if (!found && n.dataset.name === value) found = n;
+      });
+    }
+    if (!found) return;
+    found.classList.add("lit");
+    // The card is its own scroll box, so scroll within it rather than moving
+    // the page behind the overlay.
+    var top = found.offsetTop - sheet.clientHeight / 3;
+    sheet.scrollTop = Math.max(0, top);
+  }
+
   // ---- the paper fact card ---------------------------------------------
   function showSheet(res) {
     var card = res.card;
@@ -330,7 +536,9 @@
 
     body.push(h("div", { class: "verdict " + (res.correct ? "right" : "wrong") }, [
       h("span", { text: verdict }),
-      h("span", { class: "pts", text: res.correct ? ("+" + pointsGained(res)) : ("It was " + card.name) })
+      h("span", { class: "pts",
+                  text: res.correct ? ("+" + pointsGained(res))
+                                    : ("It was " + (res.answer_text || card.name)) })
     ]));
 
     body.push(h("div", { class: "card-head" }, [
@@ -436,6 +644,7 @@
     sheet.scrollTop = 0;
     sheet.setAttribute("tabindex", "-1");
     sheet.focus({ preventScroll: true });
+    markHighlight(sheet, res);
   }
 
   function pointsGained(res) {
@@ -446,8 +655,19 @@
     return typeof n === "number" ? n.toLocaleString() : n;
   }
 
+  function trim(text, n) {
+    return text.length > n ? text.slice(0, n).replace(/\s+\S*$/, "") + "..." : text;
+  }
+
+  /* A person or city with no fetched biography still has facts; the first
+     two make a serviceable one-line description. */
+  function factLine(f) {
+    return (f.facts || []).slice(0, 2)
+      .map(function (r) { return r[0] + ": " + r[1]; }).join(" · ");
+  }
+
   function chip(href, label, sub, external) {
-    var attrs = { class: "neighbour", href: href };
+    var attrs = { class: "neighbour", href: href, "data-name": label };
     if (external) { attrs.target = "_blank"; attrs.rel = "noopener"; }
     return h("a", attrs, [
       h("span", { text: label }),
@@ -477,9 +697,9 @@
     // they were is a dead end on a page that is otherwise all doors.
     if (wiki) {
       return h("a", { class: "person", href: wiki, target: "_blank",
-                      rel: "noopener" }, kids);
+                      rel: "noopener", "data-name": name }, kids);
     }
-    return h("div", { class: "person" }, kids);
+    return h("div", { class: "person", "data-name": name }, kids);
   }
 
   function button(label, cls, fn) {
@@ -494,6 +714,7 @@
     if (!btn || locked || !current) return;
     var kind = btn.dataset.kind;
     if (kind === "skip") { answer(null, true); return; }
+    if (kind === "fifty" && !current.choices.length) return;   // nothing to cut
     var keys = current.choices.map(function (c) { return c.key; });
     post("/api/lifeline", { qid: current.qid, kind: kind, keys: keys }).then(function (res) {
       if (res.error) return;
@@ -516,6 +737,7 @@
       e.preventDefault(); sheetBtn.click(); return;
     }
     if (locked) return;
+    if (/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
     var n = parseInt(e.key, 10);
     if (n >= 1 && n <= el.choices.children.length) {
       var btn = el.choices.children[n - 1];

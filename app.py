@@ -10,8 +10,32 @@ from urllib.parse import quote_plus
 
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
-from learngeo import questions, store
+
+def _load_env(path=".env"):
+    """Read .env if it is there, without adding a dependency.
+
+    Anything already in the real environment wins, which is what makes this
+    safe on a host: Railway sets its variables properly and this changes
+    nothing there.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            lines = f.readlines()
+    except IOError:
+        return
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+
+
+_load_env()
+
+from learngeo import matching, questions, store, supplement
 from learngeo.data import TOPIC_FIELDS, ent_name, slug, world
+from learngeo.data_util import wiki_url
 
 app = Flask(__name__)
 # Only guards the local session cookie (score, current answer key). Override
@@ -21,6 +45,46 @@ app.secret_key = os.environ.get("LEARNGEO_SECRET", "learngeo-local-dev-key")
 RUN_LENGTH = 12       # questions in a standard run
 STARTING_LIVES = 3
 BASE_POINTS = 100
+
+PLAYER_COOKIE = "learngeo_player"
+LEARN_COOKIE = "learngeo_learning"
+COOKIE_YEAR = 365 * 24 * 3600
+
+
+def player_id():
+    """Who is playing, with no account and no sign-up.
+
+    A random id in a year-long cookie. It scopes every row in the progress
+    database, so two people on the same deployed copy do not share a score,
+    and clearing your cookies is how you start over. Nothing about a person is
+    stored: the id is the only thing that identifies the browser, and it is
+    generated here, not derived from anything.
+    """
+    pid = request.cookies.get(PLAYER_COOKIE)
+    if pid and 8 <= len(pid) <= 40 and pid.isalnum():
+        return pid
+    return uuid.uuid4().hex[:24]
+
+
+def learning_on():
+    """Whether answers train the picker. Off means questions come at random
+    and nothing is written down."""
+    return request.cookies.get(LEARN_COOKIE) != "off"
+
+
+def with_player(response):
+    """Refresh the cookies on the way out, so a year is a rolling year."""
+    pid = player_id()
+    response.set_cookie(PLAYER_COOKIE, pid, max_age=COOKIE_YEAR,
+                        samesite="Lax", httponly=True)
+    return response
+
+
+@app.after_request
+def _keep_player(response):
+    if request.endpoint and request.endpoint != "static":
+        with_player(response)
+    return response
 
 
 # --------------------------------------------------------------------------
@@ -190,13 +254,108 @@ def news_url(name):
 
 
 # --------------------------------------------------------------------------
+# Focus cards -- what a wrong answer should actually put in front of you
+# --------------------------------------------------------------------------
+# "Which country did Gaddafi lead?" is a question about Gaddafi, and answering
+# it wrong used to raise a page about Libya with him four screens down. The
+# question says what it was about (its `highlight`), and that decides which
+# card comes up. The country card is still there, one button away, because
+# sometimes the country is the interesting part.
+
+ROLE_LABEL = {"head_of_state": "Head of state",
+              "head_of_government": "Head of government"}
+
+
+def person_card(name, iso2):
+    w = world()
+    p = w.person(name)
+    if not p:
+        return None
+    bio = supplement.summary_for(name)
+    home = w.get(p.get("iso2") or iso2)
+    lines = []
+    if p.get("role"):
+        role = ROLE_LABEL.get(p["role"], "Leader")
+        span = " to ".join(x for x in (p.get("start"), p.get("end")) if x)
+        lines.append((role, span or "in office"))
+    if p.get("party"):
+        lines.append(("Party", p["party"]))
+    if p.get("occupations"):
+        lines.append(("Known as", ", ".join(p["occupations"][:3])))
+    if p.get("born") or p.get("died"):
+        lines.append(("Lived", "%s to %s" % (p.get("born") or "?",
+                                             p.get("died") or "now")))
+    if p.get("note"):
+        lines.append(("Why they matter", p["note"]))
+    return {
+        "kind": "person",
+        "title": name,
+        "subtitle": home["name"] if home else None,
+        "image": p.get("image") or bio.get("image"),
+        "blurb": bio.get("summary"),
+        "facts": lines,
+        "wiki_url": p.get("wiki") or bio.get("wiki") or wiki_url(name),
+        "iso2": p.get("iso2") or iso2,
+        "flag": home["flag_thumb"] if home else None,
+    }
+
+
+def city_card(name, iso2):
+    w = world()
+    c = w.get(iso2)
+    if not c:
+        return None
+    cities = c.get("cities") or []
+    row = next((x for x in cities if x.get("name") == name), None)
+    if not row:
+        return None
+    rank = cities.index(row) + 1
+    ordinal = ["largest", "second largest", "third largest", "fourth largest",
+               "fifth largest"][rank - 1] if rank <= 5 else "%dth largest" % rank
+    facts = [("Country", c["name"]), ("Size", "The %s city" % ordinal)]
+    if row.get("population"):
+        facts.append(("Population", "{:,}".format(row["population"])))
+    if c.get("capitals") and ent_name(c["capitals"][0]) == name:
+        facts.append(("Also", "The capital"))
+    others = [x["name"] for x in cities if x["name"] != name][:4]
+    if others:
+        facts.append(("Other cities", ", ".join(others)))
+    return {
+        "kind": "city",
+        "title": name,
+        "subtitle": c["name"],
+        "image": None,
+        "blurb": None,
+        "facts": facts,
+        "wiki_url": row.get("wiki") or wiki_url(name),
+        "iso2": iso2,
+        "flag": c["flag_thumb"],
+    }
+
+
+def focus_card(highlight, iso2):
+    """The card for the thing a question was about, or None for the country."""
+    if not highlight:
+        return None
+    kind, value = highlight[0], highlight[1]
+    if kind == "person":
+        return person_card(value, iso2)
+    if kind == "city":
+        return city_card(value, iso2)
+    return None          # "fact" highlights mark a line on the country card
+
+
+# --------------------------------------------------------------------------
 # Run state, kept in the session cookie
 # --------------------------------------------------------------------------
 
-def new_run(category, endless=False):
+def new_run(category, endless=False, challenge=False):
     session["run"] = {
         "category": category,
         "endless": endless,
+        # Challenge mode takes the four options away: you type the answer, or
+        # for anything whose answer is a country, click it on the map.
+        "challenge": challenge,
         "score": 0,
         "streak": 0,
         "best_streak": 0,
@@ -225,9 +384,9 @@ def modes_for(category):
 
 
 def public(run):
-    return {k: run[k] for k in
-            ("category", "endless", "score", "streak", "best_streak", "asked",
-             "correct", "lives", "lifelines", "over")}
+    return {k: run.get(k) for k in
+            ("category", "endless", "challenge", "score", "streak",
+             "best_streak", "asked", "correct", "lives", "lifelines", "over")}
 
 
 # --------------------------------------------------------------------------
@@ -237,7 +396,7 @@ def public(run):
 @app.route("/")
 def home():
     w = world()
-    stats = store.overview(w)
+    stats = store.overview(w, player_id())
     # The flag wall: every country, ordered so the world reads west to east,
     # dim until you have shown you know it.
     wall = []
@@ -254,7 +413,7 @@ def games():
     """Every game in one place, each offered both ways round: a scored run of
     twelve with three lives, or casual practice that never ends."""
     return render_template("games.html", categories=questions.CATEGORIES,
-                           stats=store.overview(world()))
+                           stats=store.overview(world(), player_id()))
 
 
 @app.route("/map")
@@ -266,7 +425,7 @@ def world_map():
     load.
     """
     w = world()
-    stats = store.overview(w)
+    stats = store.overview(w, player_id())
     # Keyed by ISO3 because that is the id on every GeoJSON feature.
     info = {}
     for iso in w.all_isos:
@@ -307,16 +466,18 @@ def play(category):
     if category not in questions.CATEGORY_MODES:
         return redirect(url_for("home"))
     endless = request.args.get("endless") == "1"
-    new_run(category, endless)
+    challenge = request.args.get("challenge") == "1"
+    new_run(category, endless, challenge)
     title = next((n for k, n, _, _ in questions.CATEGORIES if k == category), "Quiz")
     return render_template("play.html", category=category, title=title,
-                           endless=endless, run_length=RUN_LENGTH)
+                           endless=endless, challenge=challenge,
+                           run_length=RUN_LENGTH)
 
 
 @app.route("/atlas")
 def atlas():
     w = world()
-    stats = store.overview(w)
+    stats = store.overview(w, player_id())
     rows = []
     for iso in w.all_isos:
         c = w.get(iso)
@@ -340,7 +501,7 @@ def country(iso2):
     c = w.get(iso2)
     if not c:
         return redirect(url_for("atlas"))
-    stats = store.overview(w)
+    stats = store.overview(w, player_id())
     linked = {f: w.topics_for(iso2, f) for f in TOPIC_FIELDS}
     return render_template("country.html", c=c, card=fact_card(iso2),
                            mastery=stats["mastery"].get(iso2),
@@ -395,7 +556,7 @@ def topic(kind, key):
 @app.route("/progress")
 def progress():
     w = world()
-    stats = store.overview(w)
+    stats = store.overview(w, player_id())
     weak = []
     for row in stats["weak"]:
         weak.append({
@@ -426,9 +587,10 @@ def api_next():
     modes = modes_for(run["category"])
     rng = random
     q = None
-    avoid = [tuple(x) for x in run["recent"][-8:]]
+    avoid = [tuple(x) for x in run["recent"][-14:]]
     for _ in range(40):
-        iso, mode = store.pick(w, modes, rng, avoid=avoid)
+        iso, mode = store.pick(w, modes, rng, avoid=avoid,
+                               player=player_id(), adaptive=learning_on())
         gen = questions.MODES[mode][2]
         try:
             q = gen(w, iso, rng)
@@ -439,10 +601,17 @@ def api_next():
     if not q:
         return jsonify({"error": "Could not build a question. Is the dataset built?"}), 500
 
+    kind = q.get("answer_kind") or "text"
+    challenge = bool(run.get("challenge")) and kind != "map"
+
     qid = uuid.uuid4().hex[:12]
     run["pending"] = {qid: {"answer": q["answer"], "mode": q["mode"],
-                            "subject": q["subject"]}}
-    run["recent"] = (run["recent"] + [[q["subject"], q["mode"]]])[-10:]
+                            "subject": q["subject"],
+                            "highlight": q.get("highlight"),
+                            "answer_kind": kind,
+                            "also": q.get("also") or [],
+                            "challenge": challenge}}
+    run["recent"] = (run["recent"] + [[q["subject"], q["mode"]]])[-18:]
     session.modified = True
 
     payload = {k: q[k] for k in ("mode", "prompt", "hint", "media", "choices")}
@@ -451,6 +620,17 @@ def api_next():
     payload["run"] = public(run)
     payload["question_no"] = run["asked"] + 1
     payload["run_length"] = None if run["endless"] else RUN_LENGTH
+    payload["answer_kind"] = kind
+    payload["challenge"] = challenge
+    if challenge:
+        # No options to choose between, so they are not sent at all -- and a
+        # country answer gets the map as a second way in, since pointing at
+        # Chad is a fair way to prove you know where Chad is.
+        payload["choices"] = []
+        payload["input"] = "text"
+        if kind == "country":
+            payload["media"] = {"type": "map"}
+            payload["input"] = "text+map"
     return jsonify(payload)
 
 
@@ -464,12 +644,20 @@ def api_answer():
         return jsonify({"error": "That question expired -- start a new one."}), 400
 
     given = body.get("choice")
+    typed = body.get("text")
     ms = body.get("ms")
     skipped = bool(body.get("skipped"))
-    correct = (not skipped) and str(given) == str(pending["answer"])
+    if skipped:
+        correct = False
+    elif typed is not None:
+        # Challenge mode: judged on meaning, not spelling. See matching.py.
+        correct = matching.judge(world(), typed, pending)
+    else:
+        correct = str(given) == str(pending["answer"])
 
-    if not skipped:
-        store.record(pending["subject"], pending["mode"], correct, ms)
+    if not skipped and learning_on():
+        store.record(pending["subject"], pending["mode"], correct, ms,
+                     player=player_id())
 
     run["asked"] += 1
     if correct:
@@ -480,7 +668,9 @@ def api_answer():
         if isinstance(ms, int) and ms < 12000:
             speed = 1.0 + (12000 - ms) / 24000.0     # up to +50% for fast answers
         multiplier = min(4, 1 + run["streak"] // 3)
-        run["score"] += int(BASE_POINTS * multiplier * speed)
+        # No four options to guess between, so it is worth half as much again.
+        hard = 1.5 if pending.get("challenge") else 1.0
+        run["score"] += int(BASE_POINTS * multiplier * speed * hard)
     elif not skipped:
         run["streak"] = 0
         # Casual runs have no lives to lose: they are practice, and being
@@ -491,16 +681,32 @@ def api_answer():
     finished = run["lives"] <= 0 or (not run["endless"] and run["asked"] >= RUN_LENGTH)
     if finished:
         run["over"] = True
-        store.record_run(run["category"], run["score"], run["asked"],
-                         run["correct"], run["best_streak"])
+        if learning_on():
+            store.record_run(run["category"], run["score"], run["asked"],
+                             run["correct"], run["best_streak"],
+                             player=player_id())
     run["pending"] = {}
     session.modified = True
 
+    highlight = pending.get("highlight")
+    answer = pending["answer"]
+    # In challenge mode there is no winning button to light up, so the answer
+    # has to arrive as words.
+    answer_text = answer
+    if pending.get("answer_kind") in ("country", "map"):
+        iso = answer if len(str(answer)) == 2 else None
+        c = world().by_iso3.get(answer) if iso is None else world().get(answer)
+        answer_text = c["name"] if c else answer
     return jsonify({
         "correct": correct,
         "skipped": skipped,
-        "answer": pending["answer"],
+        "answer": answer,
+        "answer_text": answer_text,
         "card": fact_card(pending["subject"]),
+        # What the question was actually about: a person or a city gets its
+        # own card, and anything else marks a line on the country's.
+        "focus": focus_card(highlight, pending["subject"]),
+        "highlight": highlight,
         "run": public(run),
         "finished": finished,
     })
@@ -534,6 +740,37 @@ def api_geo():
     return jsonify(world().geojson)
 
 
+# Which set of names the challenge box should offer for each question type.
+SUGGEST_DOMAIN = {
+    "flag_to_country": "country", "country_to_flag": "country",
+    "outline": "country", "capital_to_country": "country",
+    "which_borders_both": "country", "border_odd_one_out": "country",
+    "leader_photo": "country", "past_leader": "country",
+    "famous_person": "country", "higher_lower": "country",
+    "city_to_country": "country", "map_click": "country",
+    "capital_of": "capital", "currency_of": "currency",
+    "language_of": "language", "continent_of": "continent",
+    "climate_of": "climate", "government_of": "govtype",
+    "leader_name": "person", "city_in_country": "city",
+    "biggest_city": "city",
+}
+
+
+@app.route("/api/suggest")
+def api_suggest():
+    """Type-ahead for challenge mode.
+
+    Offering the names it will accept turns a spelling test back into a
+    geography one. It is scoped to the kind of answer the question wants, so
+    a capitals question suggests capitals, not all 197 countries.
+    """
+    mode = request.args.get("mode", "")
+    kind = SUGGEST_DOMAIN.get(mode)
+    if not kind:
+        return jsonify({"results": []})
+    return jsonify({"results": world().suggest(kind, request.args.get("q", ""))})
+
+
 @app.route("/api/search")
 def api_search():
     """Type-ahead for the box in the header: countries, topics and people."""
@@ -550,10 +787,24 @@ def search_page():
     return render_template("search.html", q=q, results=results)
 
 
+@app.route("/api/learning", methods=["POST"])
+def api_learning():
+    """Turn adaptation on or off, and optionally wipe what it has learned."""
+    body = request.get_json(force=True) or {}
+    on = bool(body.get("on"))
+    if body.get("forget"):
+        store.forget(player_id())
+    resp = jsonify({"learning": on})
+    resp.set_cookie(LEARN_COOKIE, "on" if on else "off",
+                    max_age=COOKIE_YEAR, samesite="Lax")
+    return resp
+
+
 @app.route("/api/restart", methods=["POST"])
 def api_restart():
     body = request.get_json(force=True) or {}
-    run = new_run(body.get("category", "grand_tour"), bool(body.get("endless")))
+    run = new_run(body.get("category", "grand_tour"), bool(body.get("endless")),
+                  bool(body.get("challenge")))
     return jsonify({"run": public(run)})
 
 

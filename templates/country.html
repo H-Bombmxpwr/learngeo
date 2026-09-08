@@ -207,7 +207,6 @@
         {% if linked.currencies %}{{ chips(linked.currencies, 'currency', 'Money') }}{% endif %}
         {% if linked.religions %}{{ chips(linked.religions, 'religion', 'Belief') }}{% endif %}
         {% if linked.member_of %}{{ chips(linked.member_of[:16], 'organization', 'Belongs to') }}{% endif %}
-        {% if linked.highest_point %}{{ chips(linked.highest_point, 'peak', 'Highest point') }}{% endif %}
       </div>
     {% endif %}
 
@@ -216,6 +215,9 @@
         <h2>Climate and geography</h2>
         {% if c.climate_text %}<p style="max-width:66ch">{{ c.climate_text }}</p>{% endif %}
         {% if linked.climate_t %}{{ chips(linked.climate_t, 'climate', 'Climate zone') }}{% endif %}
+        {% if linked.highest_point %}
+          {{ chips(linked.highest_point, 'peak', 'Highest point') }}
+        {% endif %}
         {% if linked.landmarks %}
           {{ chips(linked.landmarks, 'landmark', 'Landmarks and landscapes') }}
         {% endif %}

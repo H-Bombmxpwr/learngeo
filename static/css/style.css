@@ -660,3 +660,51 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
   border: 1px solid var(--paper-3); background: var(--ink);
 }
 @media (max-width: 640px) { #locator { height: 40vh; } }
+
+/* ---------- challenge mode: type the answer ---------------------------- */
+.typein { display: flex; gap: 9px; max-width: 460px; margin: 0 auto; position: relative; }
+.typein input {
+  flex: 1; padding: 14px 16px; font: inherit; font-size: 1.05rem;
+  background: var(--ink-2); color: var(--stage-text);
+  border: 1px solid var(--ink-3); border-radius: var(--r-md);
+}
+.typein input:focus { border-color: var(--ochre); outline: none; }
+.typein input::placeholder { color: #6d8d9b; }
+.ac-answer { top: calc(100% + 6px); left: 0; right: 0; width: auto; text-align: left; }
+.orclick { color: var(--stage-dim); font-size: .9rem; font-style: italic; margin-top: 14px; }
+
+.play-btn.hard { background: var(--oxide); color: #fff; }
+.play-btn.hard.casual { background: transparent; color: var(--stage-dim); border: 1px solid var(--oxide); }
+.play-btn.hard.casual:hover { color: #fff; background: var(--oxide); }
+
+/* ---------- the focus card: a person or a city ------------------------- */
+.sheet.focus { max-width: 660px; }
+.focus-head { align-items: flex-start; }
+.focus-portrait {
+  width: 132px; height: 164px; object-fit: cover; object-position: 50% 18%;
+  border-radius: 3px; flex: none; background: var(--paper-2);
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
+}
+.focus-blank {
+  width: 132px; height: 164px; flex: none; border-radius: 3px;
+  background: var(--paper-2); color: var(--paper-3);
+  display: flex; align-items: center; justify-content: center; font-size: 2.6rem;
+}
+.focus-head .from { display: flex; align-items: center; gap: 7px; color: #857a68;
+  font-size: .92rem; margin: 4px 0 8px; }
+.focus-head .from img { width: 22px; height: 15px; object-fit: cover; border-radius: 2px; }
+
+/* what the question turned on, marked on the card */
+.lit {
+  position: relative; border-radius: var(--r-sm);
+  box-shadow: 0 0 0 2px var(--ochre); background: rgba(224,163,60,.14);
+  animation: litpulse 1.4s ease-out 1;
+}
+@keyframes litpulse {
+  0%   { box-shadow: 0 0 0 2px var(--ochre), 0 0 0 12px rgba(224,163,60,.35); }
+  100% { box-shadow: 0 0 0 2px var(--ochre), 0 0 0 12px rgba(224,163,60,0); }
+}
+.answerbar .note {
+  flex: 1 0 100%; margin: 2px 0 0; font-size: .9rem; line-height: 1.45;
+  color: #5c5449;
+}

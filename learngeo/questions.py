@@ -45,10 +45,44 @@ def choice_row(world, isos, with_flag=False):
     return out
 
 
-def _q(mode, subject, prompt, choices, answer, media=None, hint=None):
+MODE_ANSWER_KIND = {
+    # The answer key is an ISO2 code, so challenge mode can accept either the
+    # country's name typed in or a click on the map.
+    "flag_to_country": "country", "country_to_flag": "country",
+    "outline": "country", "capital_to_country": "country",
+    "which_borders_both": "country", "border_odd_one_out": "country",
+    "leader_photo": "country", "past_leader": "country",
+    "famous_person": "country", "higher_lower": "country",
+    "city_to_country": "country",
+    "map_click": "map",                 # already answered by clicking
+    "border_count": "number",
+    # Everything else is a plain string the player can type.
+    "capital_of": "text", "currency_of": "text", "language_of": "text",
+    "government_of": "text", "continent_of": "text", "climate_of": "text",
+    "leader_name": "text", "city_in_country": "text", "biggest_city": "text",
+    "city_rank": "text",
+    "main_export": "text", "main_industry": "text", "main_resource": "text",
+    "trade_partner": "text", "landmark_of": "text", "highest_point_of": "text",
+    "religion_of": "text",
+    "war_participant": "country",
+}
+
+
+def _q(mode, subject, prompt, choices, answer, media=None, hint=None,
+       highlight=None):
+    """`highlight` names the thing the question was actually about.
+
+    The fact card is a page of detail, and after a wrong answer the one line
+    that would have won it is somewhere in the middle of it. Naming it here
+    lets the card mark it and scroll to it -- miss a person and their photo is
+    ringed, miss a city and its row lights up. It is a (kind, value) pair, the
+    kind matching a section of the card.
+    """
     return {
         "mode": mode, "subject": subject, "prompt": prompt, "hint": hint,
         "media": media or {}, "choices": choices, "answer": answer,
+        "highlight": highlight,
+        "answer_kind": MODE_ANSWER_KIND.get(mode, "text"),
     }
 
 
@@ -121,7 +155,8 @@ def border_odd_one_out(world, iso, rng):
     picked = rng.sample(nb, 3) + [wrong]
     return _q("border_odd_one_out", iso,
               "Which of these does NOT share a land border with %s?" % world.name(iso),
-              choice_row(world, picked, with_flag=True), wrong)
+              choice_row(world, picked, with_flag=True), wrong,
+              highlight=("fact", "Land borders"))
 
 
 def border_count(world, iso, rng):
@@ -139,7 +174,7 @@ def border_count(world, iso, rng):
     rng.shuffle(choices)
     return _q("border_count", iso,
               "How many countries share a land border with %s?" % world.name(iso),
-              choices, str(n))
+              choices, str(n), highlight=("fact", "Land borders"))
 
 
 def which_borders_both(world, iso, rng):
@@ -157,7 +192,8 @@ def which_borders_both(world, iso, rng):
         return None
     return _q("which_borders_both", iso,
               "Which country borders BOTH %s and %s?" % (world.name(a), world.name(b)),
-              choice_row(world, opts, with_flag=True), iso)
+              choice_row(world, opts, with_flag=True), iso,
+              highlight=("fact", "Land borders"))
 
 
 # --------------------------------------------------------------------------
@@ -176,7 +212,8 @@ def capital_of(world, iso, rng):
         return None
     choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool]
     rng.shuffle(choices)
-    return _q("capital_of", iso, "What is the capital of %s?" % c["name"], choices, answer)
+    return _q("capital_of", iso, "What is the capital of %s?" % c["name"], choices,
+              answer, highlight=("fact", "Capital"))
 
 
 def capital_to_country(world, iso, rng):
@@ -188,7 +225,8 @@ def capital_to_country(world, iso, rng):
         return None
     return _q("capital_to_country", iso,
               "%s is the capital of which country?" % ent_name(c["capitals"][0]),
-              choice_row(world, opts, with_flag=True), iso)
+              choice_row(world, opts, with_flag=True), iso,
+              highlight=("fact", "Capital"))
 
 
 def _attribute(mode, field, prompt_tmpl):
@@ -246,7 +284,7 @@ def language_of(world, iso, rng):
         hint = "One language is spoken by %g%% of the country." % first["share"]
     return _q("language_of", iso,
               "What is the most spoken language in %s?" % c["name"], choices,
-              answer, hint=hint)
+              answer, hint=hint, highlight=("fact", "Languages"))
 
 
 def government_of(world, iso, rng):
@@ -275,7 +313,8 @@ def government_of(world, iso, rng):
     choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool]
     rng.shuffle(choices)
     return _q("government_of", iso,
-              "How is %s governed?" % c["name"], choices, answer)
+              "How is %s governed?" % c["name"], choices, answer,
+              highlight=("fact", "Government"))
 
 
 currency_of = _attribute("currency_of", "currencies", "What is the currency of %s?")
@@ -301,7 +340,8 @@ def leader_photo(world, iso, rng):
     return _q("leader_photo", iso, "Which country does this person currently lead?",
               choice_row(world, opts, with_flag=True), iso,
               media={"type": "image", "url": p["image"], "frame": "portrait"},
-              hint=p["role"].replace("_", " ").title())
+              hint=p["role"].replace("_", " ").title(),
+              highlight=("person", p["name"]))
 
 
 def leader_name(world, iso, rng):
@@ -322,7 +362,7 @@ def leader_name(world, iso, rng):
     rng.shuffle(choices)
     return _q("leader_name", iso,
               "Who is the current %s of %s?" % (role, world.name(iso)),
-              choices, p["name"])
+              choices, p["name"], highlight=("person", p["name"]))
 
 
 def past_leader(world, iso, rng):
@@ -338,7 +378,8 @@ def past_leader(world, iso, rng):
     return _q("past_leader", iso, "Which country did %s lead?" % p["name"],
               choice_row(world, opts, with_flag=True), iso,
               media={"type": "image", "url": p["image"], "frame": "portrait"},
-              hint=("In power %s" % span) if p.get("start") else None)
+              hint=("In power %s" % span) if p.get("start") else None,
+              highlight=("person", p["name"]))
 
 
 def famous_person(world, iso, rng):
@@ -355,7 +396,261 @@ def famous_person(world, iso, rng):
     return _q("famous_person", iso, "%s is from which country?" % p["name"],
               choice_row(world, opts, with_flag=True), iso,
               media={"type": "image", "url": p["image"], "frame": "portrait"},
-              hint=hint)
+              hint=hint, highlight=("person", p["name"]))
+
+
+# --------------------------------------------------------------------------
+# Cities
+# --------------------------------------------------------------------------
+# The dataset holds the five largest cities of each country, ranked, and
+# nothing was asking about them. A city name is the piece of a country most
+# people actually meet first.
+
+ORDINALS = ["largest", "second largest", "third largest",
+            "fourth largest", "fifth largest"]
+
+
+def _cities(world, iso):
+    return [c for c in (world.get(iso).get("cities") or []) if c.get("name")]
+
+
+def city_in_country(world, iso, rng):
+    """One real city of this country against three from elsewhere."""
+    mine = _cities(world, iso)
+    if not mine:
+        return None
+    answer = rng.choice(mine)["name"]
+    # Distractors come from the same continent first, so the question is
+    # "which of these is Nigerian" rather than "which of these is African".
+    ours = {c["name"] for c in mine}
+    pool = []
+    for other in distractors(world, iso, 25):
+        for city in _cities(world, other):
+            if city["name"] not in ours:
+                pool.append(city["name"])
+    pool = list(dict.fromkeys(pool))
+    if len(pool) < 3:
+        return None
+    rng.shuffle(pool)
+    choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool[:3]]
+    rng.shuffle(choices)
+    return _q("city_in_country", iso,
+              "Which of these is a city in %s?" % world.name(iso), choices, answer,
+              highlight=("city", answer))
+
+
+def city_to_country(world, iso, rng):
+    """The other direction: name the country a city belongs to."""
+    mine = _cities(world, iso)
+    if not mine:
+        return None
+    city = rng.choice(mine)
+    # A city name that another country also has would make two answers right.
+    clashes = {i for i in world.all_isos
+               if i != iso and any(c["name"] == city["name"] for c in _cities(world, i))}
+    opts = [iso] + distractors(world, iso, 3, exclude=clashes)
+    if len(opts) < 4:
+        return None
+    return _q("city_to_country", iso, "%s is a city in which country?" % city["name"],
+              choice_row(world, opts, with_flag=True), iso,
+              hint=("Population about {:,}".format(city["population"])
+                    if city.get("population") else None),
+              highlight=("city", city["name"]))
+
+
+def city_rank(world, iso, rng):
+    """Where a city sits in its own country's league table.
+
+    Only asked where the gap to the neighbouring city is wide enough that the
+    ranking is a fact rather than a coin toss between two places of much the
+    same size.
+    """
+    cities = _cities(world, iso)
+    if len(cities) < 4:
+        return None
+    usable = []
+    for i, city in enumerate(cities):
+        if not city.get("population"):
+            continue
+        near = [cities[j] for j in (i - 1, i + 1)
+                if 0 <= j < len(cities) and cities[j].get("population")]
+        # A 15% gap either side: closer than that and the census year decides
+        # the answer, not the geography.
+        if all(abs(n["population"] - city["population"]) / float(city["population"]) > 0.15
+               for n in near):
+            usable.append(i)
+    if not usable:
+        return None
+    i = rng.choice(usable)
+    answer = ORDINALS[i]
+    choices = [{"key": o, "label": o.capitalize(), "image": None}
+               for o in ORDINALS[:len(cities)]]
+    rng.shuffle(choices)
+    return _q("city_rank", iso,
+              "Where does %s rank among the cities of %s?"
+              % (cities[i]["name"], world.name(iso)),
+              choices, answer, hint="By population, largest first.",
+              highlight=("city", cities[i]["name"]))
+
+
+def biggest_city(world, iso, rng):
+    """Which of this country's own cities is the biggest."""
+    cities = _cities(world, iso)
+    if len(cities) < 4:
+        return None
+    top = cities[0]
+    if not top.get("population") or not cities[1].get("population"):
+        return None
+    if (top["population"] - cities[1]["population"]) / float(top["population"]) < 0.15:
+        return None            # too close to call from this data
+    picks = [top] + rng.sample(cities[1:], 3)
+    choices = [{"key": c["name"], "label": c["name"], "image": None} for c in picks]
+    rng.shuffle(choices)
+    return _q("biggest_city", iso,
+              "Which is the largest city in %s?" % world.name(iso),
+              choices, top["name"], highlight=("city", top["name"]))
+
+
+# --------------------------------------------------------------------------
+# Trade, resources, landmarks and history
+# --------------------------------------------------------------------------
+# Everything the country pages link to should be askable. These build a
+# question from any list-valued field, taking care that no distractor is
+# something the country also has -- with exports and industries that happens
+# constantly, since half the world sells refined petroleum.
+
+def _list_question(mode, field, prompt_tmpl, hint=None, econ=False):
+    def gen(world, iso, rng):
+        c = world.get(iso)
+        vals = (c.get("economy") or {}).get(field) if econ else c.get(field)
+        vals = [v if isinstance(v, str) else (v or {}).get("name")
+                for v in (vals or [])]
+        vals = [v for v in vals if v]
+        if not vals:
+            return None
+        answer = rng.choice(vals[:3])
+        mine = {v.lower() for v in vals}
+        pool = []
+        for other in distractors(world, iso, 40):
+            o = world.get(other)
+            theirs = (o.get("economy") or {}).get(field) if econ else o.get(field)
+            for v in theirs or []:
+                nm = v if isinstance(v, str) else (v or {}).get("name")
+                if nm and nm.lower() not in mine:
+                    pool.append(nm)
+        pool = list(dict.fromkeys(pool))
+        if len(pool) < 3:
+            return None
+        rng.shuffle(pool)
+        choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool[:3]]
+        rng.shuffle(choices)
+        return _q(mode, iso, prompt_tmpl % c["name"], choices, answer, hint=hint)
+    return gen
+
+
+main_export = _list_question(
+    "main_export", "exports", "Which of these does %s export?", econ=True,
+    hint="One of its top five, by value.")
+main_industry = _list_question(
+    "main_industry", "industries", "Which of these is a major industry in %s?",
+    econ=True)
+main_resource = _list_question(
+    "main_resource", "resources", "Which natural resource does %s have?",
+    econ=True)
+religion_of = _list_question(
+    "religion_of", "religions", "Which religion is practised in %s?")
+
+
+def landmark_of(world, iso, rng):
+    """Name the landmark that belongs to this country."""
+    mine = [m["name"] for m in (world.get(iso).get("landmarks") or []) if m.get("name")]
+    if not mine:
+        return None
+    answer = rng.choice(mine)
+    ours = {m.lower() for m in mine}
+    pool = []
+    for other in distractors(world, iso, 60):
+        for m in world.get(other).get("landmarks") or []:
+            if m.get("name") and m["name"].lower() not in ours:
+                pool.append(m["name"])
+    pool = list(dict.fromkeys(pool))
+    if len(pool) < 3:
+        return None
+    rng.shuffle(pool)
+    choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool[:3]]
+    rng.shuffle(choices)
+    return _q("landmark_of", iso, "Which of these is in %s?" % world.name(iso),
+              choices, answer, highlight=("landmark", answer))
+
+
+def war_participant(world, iso, rng):
+    """Which country fought in a given war."""
+    wars = [w for w in (world.get(iso).get("wars") or []) if w.get("name")]
+    # Only wars worth recognising, and only ones the distractors did not fight.
+    wars = [w for w in wars if (w.get("fame") or 0) >= 80]
+    if not wars:
+        return None
+    war = rng.choice(wars[:6])
+    name = war["name"].lower()
+    fought = {i for i in world.all_isos
+              if any((x.get("name") or "").lower() == name
+                     for x in world.get(i).get("wars") or [])}
+    opts = [iso] + distractors(world, iso, 3, exclude=fought)
+    if len(opts) < 4:
+        return None
+    span = "-".join(x for x in (war.get("start"), war.get("end")) if x)
+    return _q("war_participant", iso,
+              "Which of these fought in the %s?" % war["name"],
+              choice_row(world, opts, with_flag=True), iso,
+              hint=span or None, highlight=("war", war["name"]))
+
+
+def highest_point_of(world, iso, rng):
+    peaks = [p.get("name") for p in (world.get(iso).get("highest_point") or [])
+             if isinstance(p, dict) and p.get("name")]
+    if not peaks:
+        return None
+    answer = peaks[0]
+    pool = []
+    for other in distractors(world, iso, 40):
+        for p in world.get(other).get("highest_point") or []:
+            nm = p.get("name") if isinstance(p, dict) else p
+            if nm and nm != answer:
+                pool.append(nm)
+    pool = list(dict.fromkeys(pool))
+    if len(pool) < 3:
+        return None
+    rng.shuffle(pool)
+    choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool[:3]]
+    rng.shuffle(choices)
+    return _q("highest_point_of", iso,
+              "What is the highest point in %s?" % world.name(iso), choices, answer)
+
+
+def trade_partner(world, iso, rng):
+    """Who a country's exports actually go to."""
+    partners = [p["name"] for p in
+                ((world.get(iso).get("economy") or {}).get("export_partners") or [])
+                if p.get("name")]
+    if len(partners) < 2:
+        return None
+    answer = partners[0]
+    mine = {p.lower() for p in partners}
+    pool = []
+    for other in distractors(world, iso, 40):
+        for p in ((world.get(other).get("economy") or {}).get("export_partners")
+                  or []):
+            if p.get("name") and p["name"].lower() not in mine:
+                pool.append(p["name"])
+    pool = list(dict.fromkeys(pool))
+    if len(pool) < 3:
+        return None
+    rng.shuffle(pool)
+    choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool[:3]]
+    rng.shuffle(choices)
+    return _q("trade_partner", iso,
+              "Who is the biggest buyer of %s's exports?" % world.name(iso),
+              choices, answer)
 
 
 # --------------------------------------------------------------------------
@@ -379,7 +674,8 @@ def higher_lower(world, iso, rng):
     other = rng.choice(ratios[:8])[1]
     winner = iso if c[field] >= world.get(other)[field] else other
     choices = choice_row(world, [iso, other], with_flag=True)
-    return _q("higher_lower", iso, "Which has %s?" % word, choices, winner)
+    return _q("higher_lower", iso, "Which has %s?" % word, choices, winner,
+              highlight=("fact", "Population" if field == "population" else "Area"))
 
 
 def climate_of(world, iso, rng):
@@ -404,7 +700,8 @@ def climate_of(world, iso, rng):
     choices = [{"key": x, "label": x, "image": None} for x in [zone] + pool]
     rng.shuffle(choices)
     return _q("climate_of", iso,
-              "Which climate does %s mostly have?" % c["name"], choices, zone)
+              "Which climate does %s mostly have?" % c["name"], choices, zone,
+              highlight=("fact", "Climate"))
 
 
 # --------------------------------------------------------------------------
@@ -431,6 +728,18 @@ MODES = {
     "famous_person":     ("People", "Place the famous face", famous_person),
     "higher_lower":      ("Numbers", "Bigger or smaller?", higher_lower),
     "climate_of":        ("Climate", "Name the climate zone", climate_of),
+    "city_in_country":   ("Cities", "Spot the city that belongs here", city_in_country),
+    "city_to_country":   ("Cities", "Name the country from one of its cities", city_to_country),
+    "biggest_city":      ("Cities", "Name the largest city", biggest_city),
+    "city_rank":         ("Cities", "Rank a city by size", city_rank),
+    "main_export":       ("Trade", "Name what it sells", main_export),
+    "main_industry":     ("Trade", "Name a major industry", main_industry),
+    "main_resource":     ("Trade", "Name what is in the ground", main_resource),
+    "trade_partner":     ("Trade", "Name its biggest customer", trade_partner),
+    "landmark_of":       ("Landmarks", "Place the landmark", landmark_of),
+    "highest_point_of":  ("Landmarks", "Name the highest point", highest_point_of),
+    "war_participant":   ("History", "Who fought in it", war_participant),
+    "religion_of":       ("Politics", "Name a religion practised there", religion_of),
 }
 
 # What the front page offers. "Grand Tour" mixes everything.
@@ -444,6 +753,14 @@ CATEGORIES = [
     ("leaders", "Leaders", "Current and historical, with photos.", ["leader_photo", "leader_name", "past_leader"]),
     ("people", "Famous People", "Place the face.", ["famous_person"]),
     ("politics", "Politics & Money", "Government, currency, language.", ["government_of", "currency_of", "language_of"]),
+    ("cities", "Cities", "Name them, place them, rank them by size.",
+     ["city_in_country", "city_to_country", "biggest_city", "city_rank"]),
+    ("trade", "Trade & Industry", "What countries sell, dig up and make.",
+     ["main_export", "main_industry", "main_resource", "trade_partner"]),
+    ("landmarks", "Landmarks", "Wonders, mountains and the highest points.",
+     ["landmark_of", "highest_point_of"]),
+    ("history", "History", "Who fought in what, and who used to run it.",
+     ["war_participant", "past_leader"]),
     ("world", "Climate & Numbers", "Climate, size, population.", ["climate_of", "higher_lower", "continent_of"]),
 ]
 

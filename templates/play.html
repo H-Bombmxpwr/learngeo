@@ -14,6 +14,7 @@
     <span id="railTitle">{{ title }}</span>
     <span id="railCount"></span>
     {% if endless %}<span class="code" style="color:var(--ochre)">CASUAL</span>{% endif %}
+    {% if challenge %}<span class="code" style="color:var(--oxide)">CHALLENGE</span>{% endif %}
     <span class="streak" id="railStreak"></span>
     <span class="score" id="score">0</span>
   </div>
@@ -41,7 +42,9 @@
 <div id="sheetHost"></div>
 
 <script>
-  window.LEARNGEO = { category: {{ category | tojson }}, endless: {{ endless | tojson }} };
+  window.LEARNGEO = { category: {{ category | tojson }},
+                      endless: {{ endless | tojson }},
+                      challenge: {{ challenge | tojson }} };
 </script>
 {% endblock %}
 

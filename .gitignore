@@ -18,6 +18,10 @@ data/countries.json.bak
 # Local progress (your scores and spaced-repetition schedule)
 data/progress.db
 
+# Real configuration. .env.example is the committed template.
+.env
+.env.local
+
 # Editors / OS
 .vscode/
 .idea/

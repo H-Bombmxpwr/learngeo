@@ -833,16 +833,32 @@ _SUMMARIES = None
 
 
 def _summaries():
+    """Name -> {summary, wiki, image}, from both caches.
+
+    `figures.json` covers the hand-written historical figures and is
+    committed. `bios.json` covers everyone else the dataset knows about --
+    sitting leaders, past leaders, famous faces -- and is optional: without it
+    a person's card falls back to the structured facts, which is thinner but
+    never wrong. Build it with `enrich_data.py bios`.
+    """
     global _SUMMARIES
     if _SUMMARIES is None:
-        path = os.path.join(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))), "data", "figures.json")
-        try:
-            with open(path, encoding="utf-8") as f:
-                _SUMMARIES = json.load(f)
-        except (IOError, ValueError):
-            _SUMMARIES = {}
+        data = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), "data")
+        merged = {}
+        for name in ("bios.json", "figures.json"):
+            try:
+                with open(os.path.join(data, name), encoding="utf-8") as f:
+                    merged.update(json.load(f))
+            except (IOError, ValueError):
+                pass
+        _SUMMARIES = merged
     return _SUMMARIES
+
+
+def summary_for(name):
+    """The Wikipedia opening sentence for one person, if it has been fetched."""
+    return _summaries().get(name) or {}
 
 
 def _people_for(iso):
@@ -890,16 +906,11 @@ def apply(countries):
 
     for iso, c in countries.items():
         c["key_figures"] = _people_for(iso)
-        # The highest point is a landmark too, and belongs in the same list
-        # rather than filed under money and alliances.
-        marks = _landmarks_for(iso)
-        have = {m["name"].lower() for m in marks}
-        for peak in c.get("highest_point") or []:
-            nm = peak.get("name") if isinstance(peak, dict) else peak
-            if nm and nm.lower() not in have:
-                marks.append({"name": nm, "peak": True,
-                              "wiki": (peak.get("wiki")
-                                       if isinstance(peak, dict) else None)
-                              or wiki_url(nm)})
-        c["landmarks"] = marks
+        # The highest point keeps its own row under geography, so it is left
+        # out of the landmark list rather than printed twice. It stays a
+        # topic of its own either way.
+        peaks = {(p.get("name") or "").lower() for p in c.get("highest_point") or []
+                 if isinstance(p, dict)}
+        c["landmarks"] = [m for m in _landmarks_for(iso)
+                          if m["name"].lower() not in peaks]
     return countries

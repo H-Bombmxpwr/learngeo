@@ -127,19 +127,36 @@ them:
 | `app.py` | Routes, run state, scoring, fact cards, search |
 | `learngeo/data.py` | Loads the dataset, shapes, the topic index, the search index |
 | `learngeo/supplement.py` | Hand-written wars and historical figures, merged at load |
-| `learngeo/questions.py` | 19 question generators |
+| `learngeo/questions.py` | 31 question generators |
+| `learngeo/matching.py` | Judging a typed answer in challenge mode |
 | `learngeo/store.py` | SQLite progress and the spaced-repetition picker |
 | `scripts/fetch_data.py` | Builds the dataset from Wikidata |
 | `scripts/enrich_data.py` | Layers the World Factbook on top and repairs the rest |
 | `data/countries.geo.json` | Country outlines, for silhouettes and the map |
 
-**Two ways to play.** A scored run is twelve questions and three lives, with a
-streak multiplier and points for answering fast. Casual is the same questions
-with no lives and no end. Every game offers both, at `/games`.
+**Fourteen games, each four ways.** A **scored run** is twelve questions and
+three lives, with a streak multiplier and points for answering fast. **Casual**
+is the same questions with no lives and no end. **Challenge** takes the four
+options away: you type the answer — with a type-ahead scoped to what the
+question wants, and judging that forgives accents, aliases and one-character
+typos — or click the country on the map. Correct challenge answers are worth
+half as much again. All of it at `/games`.
 
-**Adaptive.** Every (country, question type) pair is a flashcard. Get one right
-and it comes back later; get it wrong and it returns within minutes. Difficulty
-opens up as you improve — you start on France and Japan, not Eswatini.
+There are 5,139 buildable (country, question type) pairs, and generators pick
+which city, war, export or leader they ask about, so the real question space is
+several times that.
+
+**Adaptive, and you can switch it off.** Every (country, question type) pair is
+a flashcard. Get one right and it comes back later; get it wrong and it returns
+within minutes. Countries you have proved you know are asked about far less
+often, difficulty opens up as you improve, and the picker avoids whatever it
+has just asked. Turn adapting off on `/progress` and questions come at random
+from the whole world with nothing recorded.
+
+**No account, ever.** Progress is keyed to a random id in a year-long cookie,
+so two people on the same deployed copy keep separate scores and nothing about
+a person is stored. Clearing cookies — or the button on `/progress` — is how
+you start over.
 
 **Right and wrong are treated differently.** A correct answer gets a line under
 the choices and a Next button; the full card is one click away if you want it.

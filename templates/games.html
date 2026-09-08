@@ -10,7 +10,9 @@
       three lives, with a streak multiplier and points for answering fast.
       <b>Casual</b> is the same questions with no lives and no end &mdash; it
       runs until you stop, which is the one to pick when you are learning
-      rather than proving.
+      rather than proving. <b>Challenge</b> takes the four options away: you
+      type the answer, or click the country on the map. Spelling is judged
+      generously and correct answers are worth half as much again.
     </p>
   </header>
 
@@ -22,6 +24,10 @@
         <div class="go">
           <a class="play-btn" href="{{ url_for('play', category=key) }}">Scored run of 12</a>
           <a class="play-btn casual" href="{{ url_for('play', category=key, endless=1) }}">Casual, endless</a>
+        </div>
+        <div class="go" style="margin-top:8px">
+          <a class="play-btn hard" href="{{ url_for('play', category=key, challenge=1) }}">Challenge</a>
+          <a class="play-btn hard casual" href="{{ url_for('play', category=key, endless=1, challenge=1) }}">Challenge, endless</a>
         </div>
       </div>
     {% endfor %}

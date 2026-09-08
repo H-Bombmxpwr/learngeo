@@ -94,9 +94,14 @@ def _clean(text):
     """Factbook text carries HTML entities and the odd <strong> tag."""
     if not text:
         return ""
-    text = re.sub(r"<[^>]+>", " ", text)
-    for a, b in (("&nbsp;", " "), ("&amp;", "&"), ("&quot;", '"'), ("&#39;", "'")):
+    # Entities first: the mirror stores "&lt;" for a literal angle bracket, and
+    # stripping tags before decoding left a bare "&lt" welded to the next word
+    # -- which is how "Swahili/Kiswahili &lt" ended up as a language name.
+    for a, b in (("&lt;", "<"), ("&gt;", ">"), ("&nbsp;", " "),
+                 ("&amp;", "&"), ("&quot;", '"'), ("&#39;", "'")):
         text = text.replace(a, b)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"&[a-z]{1,8};?", " ", text)        # anything still encoded
     text = re.sub(r"&[a-z]{1,8}acute;", lambda m: m.group(0)[1], text)
     return re.sub(r"\s+", " ", text).strip()
 
@@ -190,12 +195,20 @@ DROP_WORDS = re.compile(
 
 def parse_languages(text):
     """Spanish (official) 69.9%, Maya languages 29.7% (...)  ->
-       [{"name": "Spanish", "share": 69.9, "official": True}, ...]"""
+       [{"name": "Spanish", "share": 69.9, "official": True}, ...]
+
+    Two shapes have to be handled. Most entries carry percentages, and there
+    the rows without one are prose tacked onto the end. But a great many --
+    Nigeria, Kenya, Tanzania, the DRC, and most of Africa besides -- are a
+    plain list with no numbers at all: "English (official), Hausa, Yoruba,
+    Igbo, Fulani". Treating a missing percentage as the end of the list left
+    those countries with one language each.
+    """
     text = _clean(text)
     if not text:
         return []
     text = re.sub(r"\((\d{4})[^)]*\)", " ", text)          # (2018 est.)
-    out = []
+    rows = []
     for part in _split_top_level(text):
         part = part.strip().strip(";")
         if not part:
@@ -214,11 +227,25 @@ def parse_languages(text):
         name = re.sub(r"\s+", " ", name).strip(" .;:-")
         if not name or NOT_A_LANGUAGE.match(name) or len(name) > 44:
             continue
-        if share is None and out and not official:
-            continue          # trailing prose after the real list
-        out.append({"name": name[0].upper() + name[1:], "share": share,
-                    "official": official})
-    return out
+        # Prose reads as a sentence; a language name does not.
+        if len(name.split()) > 4:
+            continue
+        rows.append({"name": name[0].upper() + name[1:], "share": share,
+                     "official": official})
+
+    if any(r["share"] is not None for r in rows):
+        # A numbered list: anything after the numbers stop is commentary,
+        # unless it is explicitly flagged official.
+        out, ended = [], False
+        for r in rows:
+            if r["share"] is None:
+                if out and not r["official"]:
+                    ended = True
+                if ended:
+                    continue
+            out.append(r)
+        return out
+    return rows          # a plain list, keep all of it
 
 
 def _wiki_guess(language_name):
