@@ -80,6 +80,18 @@ across countries, languages, wars, currencies, forms of government and the
 
 - **A search box in the header**, on every page, with keyboard navigation and
   `/` to focus.
+- **Threads on everything.** Sixteen kinds of thing have a page now, not
+  eight: every export, import, trading partner, natural resource, industry,
+  climate, landmark and government type joins the languages, wars, currencies
+  and the rest. The economy fields arrive from the Factbook as bare strings
+  and are wrapped into the same entity shape at load time, so they need no
+  special cases anywhere downstream.
+- **Landmarks**, hand-written for the ~150 countries with an obvious one, with
+  the highest point folded into the same list.
+- **A sentence and a portrait on every historical figure**, from their own
+  Wikipedia article, cached in `data/figures.json`.
+- **`/map`**, the world as a clickable browse rather than a list.
+- **An embedded locator map** on every country page.
 - **`/games`**, listing all ten games with both run types, linked from the nav.
 - **`/sources`**, explaining what each source is used for and what each gets
   wrong.
@@ -92,10 +104,30 @@ across countries, languages, wars, currencies, forms of government and the
 - **A logo**, used on the home page and as the favicon.
 - **Shapes and Find It on the Map are separate games.**
 - **Atlas sorting** by name, population, area, mastery or continent.
+- **Chip marks**: a glyph per kind, with real symbols for currencies (€, ₹, ₺),
+  religions (✝, ☪, ☸) and organisations.
+- **Deployment**: `Procfile` and `railway.json` start gunicorn, the built
+  dataset is committed, and shapely moved to an optional `build` extra so a
+  deploy does not compile GEOS to serve a JSON file.
 
 ---
 
 ## Known gaps
+
+**"Faces from here" is commented out on country pages.** Wikidata ranks
+people by sitelink count, which puts the sitting president and the last three
+prime ministers at the top — so the row repeated the two sections above it.
+It needs to exclude anyone already shown as a leader and weight towards the
+arts and sciences before it earns the space back.
+
+**Wikidata's public endpoint is the binding constraint on any rebuild.** It
+answers 504 to anything with a `wdt:P279*` subclass walk over more than one
+country, and 429 to a few hundred sequential queries. The leaders stage is
+shaped around this: the office query goes one country at a time because
+batching multiplies the walk rather than sharing it, and the statement query
+gives up after three timeouts because it is only a top-up. Wikipedia throttles
+the same way, which silently cost two thirds of the figure summaries on the
+first run.
 
 **Famous faces still cover about 140 of 197.** The Wikidata query needs a
 sitelink count that small countries rarely clear. `enrich_data.py famous` drops

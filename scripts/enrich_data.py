@@ -525,18 +525,47 @@ def _rank_past(people):
     return recent + rest
 
 
-def stage_leaders(countries):
+def stage_leaders(countries, want_statements=True):
     print("[leaders] current and past, with parties")
     isos = sorted(countries)
     found = {}          # iso -> ([current], [past]), only for isos we heard about
     reached = set()
 
-    # The country-statement query batches cleanly (no subclass walk), so it
-    # goes 25 at a time.
-    for i in range(0, len(isos), 25):
-        batch = isos[i:i + 25]
-        result = sparql(_country_statements(batch), tries=3)
-        if result is not FAILED:
+    # The office query is the one that finds what the first pull missed, and
+    # it cannot batch: the `wdt:P279*` subclass walk is the expensive part, and
+    # putting fifteen countries in one query multiplies the walk rather than
+    # sharing it -- fifteen at once times out at 70 seconds, one answers in
+    # two. So it goes one at a time, and a failure costs only that country.
+    for n, iso in enumerate(isos):
+        result = sparql(_office_holders(iso), tries=2)
+        if result is FAILED:
+            continue
+        reached.add(iso)
+        cur, _past = found.setdefault(iso, ([], []))
+        for b in result:
+            if v(b, "plbl"):
+                _merge_person(cur, _entry(b))
+        time.sleep(0.3)
+        if n % 20 == 0:
+            print("      offices %d/%d" % (n, len(isos)))
+            save(countries)
+    print("      offices done, %d countries answered" % len(reached))
+
+    # The statement query is a top-up, not the source: the first pull already
+    # read P35 and P6 per country, so this only adds terms it has since
+    # gained. It is skipped if it starts failing, because it is the heavier
+    # query and nothing depends on it.
+    if want_statements:
+        misses = 0
+        for i in range(0, len(isos), 20):
+            batch = isos[i:i + 20]
+            result = sparql(_country_statements(batch), tries=1)
+            if result is FAILED:
+                misses += 1
+                if misses >= 3:
+                    print("      statements keep timing out, skipping the rest")
+                    break
+                continue
             reached.update(batch)
             for b in result:
                 iso = v(b, "iso2")
@@ -549,28 +578,12 @@ def stage_leaders(countries):
                 # leaders, which is why France used to have no president.
                 _merge_person(cur if (not ended or ended[:10] > TODAY) else past,
                               _entry(b, ended))
-        print("      statements %d/%d" % (min(i + 25, len(isos)), len(isos)))
-        time.sleep(1)
-
-    # The office query cannot batch, so it goes one at a time and its failures
-    # only cost that country its office-derived leaders.
-    for n, iso in enumerate(isos):
-        result = sparql(_office_holders(iso), tries=2)
-        if result is FAILED:
-            continue
-        reached.add(iso)
-        cur, _past = found.setdefault(iso, ([], []))
-        for b in result:
-            if v(b, "plbl"):
-                _merge_person(cur, _entry(b))
-        time.sleep(0.4)
-        if n % 25 == 0:
-            print("      offices %d/%d" % (n, len(isos)))
-            save(countries)
+            print("      statements %d/%d" % (min(i + 20, len(isos)), len(isos)))
+            time.sleep(1)
 
     for iso in isos:
         if iso not in reached:
-            continue        # both queries failed; keep whatever is on disk
+            continue        # nothing came back; keep whatever is on disk
         current, past = found.get(iso, ([], []))
         # Merge with what is already there rather than replacing it: a partial
         # answer should add leaders, never remove them.
