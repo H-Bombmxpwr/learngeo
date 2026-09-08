@@ -163,7 +163,12 @@ def pick(world, modes, rng=None, avoid=()):
         last = {(r["iso2"], r["mode"]): r["last_seen"] for r in
                 conn.execute("SELECT iso2, mode, last_seen FROM mastery").fetchall()}
 
-    due = [(r["iso2"], r["mode"]) for r in due if (r["iso2"], r["mode"]) not in avoid]
+    # A card can outlive the country it was about: the database is not
+    # rebuilt when the dataset is, so a row for an ISO code that has since
+    # gone would send the generator looking for a country that is not there.
+    due = [(r["iso2"], r["mode"]) for r in due
+           if (r["iso2"], r["mode"]) not in avoid
+           and r["mode"] in modes and world.get(r["iso2"])]
 
     candidates = _pool(world, modes, ceiling)
     unseen = [(i, m) for i in candidates for m in modes

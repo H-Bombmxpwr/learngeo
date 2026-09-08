@@ -1,0 +1,15 @@
+# Railway's Python builder defaults to pip and a requirements.txt. This project
+# uses uv and a lockfile instead, so the install phase is stated outright.
+# `--frozen` installs exactly what uv.lock pins and fails loudly if the lock is
+# out of step with pyproject.toml, rather than quietly resolving something else.
+# `--no-dev` skips the dev group; shapely is not installed at all, since it
+# lives in the optional `build` extra that only the dataset scripts need.
+
+[phases.setup]
+nixPkgs = ["python312", "uv"]
+
+[phases.install]
+cmds = ["uv sync --frozen --no-dev"]
+
+[start]
+cmd = "uv run --frozen --no-dev gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60"
