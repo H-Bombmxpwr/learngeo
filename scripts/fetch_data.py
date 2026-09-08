@@ -299,6 +299,7 @@ BORDER_TOLERANCE_DEG = 0.02      # ~2 km
 # are the exceptions, so they are stated outright rather than guessed.
 MICROSTATE_BORDERS = {
     "AD": ["ES", "FR"],
+    "VA": ["IT"],
     "MC": ["FR"],
     "SM": ["IT"],
     "LI": ["CH", "AT"],

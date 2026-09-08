@@ -23,6 +23,7 @@
   var locked = false;
   var map = null, mapLayer = null, geoCache = null;
   var scoreBefore = 0;
+  var lastAnswer = null;   // kept so the bar can open the card on request
 
   // ---- helpers ----------------------------------------------------------
   function h(tag, attrs, kids) {
@@ -210,7 +211,16 @@
         if (res.error) { el.prompt.textContent = res.error; return; }
         markChoices(res, key);
         paintRun(res.run);
-        showSheet(res);
+        lastAnswer = res;
+        if (res.finished) {
+          showGameOver(res);
+        } else if (res.correct) {
+          // Getting it right does not need a full page of teaching thrown at
+          // you. The card is one click away for anyone who wants it.
+          showBar(res);
+        } else {
+          showSheet(res);
+        }
       });
   }
 
@@ -231,6 +241,59 @@
         }
       });
     }
+  }
+
+  // ---- what shows after a correct answer -------------------------------
+  function showBar(res) {
+    var bar = h("div", { class: "answerbar" }, [
+      h("span", { class: "said right", text: "Correct" }),
+      h("span", { text: res.card.name }),
+      h("span", { class: "gained", text: "+" + pointsGained(res) }),
+      h("span", { class: "spacer" })
+    ]);
+    bar.appendChild(button("Next question", "btn big", nextQuestion));
+    bar.appendChild(button("See the card", "btn ghost", function () {
+      showSheet(res);
+    }));
+    el.sheetHost.innerHTML = "";
+    el.sheetHost.appendChild(bar);
+    bar.querySelector(".btn.big").focus();
+  }
+
+  // ---- the end of a run -------------------------------------------------
+  function showGameOver(res) {
+    var run = res.run;
+    var out = run.lives <= 0 ? "Out of lives" : "Run complete";
+    var pct = run.asked ? Math.round(100 * run.correct / run.asked) : 0;
+    var sheet = h("div", { class: "sheet gameover", role: "dialog",
+                           "aria-label": "Run over" }, [
+      h("h2", { text: out }),
+      h("p", { style: "color:#6b6255;margin:0",
+               text: "The answer was " + res.card.name + "." }),
+      h("div", { class: "final", text: run.score.toLocaleString() }),
+      h("div", { style: "color:#857a68;font-size:.85rem", text: "points" }),
+      h("div", { class: "tally" }, [
+        h("div", {}, [h("b", { text: run.correct + " / " + run.asked }),
+                      h("small", { text: "right" })]),
+        h("div", {}, [h("b", { text: pct + "%" }), h("small", { text: "accuracy" })]),
+        h("div", {}, [h("b", { text: String(run.best_streak) }),
+                      h("small", { text: "best streak" })])
+      ])
+    ]);
+    var actions = h("div", { class: "sheet-actions" });
+    actions.appendChild(button("Play again", "btn big", function () {
+      post("/api/restart", { category: cfg.category, endless: cfg.endless })
+        .then(nextQuestion);
+    }));
+    actions.appendChild(h("a", { class: "btn ghost", href: "/country/" + res.card.iso2,
+                                 text: "Read the card" }));
+    actions.appendChild(h("a", { class: "btn ghost", href: "/games",
+                                 text: "Other games" }));
+    sheet.appendChild(actions);
+    var back = h("div", { class: "sheet-back", style: "align-items:center" }, [sheet]);
+    el.sheetHost.innerHTML = "";
+    el.sheetHost.appendChild(back);
+    sheet.querySelector(".btn").focus();
   }
 
   // ---- the paper fact card ---------------------------------------------
@@ -281,13 +344,25 @@
     }
     if (card.leaders && card.leaders.length) {
       body.push(strip("In charge right now", card.leaders.map(function (p) {
-        return person(p.image, p.name,
-          p.role === "head_of_state" ? "Head of state" : "Head of government");
+        return person(p.image, p.name, p.party ? (p.role + ", " + p.party) : p.role,
+                      p.wiki);
       })));
     }
-    if (card.famous && card.famous.length) {
-      body.push(strip("Faces from here", card.famous.map(function (p) {
-        return person(p.image, p.name, (p.occupations || [])[0] || "");
+    // Where the row of famous faces used to be. Nobody needed four more
+    // portraits after the two above; what a country sells and to whom is the
+    // thing you cannot guess from the map.
+    if (card.economy && card.economy.length) {
+      var econ = h("div", { class: "facts", style: "margin-top:4px" });
+      card.economy.forEach(function (row) {
+        econ.appendChild(h("div", { class: "fact" }, [
+          h("dt", { text: row[0] }), h("dd", { text: row[1] })
+        ]));
+      });
+      body.push(h("div", { class: "strip" }, [h("h3", { text: "Trade" }), econ]));
+    }
+    if (card.figures && card.figures.length) {
+      body.push(chipStrip("Figures from its history", card.figures.map(function (p) {
+        return chip(p.wiki, p.name, null, true);
       })));
     }
     if (card.neighbours && card.neighbours.length) {
@@ -301,35 +376,32 @@
     }
 
     var actions = h("div", { class: "sheet-actions" });
-    if (res.finished) {
-      actions.appendChild(button("Play again", "btn big", function () {
-        post("/api/restart", { category: cfg.category, endless: cfg.endless })
-          .then(nextQuestion);
-      }));
-      actions.appendChild(h("a", { class: "btn ghost", href: "/", text: "Back to the menu" }));
-      actions.appendChild(h("span", {
-        style: "margin-left:auto;font-size:.95rem;color:#6b6255",
-        text: "Run over: " + res.run.correct + " of " + res.run.asked +
-              " right, best streak " + res.run.best_streak + ", " +
-              res.run.score.toLocaleString() + " points."
-      }));
-    } else {
-      actions.appendChild(button("Next question", "btn big", nextQuestion));
+    actions.appendChild(button("Next question", "btn big", nextQuestion));
+    actions.appendChild(h("a", {
+      class: "btn ghost", href: "/country/" + card.iso2, text: "Read the full page"
+    }));
+    if (card.news_url) {
       actions.appendChild(h("a", {
-        class: "btn ghost", href: "/country/" + card.iso2, text: "Read the full page"
+        class: "btn ghost", href: card.news_url, target: "_blank", rel: "noopener",
+        text: "Recent news"
       }));
-      if (card.wiki_url) {
-        actions.appendChild(h("a", {
-          class: "btn ghost", href: card.wiki_url, target: "_blank", rel: "noopener",
-          text: "Wikipedia"
-        }));
-      }
+    }
+    if (card.wiki_url) {
+      actions.appendChild(h("a", {
+        class: "btn ghost", href: card.wiki_url, target: "_blank", rel: "noopener",
+        text: "Wikipedia"
+      }));
     }
     body.push(actions);
 
     var sheet = h("div", { class: "sheet", role: "dialog", "aria-label": "Answer" }, body);
     var back = h("div", { class: "sheet-back" }, [sheet]);
-    back.addEventListener("click", function (e) { if (e.target === back && !res.finished) nextQuestion(); });
+    // Dismissing the card goes on with the run, unless it was opened from the
+    // bar after a correct answer -- then it goes back to the bar.
+    back.addEventListener("click", function (e) {
+      if (e.target !== back) return;
+      if (res.correct) showBar(res); else nextQuestion();
+    });
     el.sheetHost.innerHTML = "";
     el.sheetHost.appendChild(back);
     var first = sheet.querySelector(".btn");
@@ -365,12 +437,19 @@
     return h("div", { class: "strip" }, [h("h3", { text: title }), row]);
   }
 
-  function person(img, name, sub) {
-    return h("div", { class: "person" }, [
+  function person(img, name, sub, wiki) {
+    var kids = [
       img ? h("img", { src: img, alt: name, loading: "lazy" }) : h("div", { class: "person-blank" }),
       h("b", { text: name }),
       sub ? h("small", { text: sub }) : null
-    ]);
+    ];
+    // Everybody on a card is a link now: a face with no way through to who
+    // they were is a dead end on a page that is otherwise all doors.
+    if (wiki) {
+      return h("a", { class: "person", href: wiki, target: "_blank",
+                      rel: "noopener" }, kids);
+    }
+    return h("div", { class: "person" }, kids);
   }
 
   function button(label, cls, fn) {

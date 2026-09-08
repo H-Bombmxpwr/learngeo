@@ -30,6 +30,11 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Every filter on the site hides rows with the `hidden` attribute, and every
+   row it is applied to is a flex or grid item -- whose `display` beat
+   `hidden` and left the atlas search doing visibly nothing. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--ink);
@@ -222,11 +227,16 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
   width: 100%; height: min(58vh, 480px); background: var(--ink);
   border: 1px solid var(--ink-2); border-radius: var(--r-md);
 }
-.leaflet-container { background: var(--ink) !important; outline: none; }
+/* Leaflet gives its panes z-index 400 and its controls 800. The map container
+   is positioned but has no z-index of its own, so those numbers competed with
+   the rest of the page and the map painted straight through the fact card.
+   A z-index here makes the map its own stacking context, and the whole thing
+   sits below the sheet. */
+.leaflet-container { background: var(--ink) !important; outline: none; z-index: 0; }
 
 /* ---------- the paper sheet: where the learning happens ---------------- */
 .sheet-back {
-  position: fixed; inset: 0; z-index: 20; background: rgba(4, 12, 18, .72);
+  position: fixed; inset: 0; z-index: 900; background: rgba(4, 12, 18, .72);
   display: flex; align-items: flex-end; justify-content: center;
 }
 .sheet {
@@ -384,3 +394,122 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+
+/* ---------- the search box in the header ------------------------------- */
+.sitesearch { position: relative; margin-left: auto; z-index: 30; }
+.sitesearch input {
+  width: min(300px, 42vw); padding: 8px 12px;
+  background: var(--ink-2); color: var(--stage-text);
+  border: 1px solid var(--ink-3); border-radius: 100px;
+  font: inherit; font-size: .9rem;
+}
+.sitesearch input::placeholder { color: #6d8d9b; }
+.sitesearch input:focus { border-color: var(--sea); outline: none; }
+.ac {
+  position: absolute; top: calc(100% + 7px); right: 0;
+  width: min(390px, 88vw); max-height: 62vh; overflow-y: auto;
+  background: var(--paper); border-radius: var(--r-md);
+  box-shadow: var(--shadow-lift); padding: 5px; z-index: 40;
+}
+.ac-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--r-sm);
+  color: var(--graphite); text-decoration: none;
+}
+.ac-row.on, .ac-row:hover { background: var(--paper-2); }
+.ac-row img { width: 28px; height: 19px; object-fit: cover; border-radius: 2px; flex: none; }
+.ac-row .ac-dot {
+  width: 28px; height: 19px; flex: none; border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--paper-2) 0 3px, var(--paper) 3px 6px);
+}
+.ac-row b { display: block; font-size: .95rem; font-weight: 600; line-height: 1.2; }
+.ac-row small { color: #857a68; font-size: .78rem; }
+
+/* ---------- language shares ------------------------------------------- */
+.langs { display: grid; gap: 10px; max-width: 560px; }
+.lang { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: baseline; }
+.lang .meter { grid-column: 1 / -1; height: 7px; background: var(--paper-2); border-radius: 100px; }
+.lang .meter i { display: block; height: 100%; border-radius: 100px; background: var(--sea); }
+.lang .pct { font-variant-numeric: tabular-nums; color: #6b6255; font-size: .9rem; }
+.badge {
+  display: inline-block; margin-left: 7px; padding: 1px 7px;
+  font-family: "Bricolage Grotesque", sans-serif; font-size: .68rem;
+  font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: #6b5a33; background: rgba(224,163,60,.28);
+  border-radius: 100px; vertical-align: 2px;
+}
+
+/* ---------- economy ---------------------------------------------------- */
+.econ { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
+.econ h3 { font-size: .84rem; color: #857a68; font-weight: 600; margin-bottom: 8px; }
+.econ ul { margin: 0; padding-left: 18px; }
+.econ li { margin-bottom: 3px; }
+.partner { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.partner span:last-child { color: #857a68; font-variant-numeric: tabular-nums; }
+
+/* ---------- games index ------------------------------------------------ */
+.gamelist { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.game {
+  background: var(--ink-2); border-left: 3px solid var(--sea);
+  border-radius: 0 var(--r-md) var(--r-md) 0; padding: 18px 20px 16px;
+}
+.game.feature { border-left-color: var(--ochre); background: #16394a; }
+.game h3 { margin: 0 0 4px; font-size: 1.12rem; }
+.game p { margin: 0 0 14px; color: var(--stage-dim); font-size: .92rem; }
+.game .go { display: flex; gap: 9px; flex-wrap: wrap; }
+.play-btn {
+  padding: 8px 15px; border-radius: 100px; text-decoration: none;
+  font-family: "Bricolage Grotesque", sans-serif; font-size: .87rem; font-weight: 700;
+  background: var(--ochre); color: #23180a;
+}
+.play-btn.casual { background: transparent; color: var(--stage-dim); border: 1px solid var(--ink-3); }
+.play-btn.casual:hover { color: var(--ochre); border-color: var(--ochre); }
+
+/* ---------- the answer bar: what shows when you get one right ---------- */
+.answerbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 14px 24px; background: var(--paper); color: var(--graphite);
+  box-shadow: 0 -14px 40px -18px rgba(0,0,0,.7);
+  animation: rise .24s cubic-bezier(.2, .8, .25, 1);
+}
+.answerbar .said { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; }
+.answerbar .said.right { color: #4d6b2c; }
+.answerbar .gained { color: #857a68; font-variant-numeric: tabular-nums; }
+.answerbar .spacer { margin-left: auto; }
+.answerbar .btn { padding: 10px 20px; }
+
+/* ---------- run-over card ---------------------------------------------- */
+.gameover { max-width: 560px; text-align: center; padding: 34px 30px 30px; }
+.gameover h2 { font-size: 2rem; margin-bottom: .2em; }
+.gameover .final {
+  font-family: "Bricolage Grotesque", sans-serif; font-size: 3.4rem;
+  font-weight: 800; color: var(--sienna); line-height: 1; margin: 14px 0 4px;
+  font-variant-numeric: tabular-nums;
+}
+.gameover .tally { display: flex; justify-content: center; gap: 26px; margin: 22px 0 26px; }
+.gameover .tally b {
+  display: block; font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.5rem; font-weight: 700;
+}
+.gameover .tally small { color: #857a68; font-size: .8rem; }
+.gameover .sheet-actions { justify-content: center; border-top: none; }
+
+/* ---------- misc ------------------------------------------------------- */
+.sortbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.sortbar label { font-size: .85rem; color: #6b6255; }
+.sortbar select {
+  padding: 8px 11px; font: inherit; font-size: .92rem; color: var(--graphite);
+  background: #fff; border: 1px solid var(--paper-3); border-radius: var(--r-sm);
+}
+.count { color: #857a68; font-size: .85rem; }
+
+.people a.person, .leader-row a.leader { text-decoration: none; color: inherit; }
+.people a.person:hover b, .leader-row a.leader:hover b { text-decoration: underline; }
+
+.figure-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 4px 22px; }
+.figure { padding: 9px 0; border-bottom: 1px solid var(--paper-2); }
+.figure b { font-size: .98rem; }
+.figure small { display: block; color: #857a68; font-size: .84rem; line-height: 1.4; }
+
+.source-table td:first-child { width: 190px; font-weight: 600; }

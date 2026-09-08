@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img"
+     aria-label="LearnGeo">
+  <title>LearnGeo</title>
+  <!-- A globe drawn as a graticule: the same lat/long grid the site uses as
+       its background device, wrapped onto a sphere, with the meridian struck
+       through it like a bookmark. -->
+  <defs>
+    <clipPath id="ball"><circle cx="32" cy="32" r="25"/></clipPath>
+  </defs>
+  <circle cx="32" cy="32" r="25" fill="#12303f"/>
+  <g clip-path="url(#ball)" fill="none" stroke="#3e8c9e" stroke-width="1.4"
+     opacity=".85">
+    <!-- parallels -->
+    <path d="M7 22h50M7 42h50"/>
+    <path d="M9.5 32h45"/>
+    <!-- meridians -->
+    <ellipse cx="32" cy="32" rx="9" ry="25"/>
+    <ellipse cx="32" cy="32" rx="18" ry="25"/>
+    <path d="M32 7v50"/>
+  </g>
+  <!-- the equator, heavier, as on a printed map -->
+  <path d="M8 32h48" stroke="#e0a33c" stroke-width="2.2" stroke-linecap="round"
+        clip-path="url(#ball)"/>
+  <circle cx="32" cy="32" r="25" fill="none" stroke="#e0a33c" stroke-width="3"/>
+  <!-- the pin: where you are being asked to look -->
+  <path d="M45 14.5c0-3.6 2.9-6.5 6.5-6.5S58 10.9 58 14.5c0 4.6-6.5 11-6.5 11
+           s-6.5-6.4-6.5-11z" fill="#b8623a"/>
+  <circle cx="51.5" cy="14.4" r="2.4" fill="#f3ead9"/>
+</svg>

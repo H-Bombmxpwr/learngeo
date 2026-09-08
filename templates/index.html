@@ -5,6 +5,8 @@
 <div class="wrap">
 
   <header class="hero">
+    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt=""
+         width="76" height="76" style="margin-bottom:14px">
     <h1>Learn the world,<br>one question at a time.</h1>
     <p class="lede">
       Every answer -- right or wrong -- comes back with the flag, the map, the
@@ -30,6 +32,9 @@
       </a>
     {% endfor %}
   </div>
+  <p style="margin-top:16px">
+    <a href="{{ url_for('games') }}">All games, scored or casual</a>
+  </p>
 
   <div class="statline">
     <div>

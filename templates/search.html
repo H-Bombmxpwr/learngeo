@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ q }} - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="paper-page">
+    <h1>{{ results | length }} match{% if results | length != 1 %}es{% endif %}</h1>
+    <p style="color:#6b6255;margin-top:0">for &ldquo;{{ q }}&rdquo;</p>
+
+    {% if results %}
+      <div class="country-grid" style="margin-top:20px">
+        {% for r in results %}
+          <a class="country-cell" href="{{ r.url }}">
+            {% if r.flag %}<img src="{{ r.flag }}" alt="" loading="lazy" width="34" height="23">
+            {% else %}<span class="ac-dot"></span>{% endif %}
+            <span>
+              <b>{{ r.label }}</b>
+              <small>{{ r.sub }}</small>
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Nothing matches that. Try a country, a language, a war,
+        a currency or a person.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

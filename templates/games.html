@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Games - LearnGeo{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <header class="hero" style="padding:40px 0 22px">
+    <h1>Ten ways to play</h1>
+    <p class="lede">
+      Every game comes two ways. A <b>scored run</b> is twelve questions and
+      three lives, with a streak multiplier and points for answering fast.
+      <b>Casual</b> is the same questions with no lives and no end &mdash; it
+      runs until you stop, which is the one to pick when you are learning
+      rather than proving.
+    </p>
+  </header>
+
+  <div class="gamelist">
+    {% for key, name, blurb, modes in categories %}
+      <div class="game{% if loop.first %} feature{% endif %}">
+        <h3>{{ name }}</h3>
+        <p>{{ blurb }}</p>
+        <div class="go">
+          <a class="play-btn" href="{{ url_for('play', category=key) }}">Scored run of 12</a>
+          <a class="play-btn casual" href="{{ url_for('play', category=key, endless=1) }}">Casual, endless</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="statline">
+    <div>
+      <b>{{ stats.countries_known }}<small style="color:var(--stage-dim);font-size:1rem"> / {{ stats.countries_total }}</small></b>
+      <small>countries you know</small>
+    </div>
+    <div><b>{{ stats.answered }}</b><small>questions answered</small></div>
+    <div><b>{{ (stats.accuracy * 100) | round | int }}%</b><small>accuracy</small></div>
+    <div><b>{{ stats.tier }}</b><small>difficulty tier unlocked</small></div>
+  </div>
+</div>
+{% endblock %}

@@ -12,7 +12,9 @@ wander around.
 """
 import json
 import os
-import re
+
+from . import supplement
+from .data_util import fold, slug, wiki_url
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "data")
@@ -29,10 +31,6 @@ def _thumb(url, width=400):
 def ent_name(x):
     """Entities are dicts, but older datasets stored plain strings."""
     return x.get("name") if isinstance(x, dict) else x
-
-
-def slug(text):
-    return re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-") or "unknown"
 
 
 # field on a country  ->  (url kind, human label, singular noun)
@@ -62,13 +60,23 @@ class World(object):
                 self.shapes[feat["id"]] = feat["geometry"]
         self.geojson = geo
 
+        # Curated wars and historical figures, layered on top of the fetched
+        # data. See supplement.py for why they cannot come from a query.
+        supplement.apply(self.countries)
+
         self.by_iso3 = {}
         for c in self.countries.values():
             if c.get("iso3"):
                 self.by_iso3[c["iso3"]] = c
-            for person in (c.get("famous", []) + c.get("leaders", [])
-                           + c.get("past_leaders", [])):
+            for person in self.people_of(c):
                 person["image"] = _thumb(person.get("image"))
+                # Nobody on a fact card was clickable, because the person
+                # queries kept a name and a photo but no link. The enrichment
+                # pass fills most of these in; the rest fall back to the
+                # article named after the person, which is how Wikipedia
+                # titles a biography unless the name is ambiguous.
+                if not person.get("wiki") and person.get("name"):
+                    person["wiki"] = wiki_url(person["name"])
 
         self.all_isos = sorted(self.countries)
         self.by_continent = {}
@@ -76,6 +84,12 @@ class World(object):
             self.by_continent.setdefault(self.continent_of(iso), []).append(iso)
 
         self._build_topics()
+        self._build_search()
+
+    @staticmethod
+    def people_of(c):
+        return ((c.get("famous") or []) + (c.get("leaders") or [])
+                + (c.get("past_leaders") or []) + (c.get("key_figures") or []))
 
     # -- topic index -----------------------------------------------------
     def _build_topics(self):
@@ -104,13 +118,80 @@ class World(object):
         for kind, bucket in self.topics.items():
             for node in bucket.values():
                 if kind == "language":
+                    # Share of the population first -- it is on almost every
+                    # country now -- and speaker counts where it is not.
                     node["countries"].sort(
-                        key=lambda r: -(r["detail"].get("speakers") or 0))
+                        key=lambda r: (-(r["detail"].get("share") or 0),
+                                       -(r["detail"].get("speakers") or 0)))
                 elif kind == "government":
                     node["countries"].sort(
                         key=lambda r: (r["detail"].get("start") or "9999"))
                 else:
                     node["countries"].sort(key=lambda r: self.name(r["iso2"]))
+
+    # -- search ----------------------------------------------------------
+    def _build_search(self):
+        """One flat list of everything the site has a page for.
+
+        Country names, every topic node, and every person the dataset knows
+        about. It is a few thousand rows, so matching is a scan -- fast enough
+        that the box can answer as you type, without a search engine.
+        """
+        rows = []
+        for iso in self.all_isos:
+            c = self.countries[iso]
+            rows.append({"label": c["name"], "sub": self.continent_of(iso),
+                         "kind": "country", "url": "/country/" + iso,
+                         "flag": c["flag_thumb"], "alt": [iso, c.get("iso3") or ""],
+                         "rank": 0})
+        for kind, bucket in self.topics.items():
+            noun = next((sing for _, (k, _, sing) in TOPIC_FIELDS.items()
+                         if k == kind), kind)
+            for node in bucket.values():
+                n = len(node["countries"])
+                rows.append({
+                    "label": node["name"],
+                    "sub": "%s - %d countr%s" % (
+                        noun.capitalize(), n, "y" if n == 1 else "ies"),
+                    "kind": kind, "url": "/topic/%s/%s" % (kind, node["key"]),
+                    "flag": None, "alt": [], "rank": 1,
+                })
+        seen = set()
+        for iso in self.all_isos:
+            c = self.countries[iso]
+            for p in self.people_of(c):
+                key = (p.get("name"), iso)
+                if not p.get("name") or key in seen or not p.get("wiki"):
+                    continue
+                seen.add(key)
+                rows.append({"label": p["name"], "sub": c["name"],
+                             "kind": "person", "url": "/country/" + iso,
+                             "flag": c["flag_thumb"], "alt": [], "rank": 2})
+        for r in rows:
+            r["_f"] = fold(r["label"])
+            r["_alt"] = [fold(a) for a in r["alt"] if a]
+        self.search_rows = rows
+
+    def search(self, query, limit=10):
+        q = fold(query).strip()
+        if not q:
+            return []
+        hits = []
+        for r in self.search_rows:
+            if r["_f"].startswith(q):
+                score = 0
+            elif any(a == q for a in r["_alt"]):
+                score = 1
+            elif (" " + q) in (" " + r["_f"]):     # start of any word
+                score = 2
+            elif q in r["_f"]:
+                score = 3
+            else:
+                continue
+            hits.append((score, r["rank"], len(r["label"]), r))
+        hits.sort(key=lambda h: h[:3])
+        return [{k: v for k, v in r.items() if not k.startswith("_")}
+                for _, _, _, r in hits[:limit]]
 
     def topic(self, kind, key):
         return (self.topics.get(kind) or {}).get(key)

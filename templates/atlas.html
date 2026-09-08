@@ -25,11 +25,28 @@
       {% endfor %}
     </div>
 
+    <div class="sortbar">
+      <label for="sort">Sort by</label>
+      <select id="sort">
+        <option value="name">Name, A to Z</option>
+        <option value="-name">Name, Z to A</option>
+        <option value="-population">Population, largest first</option>
+        <option value="population">Population, smallest first</option>
+        <option value="-area">Area, largest first</option>
+        <option value="area">Area, smallest first</option>
+        <option value="-level">What you know best</option>
+        <option value="level">What you know least</option>
+        <option value="continent">Continent</option>
+      </select>
+      <span class="count" id="count"></span>
+    </div>
+
     <div class="country-grid" id="grid">
       {% for r in rows %}
         <a class="country-cell" href="{{ url_for('country', iso2=r.iso2) }}"
            data-level="{{ r.level }}" data-continent="{{ r.continent }}"
-           data-name="{{ r.name | lower }}">
+           data-name="{{ r.name | lower }}" data-population="{{ r.population }}"
+           data-area="{{ r.area }}">
           <img src="{{ r.flag }}" alt="" loading="lazy" width="34" height="23">
           <span>
             <b>{{ r.name }}</b>
@@ -47,8 +64,31 @@
   var grid = document.getElementById("grid");
   var cells = Array.prototype.slice.call(grid.children);
   var search = document.getElementById("search");
+  var sort = document.getElementById("sort");
   var none = document.getElementById("noresults");
+  var count = document.getElementById("count");
   var continent = "";
+
+  function key(cell, field) {
+    if (field === "name") return cell.dataset.name;
+    if (field === "continent") return cell.dataset.continent + " " + cell.dataset.name;
+    return Number(cell.dataset[field] || 0);
+  }
+
+  function reorder() {
+    var field = sort.value, desc = false;
+    if (field.charAt(0) === "-") { desc = true; field = field.slice(1); }
+    var order = cells.slice().sort(function (a, b) {
+      var x = key(a, field), y = key(b, field);
+      if (x < y) return desc ? 1 : -1;
+      if (x > y) return desc ? -1 : 1;
+      return a.dataset.name < b.dataset.name ? -1 : 1;   // ties read A to Z
+    });
+    // One reflow rather than 197: the fragment is built detached.
+    var frag = document.createDocumentFragment();
+    order.forEach(function (c) { frag.appendChild(c); });
+    grid.appendChild(frag);
+  }
 
   function apply() {
     var q = search.value.trim().toLowerCase();
@@ -60,9 +100,11 @@
       if (ok) shown++;
     });
     none.hidden = shown > 0;
+    count.textContent = shown + " of " + cells.length + " countries";
   }
 
   search.addEventListener("input", apply);
+  sort.addEventListener("change", reorder);
   document.querySelectorAll(".chip").forEach(function (chip) {
     chip.addEventListener("click", function () {
       continent = chip.dataset.continent;
@@ -72,6 +114,7 @@
       apply();
     });
   });
+  apply();
 })();
 </script>
 {% endblock %}

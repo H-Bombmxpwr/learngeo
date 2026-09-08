@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}LearnGeo{% endblock %}</title>
+<link rel="icon" href="{{ url_for('static', filename='images/logo.svg') }}" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -14,14 +15,28 @@
 <div class="graticule" aria-hidden="true"></div>
 <div class="wrap">
   <nav class="nav">
-    <a class="brand" href="{{ url_for('home') }}">Learn<span>Geo</span></a>
+    <a class="brand" href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="" width="30" height="30">
+      Learn<span>Geo</span>
+    </a>
+    <a href="{{ url_for('games') }}">Games</a>
     <a href="{{ url_for('play', category='grand_tour') }}">Play</a>
     <a href="{{ url_for('atlas') }}">Atlas</a>
     <a href="{{ url_for('topics_index') }}">Topics</a>
     <a href="{{ url_for('progress') }}">Progress</a>
+    <a href="{{ url_for('sources') }}">Sources</a>
+
+    <form class="sitesearch" action="{{ url_for('search_page') }}" method="get"
+          role="search" autocomplete="off">
+      <input id="q" name="q" type="search" placeholder="Search countries, topics, people"
+             aria-label="Search" aria-expanded="false" aria-controls="acbox"
+             role="combobox" value="{{ request.args.get('q', '') if request.endpoint == 'search_page' }}">
+      <div class="ac" id="acbox" role="listbox" hidden></div>
+    </form>
   </nav>
 </div>
 <main>{% block body %}{% endblock %}</main>
+<script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

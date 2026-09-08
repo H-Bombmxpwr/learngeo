@@ -143,7 +143,11 @@ def which_borders_both(world, iso, rng):
     if len(nb) < 2:
         return None
     a, b = rng.sample(nb, 2)
-    opts = [iso] + distractors(world, iso, 3, exclude=(a, b))
+    # A distractor that also touches both would make two answers right --
+    # Switzerland and Austria both border Germany and Italy.
+    both = {i for i in world.all_isos
+            if a in world.neighbours(i) and b in world.neighbours(i)}
+    opts = [iso] + distractors(world, iso, 3, exclude=set(both) | {a, b})
     if len(opts) < 4:
         return None
     return _q("which_borders_both", iso,
@@ -231,12 +235,45 @@ def language_of(world, iso, rng):
         return None
     choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool]
     rng.shuffle(choices)
+    hint = None
+    first = langs[0]
+    if isinstance(first, dict) and first.get("share"):
+        hint = "One language is spoken by %g%% of the country." % first["share"]
     return _q("language_of", iso,
-              "What is the most spoken language in %s?" % c["name"], choices, answer)
+              "What is the most spoken language in %s?" % c["name"], choices,
+              answer, hint=hint)
+
+
+def government_of(world, iso, rng):
+    """Uses the Factbook's single government type, not Wikidata's list.
+
+    China is a communist state, a socialist state, a unitary state and a
+    one-party state, and Wikidata lists all four -- so the question offered
+    four correct answers and marked three of them wrong. The Factbook states
+    one type per country, which is the thing a quiz can ask about.
+    """
+    c = world.get(iso)
+    answer = c.get("government_type")
+    if not answer:
+        return None
+    mine = {answer.lower()}
+    for x in c.get("government") or []:
+        mine.add((ent_name(x) or "").lower())
+    pool = []
+    for i in distractors(world, iso, 40):
+        other = world.get(i).get("government_type")
+        if other and other.lower() not in mine:
+            pool.append(other)
+    pool = list(dict.fromkeys(pool))[:3]
+    if len(pool) < 3:
+        return None
+    choices = [{"key": x, "label": x, "image": None} for x in [answer] + pool]
+    rng.shuffle(choices)
+    return _q("government_of", iso,
+              "How is %s governed?" % c["name"], choices, answer)
 
 
 currency_of = _attribute("currency_of", "currencies", "What is the currency of %s?")
-government_of = _attribute("government_of", "government", "What form of government does %s have?")
 continent_of = _attribute("continent_of", "continents", "Which continent is %s in?")
 
 
@@ -341,12 +378,18 @@ def higher_lower(world, iso, rng):
 
 
 def climate_of(world, iso, rng):
+    """The zones are deliberately few and far apart.
+
+    Brazil used to be "Tropical" with "Equatorial tropical" among the wrong
+    answers, which is not a question anyone can answer. The zones now come
+    from the country's own climate description and no two of them overlap.
+    """
     c = world.get(iso)
     zone = c.get("climate_zone")
     if not zone:
         return None
     pool = []
-    for i in distractors(world, iso, 30):
+    for i in distractors(world, iso, 60):
         z = world.get(i).get("climate_zone")
         if z and z != zone:
             pool.append(z)
@@ -356,7 +399,7 @@ def climate_of(world, iso, rng):
     choices = [{"key": x, "label": x, "image": None} for x in [zone] + pool]
     rng.shuffle(choices)
     return _q("climate_of", iso,
-              "Which climate zone does %s mostly sit in?" % c["name"], choices, zone)
+              "Which climate does %s mostly have?" % c["name"], choices, zone)
 
 
 # --------------------------------------------------------------------------
@@ -389,13 +432,14 @@ MODES = {
 CATEGORIES = [
     ("grand_tour", "Grand Tour", "Everything, shuffled. The full quiz show.", None),
     ("flags", "Flags", "Flags in both directions.", ["flag_to_country", "country_to_flag"]),
-    ("shapes", "Shapes & Maps", "Silhouettes and find-it-on-the-map.", ["outline", "map_click"]),
+    ("shapes", "Shapes", "Name the country from its silhouette alone.", ["outline"]),
+    ("map", "Find It on the Map", "Click the country on a bare world map.", ["map_click"]),
     ("borders", "Borders", "Who touches whom.", ["border_odd_one_out", "border_count", "which_borders_both"]),
     ("capitals", "Capitals", "Capitals, both directions.", ["capital_of", "capital_to_country"]),
     ("leaders", "Leaders", "Current and historical, with photos.", ["leader_photo", "leader_name", "past_leader"]),
     ("people", "Famous People", "Place the face.", ["famous_person"]),
     ("politics", "Politics & Money", "Government, currency, language.", ["government_of", "currency_of", "language_of"]),
-    ("world", "Climate & Numbers", "Climate zones, size, population.", ["climate_of", "higher_lower", "continent_of"]),
+    ("world", "Climate & Numbers", "Climate, size, population.", ["climate_of", "higher_lower", "continent_of"]),
 ]
 
 CATEGORY_MODES = {key: modes for key, _, _, modes in CATEGORIES}

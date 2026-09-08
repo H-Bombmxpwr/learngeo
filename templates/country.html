@@ -13,6 +13,17 @@
   </div>
 {%- endmacro %}
 
+{% macro personcard(p, sub) -%}
+  <a class="leader" href="{{ p.wiki }}" target="_blank" rel="noopener">
+    {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
+    <div>
+      <b>{{ p.name }}</b>
+      <small>{{ sub }}</small>
+      {%- if p.party %}<br><small>{{ p.party }}</small>{% endif %}
+    </div>
+  </a>
+{%- endmacro %}
+
 {% block body %}
 <div class="wrap">
   <div class="paper-page">
@@ -26,9 +37,12 @@
           {%- if c.lat is not none %} &nbsp; {{ c.lat | round(1) }}&deg;, {{ c.lon | round(1) }}&deg;{% endif %}
         </div>
         {% if c.summary %}<p>{{ c.summary }}</p>{% endif %}
-        {% if c.wiki_url %}
-          <p><a href="{{ c.wiki_url }}" target="_blank" rel="noopener">Read {{ c.name }} on Wikipedia</a></p>
-        {% endif %}
+        <p>
+          {% if c.wiki_url %}
+            <a href="{{ c.wiki_url }}" target="_blank" rel="noopener">Read {{ c.name }} on Wikipedia</a> &nbsp;&middot;&nbsp;
+          {% endif %}
+          <a href="{{ news_url }}" target="_blank" rel="noopener">Recent news from {{ c.name }}</a>
+        </p>
         {% if mastery %}
           <div style="max-width:280px;margin-top:16px">
             <div class="bar"><i style="width:{{ (mastery.accuracy * 100) | round | int }}%"></i></div>
@@ -50,6 +64,98 @@
       {% if c.hemisphere %}<div class="fact"><dt>Hemisphere</dt><dd>{{ c.hemisphere }}</dd></div>{% endif %}
     </div>
 
+    {% if languages %}
+      <div class="section">
+        <h2>Languages</h2>
+        <p style="color:#6b6255;margin-top:0">
+          Share of the population that speaks each. Click one to see every
+          country that speaks it.
+        </p>
+        <div class="langs">
+          {% for l in languages %}
+            <div class="lang">
+              <div>
+                <a href="{{ url_for('topic', kind='language', key=l.key) }}">{{ l.name }}</a>
+                {%- if l.official %}<span class="badge">official</span>{% endif %}
+              </div>
+              <div class="pct">
+                {%- if l.share %}{{ l.share }}%
+                {%- elif l.speakers %}{{ l.speakers }} speakers
+                {%- else %}&mdash;{% endif %}
+              </div>
+              {% if l.share %}<div class="meter"><i style="width:{{ l.share }}%"></i></div>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if economy %}
+      <div class="section">
+        <h2>What it sells, and to whom</h2>
+        <div class="econ">
+          {% if economy.exports %}
+            <div>
+              <h3>Exports{% if economy.exports_value %} &mdash; {{ economy.exports_value }}{% endif %}</h3>
+              <ul>{% for x in economy.exports %}<li>{{ x }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if economy.export_partners %}
+            <div>
+              <h3>Sells to</h3>
+              {% for p in economy.export_partners %}
+                <div class="partner"><span>{{ p.name }}</span>
+                  <span>{% if p.share %}{{ p.share }}%{% endif %}</span></div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if economy.imports %}
+            <div>
+              <h3>Imports{% if economy.imports_value %} &mdash; {{ economy.imports_value }}{% endif %}</h3>
+              <ul>{% for x in economy.imports %}<li>{{ x }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if economy.import_partners %}
+            <div>
+              <h3>Buys from</h3>
+              {% for p in economy.import_partners %}
+                <div class="partner"><span>{{ p.name }}</span>
+                  <span>{% if p.share %}{{ p.share }}%{% endif %}</span></div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if economy.resources %}
+            <div>
+              <h3>Natural resources</h3>
+              <ul>{% for x in economy.resources %}<li>{{ x }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if economy.industries %}
+            <div>
+              <h3>Industries</h3>
+              <ul>{% for x in economy.industries %}<li>{{ x }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if economy.agriculture %}
+            <div>
+              <h3>Farms and fisheries</h3>
+              <ul>{% for x in economy.agriculture %}<li>{{ x }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if economy.gdp or economy.gdp_per_capita or economy.unemployment %}
+            <div>
+              <h3>Size of the economy</h3>
+              <ul>
+                {% if economy.gdp %}<li>{{ economy.gdp }} at purchasing power parity</li>{% endif %}
+                {% if economy.gdp_per_capita %}<li>{{ economy.gdp_per_capita }} per head</li>{% endif %}
+                {% if economy.unemployment %}<li>{{ economy.unemployment }} unemployment</li>{% endif %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
     {% if c.cities %}
       <div class="section">
         <h2>Largest cities</h2>
@@ -65,14 +171,6 @@
             {% endfor %}
           </tbody>
         </table>
-      </div>
-    {% endif %}
-
-    {% if linked.languages %}
-      <div class="section">
-        <h2>Most spoken languages</h2>
-        <p style="color:#6b6255;margin-top:0">Click one to see every country that speaks it.</p>
-        {{ chips(linked.languages, 'language') }}
       </div>
     {% endif %}
 
@@ -94,6 +192,7 @@
     {% if linked.government %}
       <div class="section">
         <h2>Form of government</h2>
+        {% if c.government_type %}<p style="margin-top:0">{{ c.government_type }}.</p>{% endif %}
         {{ chips(linked.government, 'government') }}
       </div>
     {% endif %}
@@ -127,18 +226,23 @@
       </div>
     {% endif %}
 
-    {% if c.leaders %}
+    {% if leaders %}
       <div class="section">
         <h2>In charge right now</h2>
         <div class="leader-row">
-          {% for p in c.leaders[:4] %}
-            <div class="leader">
-              {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
-              <div>
-                <b>{{ p.name }}</b>
-                <small>{{ 'Head of state' if p.role == 'head_of_state' else 'Head of government' }}</small><br>
-                {% if p.start %}<small>since {{ p.start }}</small>{% endif %}
-              </div>
+          {% for p in leaders %}{{ personcard(p, p.role) }}{% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if c.key_figures %}
+      <div class="section">
+        <h2>Figures from its history</h2>
+        <div class="figure-row">
+          {% for p in c.key_figures %}
+            <div class="figure">
+              <b><a href="{{ p.wiki }}" target="_blank" rel="noopener">{{ p.name }}</a></b>
+              {% if p.note %}<small>{{ p.note }}</small>{% endif %}
             </div>
           {% endfor %}
         </div>
@@ -150,14 +254,7 @@
         <h2>Leaders before them</h2>
         <div class="leader-row">
           {% for p in c.past_leaders[:8] %}
-            <div class="leader">
-              {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
-              <div>
-                <b>{{ p.name }}</b>
-                <small>{{ 'Head of state' if p.role == 'head_of_state' else 'Head of government' }}</small><br>
-                <small>{{ p.start or '?' }} to {{ p.end or '?' }}</small>
-              </div>
-            </div>
+            {{ personcard(p, (p.start or '?') ~ ' to ' ~ (p.end or '?')) }}
           {% endfor %}
         </div>
       </div>
@@ -168,11 +265,11 @@
         <h2>Faces from here</h2>
         <div class="people" style="flex-wrap:wrap">
           {% for p in c.famous[:14] %}
-            <div class="person">
+            <a class="person" href="{{ p.wiki }}" target="_blank" rel="noopener">
               {% if p.image %}<img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">{% endif %}
               <b>{{ p.name }}</b>
               <small>{{ p.occupations[:2] | join(', ') }}{% if p.born %}, b. {{ p.born }}{% endif %}</small>
-            </div>
+            </a>
           {% endfor %}
         </div>
       </div>

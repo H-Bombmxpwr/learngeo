@@ -13,6 +13,7 @@
     <div class="lives" id="lives" aria-label="Lives remaining"></div>
     <span id="railTitle">{{ title }}</span>
     <span id="railCount"></span>
+    {% if endless %}<span class="code" style="color:var(--ochre)">CASUAL</span>{% endif %}
     <span class="streak" id="railStreak"></span>
     <span class="score" id="score">0</span>
   </div>

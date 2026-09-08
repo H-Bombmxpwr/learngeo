@@ -23,7 +23,7 @@
         <thead>
           <tr>
             <th>Country</th>
-            {% if kind == 'language' %}<th class="num">Speakers</th>
+            {% if kind == 'language' %}<th class="num">Share of the country</th>
             {% elif kind == 'government' %}<th>Years</th>
             {% elif kind == 'war' %}<th>Years</th>{% endif %}
           </tr>
@@ -38,7 +38,10 @@
               </td>
               {% if kind == 'language' %}
                 <td class="num">
-                  {%- if r.detail.speakers %}{{ r.detail.speakers | commas }}
+                  {%- if r.detail.share %}{{ r.detail.share }}%
+                  {%- if r.detail.official %}<span class="badge">official</span>{% endif %}
+                  {%- elif r.detail.speakers %}{{ r.detail.speakers | commas }} speakers
+                  {%- elif r.detail.official %}<span class="badge">official</span>
                   {%- else %}<span class="empty">not recorded</span>{% endif %}
                 </td>
               {% elif kind in ('government', 'war') %}

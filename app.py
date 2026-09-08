@@ -6,6 +6,7 @@
 import os
 import random
 import uuid
+from urllib.parse import quote_plus
 
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
@@ -39,16 +40,86 @@ def speaker_count(n):
     return str(n)
 
 
-def language_line(c):
-    """Top three languages by speakers, with the numbers."""
+def language_rows(c, limit=3):
+    """The languages of a country, with the share of people who speak each.
+
+    At least three where the data has three, and more than three whenever the
+    ones beyond it are still spoken by a fifth of the country -- a rule that
+    keeps Switzerland's four and Canada's two both looking right.
+    """
+    langs = [l for l in (c.get("languages") or []) if isinstance(l, dict)]
     out = []
-    for lang in (c.get("languages") or [])[:3]:
-        if isinstance(lang, str):          # dataset built before speaker counts
-            out.append(lang)
+    for i, lang in enumerate(langs):
+        if i >= limit and (lang.get("share") or 0) < 20:
+            break
+        out.append({
+            "name": lang["name"],
+            "share": lang.get("share"),
+            "official": bool(lang.get("official")),
+            "speakers": speaker_count(lang.get("speakers")),
+            "wiki": lang.get("wiki"),
+            "kind": "language",
+            "key": lang.get("qid") or slug(lang["name"]),
+        })
+    return out
+
+
+def language_line(c):
+    """The same list as one line of text, for the fact-card bullet."""
+    bits = []
+    for lang in language_rows(c):
+        if lang["share"]:
+            bits.append("%s %g%%" % (lang["name"], lang["share"]))
+        elif lang["speakers"]:
+            bits.append("%s %s" % (lang["name"], lang["speakers"]))
+        else:
+            bits.append(lang["name"])
+    return ", ".join(bits)
+
+
+def leader_rows(c, limit=4):
+    """Current leaders, with the two offices merged when one person holds both.
+
+    Presidential systems put the same person in both chairs, and the card was
+    printing them twice -- Guatemala showed Bernardo Arevalo next to Bernardo
+    Arevalo.
+    """
+    ROLES = {"head_of_state": "Head of state",
+             "head_of_government": "Head of government"}
+    out = []
+    for p in (c.get("leaders") or []):
+        if not p.get("name"):
             continue
-        n = speaker_count(lang.get("speakers"))
-        out.append("%s %s" % (lang["name"], n) if n else lang["name"])
-    return ", ".join(out)
+        same = next((x for x in out if x["name"] == p["name"]), None)
+        role = ROLES.get(p.get("role"), "Leader")
+        if same:
+            if role not in same["roles"]:
+                same["roles"].append(role)
+            continue
+        out.append({"name": p["name"], "roles": [role], "image": p.get("image"),
+                    "wiki": p.get("wiki"), "party": p.get("party"),
+                    "start": p.get("start")})
+    for p in out:
+        p["role"] = " and ".join(p["roles"]).replace("Head of state and Head of "
+                                                     "government", "Head of state and government")
+    return out[:limit]
+
+
+def economy_lines(c):
+    """The two or three economy facts worth a strip on the card."""
+    e = c.get("economy") or {}
+    out = []
+    if e.get("exports"):
+        out.append(("Sells", ", ".join(e["exports"][:4])))
+    if e.get("export_partners"):
+        out.append(("Sells to", ", ".join(
+            "%s%s" % (p["name"], " %g%%" % p["share"] if p.get("share") else "")
+            for p in e["export_partners"][:3])))
+    if e.get("resources"):
+        out.append(("Natural resources", ", ".join(e["resources"][:5])))
+    if e.get("gdp_per_capita"):
+        out.append(("GDP per head", e["gdp_per_capita"]))
+    return out
 
 
 def fact_card(iso2):
@@ -58,8 +129,7 @@ def fact_card(iso2):
         return None
     neighbours = [{"iso2": n, "name": w.name(n), "flag": w.get(n)["flag_thumb"]}
                   for n in w.neighbours(iso2, 8)]
-    leaders = [p for p in (c.get("leaders") or []) if p.get("name")][:2]
-    famous = [p for p in (c.get("famous") or []) if p.get("image")][:4]
+    leaders = leader_rows(c, 3)
     bullets = []
     if c.get("capitals"):
         bullets.append(("Capital", ", ".join(
@@ -70,13 +140,16 @@ def fact_card(iso2):
         bullets.append(("Area", "{:,} km2".format(int(c["area"]))))
     if c.get("climate_zone"):
         bullets.append(("Climate", c["climate_zone"]))
-    if c.get("government"):
-        bullets.append(("Government", ent_name(c["government"][0])))
+    if c.get("government_type") or c.get("government"):
+        bullets.append(("Government", c.get("government_type")
+                        or ent_name(c["government"][0])))
     if c.get("currencies"):
         bullets.append(("Currency", ent_name(c["currencies"][0])))
     langs = language_line(c)
     if langs:
-        bullets.append(("Most spoken", langs))
+        bullets.append(("Languages", langs))
+    for label, value in economy_lines(c)[:2]:
+        bullets.append((label, value))
     all_neighbours = w.neighbours(iso2)
     if all_neighbours:
         bullets.append(("Land borders", "%d: %s" % (
@@ -95,15 +168,25 @@ def fact_card(iso2):
         "bullets": bullets,
         "neighbours": neighbours,
         "leaders": leaders,
-        "famous": famous,
+        "figures": (c.get("key_figures") or [])[:4],
+        "economy": economy_lines(c),
         "geometry": w.shape(iso2),
         "wiki_url": c.get("wiki_url"),
+        "news_url": news_url(c["name"]),
         "cities": (c.get("cities") or [])[:5],
         "wars": [dict(x, kind="war", key=x.get("qid") or slug(x["name"]))
                  for x in (c.get("wars") or [])[:5]],
-        "links": [x for f in ("languages", "government", "currencies", "religions")
-                  for x in w.topics_for(iso2, f)][:8],
+        "languages": language_rows(c, 4),
+        "links": [x for f in ("government", "currencies", "religions")
+                  for x in w.topics_for(iso2, f)][:6],
     }
+
+
+def news_url(name):
+    """Today's headlines for a country. Google News rather than a news API:
+    no key, no quota, and it is where the reader would have gone anyway."""
+    return ("https://news.google.com/search?q=%s&hl=en-US&gl=US&ceid=US:en"
+            % quote_plus(name))
 
 
 # --------------------------------------------------------------------------
@@ -166,6 +249,28 @@ def home():
     return render_template("index.html", categories=questions.CATEGORIES, stats=stats)
 
 
+@app.route("/games")
+def games():
+    """Every game in one place, each offered both ways round: a scored run of
+    twelve with three lives, or casual practice that never ends."""
+    return render_template("games.html", categories=questions.CATEGORIES,
+                           stats=store.overview(world()))
+
+
+@app.route("/sources")
+def sources():
+    w = world()
+    counts = {
+        "countries": len(w.all_isos),
+        "languages": len(w.topics.get("language") or {}),
+        "wars": len(w.topics.get("war") or {}),
+        "people": sum(1 for r in w.search_rows if r["kind"] == "person"),
+        "cities": sum(len(w.get(i).get("cities") or []) for i in w.all_isos),
+        "economy": sum(1 for i in w.all_isos if w.get(i).get("economy")),
+    }
+    return render_template("sources.html", counts=counts)
+
+
 @app.route("/play/<category>")
 def play(category):
     if category not in questions.CATEGORY_MODES:
@@ -173,7 +278,8 @@ def play(category):
     endless = request.args.get("endless") == "1"
     new_run(category, endless)
     title = next((n for k, n, _, _ in questions.CATEGORIES if k == category), "Quiz")
-    return render_template("play.html", category=category, title=title, endless=endless)
+    return render_template("play.html", category=category, title=title,
+                           endless=endless, run_length=RUN_LENGTH)
 
 
 @app.route("/atlas")
@@ -188,6 +294,7 @@ def atlas():
             "iso2": iso, "name": c["name"], "flag": c["flag_thumb"],
             "continent": w.continent_of(iso),
             "population": c.get("population") or 0,
+            "area": int(c.get("area") or 0),
             "level": m.get("level", 0), "seen": m.get("seen", 0),
         })
     rows.sort(key=lambda r: r["name"])
@@ -207,6 +314,10 @@ def country(iso2):
     return render_template("country.html", c=c, card=fact_card(iso2),
                            mastery=stats["mastery"].get(iso2),
                            linked=linked,
+                           languages=language_rows(c, 5),
+                           leaders=leader_rows(c),
+                           economy=c.get("economy") or {},
+                           news_url=news_url(c["name"]),
                            neighbours=[w.get(n) for n in w.neighbours(iso2)])
 
 
@@ -339,7 +450,10 @@ def api_answer():
         run["score"] += int(BASE_POINTS * multiplier * speed)
     elif not skipped:
         run["streak"] = 0
-        run["lives"] -= 1
+        # Casual runs have no lives to lose: they are practice, and being
+        # thrown out after three mistakes is the opposite of practice.
+        if not run["endless"]:
+            run["lives"] -= 1
 
     finished = run["lives"] <= 0 or (not run["endless"] and run["asked"] >= RUN_LENGTH)
     if finished:
@@ -385,6 +499,22 @@ def api_lifeline():
 @app.route("/api/geo")
 def api_geo():
     return jsonify(world().geojson)
+
+
+@app.route("/api/search")
+def api_search():
+    """Type-ahead for the box in the header: countries, topics and people."""
+    return jsonify({"results": world().search(request.args.get("q", ""), 10)})
+
+
+@app.route("/search")
+def search_page():
+    """Where Enter lands: the same matches, but a page of them."""
+    q = request.args.get("q", "")
+    results = world().search(q, 60)
+    if len(results) == 1:
+        return redirect(results[0]["url"])
+    return render_template("search.html", q=q, results=results)
 
 
 @app.route("/api/restart", methods=["POST"])
