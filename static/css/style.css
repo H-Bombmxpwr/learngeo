@@ -708,3 +708,129 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
   flex: 1 0 100%; margin: 2px 0 0; font-size: .9rem; line-height: 1.45;
   color: #5c5449;
 }
+/* A compact dashboard and a consistent game setup on every screen. */
+.score-dashboard { padding: 24px; margin: 24px 0; border: 1px solid #315567; border-radius: 18px; background: #102c3a; color: #e5eff3; }
+.dashboard-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.dashboard-heading h2 { margin: 4px 0 20px; font-size: 1.6rem; }
+.eyebrow { font: 500 .72rem 'DM Mono', monospace; letter-spacing: .12em; color: #e8b65b; }
+.score-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.score-stats b { display: block; font: 700 2rem 'Bricolage Grotesque', sans-serif; }
+.score-stats span, .save-note { font: 400 .85rem/1.5 'Bricolage Grotesque', sans-serif; color: #a9c4ce; }
+.score-dashboard details { margin-top: 14px; font: 400 .9rem/1.6 'Bricolage Grotesque', sans-serif; }
+.score-dashboard summary { cursor: pointer; }
+.game-options { display: grid; gap: 12px; margin-top: 20px; }
+.game-options label { display: grid; gap: 6px; font: 500 .8rem 'Bricolage Grotesque', sans-serif; }
+.game-options select { width: 100%; min-width: 0; padding: 12px; border: 1px solid #466372; border-radius: 8px; background: #102c3a; color: #e5eff3; font: inherit; }
+.game-options .play-btn { width: 100%; cursor: pointer; text-align: center; }
+.stage .media:empty { display: none; }
+.stage .prompt { margin: 0 auto 12px; }
+.stage .hint { margin-bottom: 20px; }
+.stage #map { height: clamp(240px, 40vh, 400px); }
+.answerbar { max-width: 720px; }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid #e8b65b; outline-offset: 4px; }
+@media (max-width: 600px) {
+  .score-dashboard { padding: 18px; }
+  .score-stats { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .dashboard-heading { align-items: flex-start; flex-direction: column; }
+  .gamelist { grid-template-columns: minmax(0, 1fr); }
+  .stage { padding-top: 18px; }
+  .stage .prompt { font-size: 1.5rem; }
+  .stage .media { min-height: 0; }
+  .stage #map { height: 260px; }
+  .rail { flex-wrap: wrap; position: static; }
+  .typein { width: 100%; }
+  .typein input { min-width: 0; width: 100%; font-size: 16px; }
+  .answerbar .btn { min-height: 44px; }
+  .lifelines { flex-wrap: wrap; }
+  #wmap { height: 320px; min-height: 0; }
+  .nav .sitesearch { flex: 1 0 100%; width: 100%; max-width: none; margin-left: 0; }
+  .nav .sitesearch input { width: 100%; }
+}
+
+/* ---------- added with the provenance, map and dialog work ------------- */
+
+/* Announced to a screen reader, invisible to everyone else. The stage used
+   to be one big aria-live region, which read the prompt, the hint, all four
+   options and the score out again on every repaint. */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  border: 0;
+}
+
+/* What the answer is measured against, where that is a convention rather than
+   a fact. Quieter than the hint, because it is a footnote, not a clue. */
+.definition {
+  margin: 2px 0 10px; font-size: .82rem; line-height: 1.5;
+  color: var(--stage-dim, #8aa3ad); max-width: 62ch;
+  border-left: 2px solid var(--ink-2); padding-left: 10px;
+}
+
+.map-status {
+  margin: 10px 0 0; font-size: .9rem; color: var(--stage-dim, #8aa3ad);
+}
+.map-status.error { color: var(--oxide); }
+
+/* Everything to do with the game map lives in here, because .media is a flex
+   row and anything appended beside the map is laid out beside it. */
+.map-wrap { position: relative; width: 100%; }
+
+.map-reset {
+  position: absolute; right: 12px; bottom: 12px; z-index: 500;
+  margin: 0; padding: 7px 14px; font: inherit; font-size: .82rem;
+  background: rgba(8, 24, 32, .88); white-space: nowrap;
+  color: var(--stage-dim, #8aa3ad); cursor: pointer;
+  border: 1px solid var(--ink-2); border-radius: 999px;
+}
+.map-reset:hover { color: var(--ochre); border-color: var(--ochre); }
+
+/* A country with no polygon in this dataset, drawn as a target rather than
+   left off the map entirely. */
+.map-point { cursor: pointer; }
+
+/* Every card is a dialog, and a dialog needs a way out that is not a guess
+   about where the backdrop starts. */
+.sheet { position: relative; }
+.sheet-close {
+  position: absolute; top: 10px; right: 12px; z-index: 2;
+  width: 34px; height: 34px; line-height: 1; font-size: 1.5rem;
+  background: rgba(255, 255, 255, .82); color: var(--graphite);
+  border: 1px solid rgba(0, 0, 0, .12); border-radius: 50%; cursor: pointer;
+}
+.sheet-close:hover { background: #fff; }
+.sheet-close:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+
+.game-menu { display: inline-flex; gap: 6px; margin-left: 8px; }
+.game-menu .chip { padding: 4px 12px; font-size: .78rem; }
+
+.gap-note {
+  margin: 16px 0 0; font-size: .85rem; color: var(--stage-dim, #8aa3ad);
+  max-width: 66ch;
+}
+
+/* Study one country, from the games page rather than only from the country's
+   own page. */
+.country-study {
+  margin: 0 0 26px; padding: 22px 24px;
+  background: var(--ink-2, #14313f); border-radius: var(--r-md, 10px);
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+}
+.country-study h3 { flex: 1 0 100%; margin: 0; }
+.country-study p { flex: 1 0 100%; margin: 0; font-size: .88rem; max-width: 62ch; }
+.country-study label { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; }
+.country-study select { min-width: 180px; padding: 9px 10px; font: inherit; }
+
+.chip.danger { border-color: var(--oxide); color: var(--oxide); }
+.chip.danger:hover { background: var(--oxide); color: #fff; }
+
+/* Where a fact came from, on the country page. */
+.provenance { margin-top: 8px; font-size: .85rem; }
+.provenance li { margin-bottom: 10px; line-height: 1.5; }
+.provenance .field { font-weight: 600; }
+.provenance .when { color: #857a68; }
+
+@media (max-width: 640px) {
+  .country-study { flex-direction: column; align-items: stretch; }
+  .country-study select, .country-study .play-btn { width: 100%; }
+  .game-menu { margin-left: auto; }
+}

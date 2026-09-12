@@ -119,6 +119,42 @@
     </div>
 
     <div class="section">
+      <h2>What the quiz will and will not claim</h2>
+      <p style="max-width:66ch">
+        Most of this dataset arrives in bulk and carries no source of its own.
+        Where an answer depends on a definition rather than a fact, the
+        definition is written down and shown under the question, so a
+        disagreement is with a stated rule instead of a silent one.
+      </p>
+      <dl class="facts" style="margin-inline:0">
+        {% for key, text in conventions %}
+          <div class="fact"><dt>{{ key | replace('_', ' ') | capitalize }}</dt><dd>{{ text }}</dd></div>
+        {% endfor %}
+      </dl>
+      <p style="max-width:66ch">
+        One thing is deliberately not asked about at all: <b>who fought in
+        which war</b>. The curated table names principal belligerents, and the
+        imported one lists anybody a source called a participant &mdash;
+        funding, basing and reconstruction included. Neither settles whether a
+        country took part, in either direction, so questions built on them
+        marked real participants wrong and treated reconstruction as combat.
+        Dates, the order events happened in, and wars fought between exactly
+        two states are asked about instead, because those the data can
+        actually answer. Every war on a country page says which kind of claim
+        it is.
+      </p>
+      <p style="max-width:66ch">
+        Corrections checked by hand against a named source are listed on the
+        country pages they belong to, under <b>Checked facts</b>, with the
+        date the source was read. They are reapplied after every dataset
+        rebuild, so a refetch cannot quietly reinstate the old value. Running
+        <code>python scripts/audit_data.py</code> reports how much of the
+        dataset that covers &mdash; today, not much, and that number going up
+        is the work.
+      </p>
+    </div>
+
+    <div class="section">
       <h2>What is in the dataset today</h2>
       <div class="statline" style="border-top:none;padding-top:0">
         <div><b style="color:var(--sienna)">{{ counts.countries }}</b><small style="color:#857a68">countries</small></div>

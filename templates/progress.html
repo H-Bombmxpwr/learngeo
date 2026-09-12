@@ -5,6 +5,7 @@
 <div class="wrap">
   <div class="paper-page">
     <h1>Progress</h1>
+{% include "scoreboard.html" %}
 
     <div class="facts" style="margin-inline:0">
       <div class="fact"><dt>Countries known</dt>
@@ -100,7 +101,6 @@
       </p>
       <div class="filters" style="gap:12px">
         <button class="chip" id="learnToggle" aria-pressed="true">Adapting</button>
-        <button class="chip" id="forgetBtn">Forget everything</button>
         <span class="count" id="learnState"></span>
       </div>
       <p style="color:#857a68;font-size:.9rem;max-width:64ch">
@@ -109,11 +109,46 @@
       </p>
     </div>
 
+    <div class="section">
+      <h2>Your data</h2>
+      {# Two stores, and "Forget everything" used to clear most of one of
+         them: server mastery, answers and finished runs went, the run in
+         progress stayed, and the points on every dashboard -- which live in
+         this browser, not on the server -- were untouched. Each button now
+         names exactly what it takes. #}
+      <p style="max-width:64ch;margin-top:0">
+        Your progress sits in two places. <b>On the server</b>: which
+        questions you have been asked and how you did, keyed to a random id in
+        a cookie. <b>In this browser</b>: the points, streaks and best runs on
+        the dashboards. Neither is an account, and neither follows you to
+        another device unless you move it yourself.
+      </p>
+
+      <h3>Take a copy</h3>
+      <div class="filters" style="gap:12px">
+        <a class="chip" href="/api/progress/export" download="learngeo-progress.json">Export server progress</a>
+        <button class="chip" id="exportScores">Export browser scores</button>
+        <label class="chip" for="importFile">Import a file</label>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+      <p class="count" id="dataNote" role="status" aria-live="polite"></p>
+
+      <h3>Erase</h3>
+      <div class="filters" style="gap:12px">
+        <button class="chip" data-forget="mastery">Clear server answers &amp; mastery</button>
+        <button class="chip" data-forget="runs">Clear finished-run history</button>
+        <button class="chip" data-forget="active">Clear games in progress</button>
+        <button class="chip" id="clearScores">Clear browser scores</button>
+        <button class="chip danger" id="forgetAll">Erase everything</button>
+      </div>
+    </div>
+
     <script>
     (function () {
       var toggle = document.getElementById("learnToggle");
-      var forget = document.getElementById("forgetBtn");
       var state = document.getElementById("learnState");
+      var note = document.getElementById("dataNote");
+
       function on() {
         return document.cookie.indexOf("learngeo_learning=off") === -1;
       }
@@ -124,18 +159,89 @@
         state.textContent = v ? "questions follow what you get wrong"
                               : "questions are drawn at random";
       }
-      function send(value, wipe) {
-        return fetch("/api/learning", {
+      function say(text) { if (note) note.textContent = text; }
+
+      function post(url, body) {
+        return fetch(url, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ on: value, forget: !!wipe })
-        }).then(function () { paint(); });
+          body: JSON.stringify(body || {})
+        }).then(function (r) { return r.json(); });
       }
-      toggle.addEventListener("click", function () { send(!on()); });
-      forget.addEventListener("click", function () {
-        if (confirm("Erase every answer this browser has recorded?")) {
-          send(on(), true).then(function () { location.reload(); });
-        }
+
+      toggle.addEventListener("click", function () {
+        post("/api/learning", { on: !on() }).then(paint);
       });
+
+      var WORDING = {
+        mastery: "every answer this browser has recorded on the server, and the mastery built from it",
+        runs: "the history of finished runs on the server",
+        active: "any game currently in progress"
+      };
+
+      document.querySelectorAll("[data-forget]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var scope = btn.dataset.forget;
+          if (!confirm("Erase " + WORDING[scope] + "? This cannot be undone.")) return;
+          post("/api/forget", { scopes: [scope] }).then(function () {
+            say("Cleared: " + WORDING[scope] + ".");
+            setTimeout(function () { location.reload(); }, 700);
+          });
+        });
+      });
+
+      document.getElementById("clearScores").addEventListener("click", function () {
+        if (!confirm("Erase the points, streaks and best runs saved in this browser? Server progress is not touched.")) return;
+        if (window.GeoScores) window.GeoScores.clear();
+        say("Browser scores cleared. Server progress was not touched.");
+      });
+
+      document.getElementById("forgetAll").addEventListener("click", function () {
+        if (!confirm("Erase everything: server answers, mastery, run history, any game in progress, and the scores saved in this browser?")) return;
+        if (window.GeoScores) window.GeoScores.clear();
+        post("/api/forget", {}).then(function () { location.reload(); });
+      });
+
+      document.getElementById("exportScores").addEventListener("click", function () {
+        if (!window.GeoScores) return;
+        var blob = new Blob([window.GeoScores.export()], { type: "application/json" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "learngeo-scores.json";
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        say("Browser scores downloaded.");
+      });
+
+      document.getElementById("importFile").addEventListener("change", function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          var text = String(reader.result || "");
+          var parsed;
+          try { parsed = JSON.parse(text); } catch (_) {
+            say("That file is not JSON."); return;
+          }
+          // One file picker, two file formats: an export of the browser
+          // scores and an export of the server progress look nothing alike,
+          // so there is no need to make the reader choose which they have.
+          if (parsed && parsed.format === "learngeo-progress") {
+            post("/api/progress/import", { data: parsed }).then(function (res) {
+              if (res.error) { say(res.error); return; }
+              say("Imported " + res.imported.mastery + " mastery rows, " +
+                  res.imported.answers + " answers and " + res.imported.runs +
+                  " runs onto the server.");
+              setTimeout(function () { location.reload(); }, 900);
+            });
+          } else if (window.GeoScores) {
+            var res = window.GeoScores.import(text);
+            say(res.error || ("Imported " + res.imported + " sessions into this browser."));
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      });
+
       paint();
     })();
     </script>

@@ -9,8 +9,10 @@ on Asuncion.
 The rules, in order:
 
 1. Fold accents and case, drop punctuation and the leading "the".
-2. Accept any recorded alias, including the ISO codes.
-3. Accept a one-character typo on anything long enough for that to be a typo
+2. Expand the abbreviations that only ever appear one way in a dataset and
+   the other way in a person's typing: St., Ste., Mt., Ft., "&".
+3. Accept any recorded alias, including the ISO codes.
+4. Accept a one-character typo on anything long enough for that to be a typo
    rather than a different word.
 
 It stays deliberately on the generous side. The point is to find out whether
@@ -60,25 +62,77 @@ ALIASES = {
 
 _LEADING = re.compile(r"^(the|republic of|kingdom of|state of)\s+")
 
+# Written one way on a map and another by every person who has been there.
+# "St." and "Saint" is the one that actually bites: eleven capitals and four
+# countries are recorded one way and typed the other, and a quiz that rejects
+# "St Johns" for "St. John's" is testing punctuation.
+_WORD_FORMS = [
+    (re.compile(r"\bste\b"), "sainte"),
+    (re.compile(r"\bst\b"), "saint"),
+    (re.compile(r"\bmt\b"), "mount"),
+    (re.compile(r"\bft\b"), "fort"),
+    (re.compile(r"\bcity of\b"), " "),
+]
+
 
 def normalise(text):
     text = fold(text)
+    text = text.replace("&", " and ")
     text = re.sub(r"[^a-z0-9 ]+", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
-    return _LEADING.sub("", text).strip()
+    text = _LEADING.sub("", text).strip()
+    for pattern, full in _WORD_FORMS:
+        text = pattern.sub(full, text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def close_enough(given, target):
     """One typo's worth of slack, scaled so short words stay exact.
 
     "Alegria" should pass for "Algeria"; "Chad" must not pass for "Chile".
+
+    The length guard is what keeps Austria from passing for Australia. On
+    ratio alone it does -- 0.842 against a 0.84 floor -- and of all the pairs
+    in the world to accept for one another, that is the worst one: it is the
+    single most common geography mistake there is, and letting it through
+    tells someone they knew something they did not.
     """
     if given == target:
         return True
     if len(target) < 5:
         return False
+    # A typo adds, drops or swaps one character. It does not change the
+    # length of a word by more than one.
+    if abs(len(given) - len(target)) > 1:
+        return False
+    # "Alegria" for "Algeria" is one transposition, which similarity ratios
+    # score as two separate errors and reject. It is also the most common way
+    # of mistyping a name, so it is checked for directly.
+    if _one_edit_apart(given, target):
+        return True
     ratio = difflib.SequenceMatcher(None, given, target).ratio()
     return ratio >= (0.88 if len(target) < 9 else 0.84)
+
+
+def _one_edit_apart(a, b):
+    """One insertion, deletion, substitution or adjacent swap -- no more."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        diffs = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
+        if len(diffs) == 1:
+            return True
+        if len(diffs) == 2 and diffs[1] == diffs[0] + 1:
+            i, j = diffs
+            return a[i] == b[j] and a[j] == b[i]
+        return False
+    short, long_ = (a, b) if len(a) < len(b) else (b, a)
+    for i in range(len(long_)):
+        if long_[:i] + long_[i + 1:] == short:
+            return True
+    return False
 
 
 def accepted_names(world, iso2):
@@ -111,12 +165,6 @@ def matches_text(given, answer, also=()):
             continue
         if close_enough(given, target):
             return True
-        # "Mandarin" for "Standard Chinese or Mandarin": accept any
-        # significant word of a multi-word answer, so a compound name from the
-        # source data does not have to be reproduced exactly.
-        parts = [p for p in target.split() if len(p) > 3]
-        if len(parts) > 1 and any(close_enough(given, p) for p in parts):
-            return True
     return False
 
 
@@ -128,7 +176,7 @@ def judge(world, given, pending):
         return matches_country(world, given, answer if len(answer) == 2
                                else _iso_for(world, answer))
     if kind == "number":
-        digits = re.sub(r"[^0-9]", "", given or "")
+        digits = (given or "").strip()
         return bool(digits) and digits == str(answer)
     return matches_text(given, answer, pending.get("also") or ())
 

@@ -11,18 +11,30 @@
 
   <div class="rail">
     <div class="lives" id="lives" aria-label="Lives remaining"></div>
+    {% if country %}<a href="/country/{{ country }}">{{ country }} practice</a>{% endif %}
     <span id="railTitle">{{ title }}</span>
     <span id="railCount"></span>
-    {% if endless %}<span class="code" style="color:var(--ochre)">CASUAL</span>{% endif %}
+    {% if endless %}<span class="code" style="color:var(--ochre)">ENDLESS</span>{% endif %}
     {% if challenge %}<span class="code" style="color:var(--oxide)">CHALLENGE</span>{% endif %}
     <span class="streak" id="railStreak"></span>
     <span class="score" id="score">0</span>
+    {# Leaving used to mean navigating away and hoping the run was kept. It
+       is kept -- that is what the run id in the address bar is for -- but
+       saying so beats making people find out. #}
+    <span class="game-menu" id="gameMenu">
+      <button class="chip" type="button" data-act="restart">Restart</button>
+      <button class="chip" type="button" data-act="exit">Exit</button>
+    </span>
   </div>
 
-  <section class="stage" id="stage" aria-live="polite">
-    <div class="media" id="media"></div>
+  <section class="stage" id="stage">
     <p class="prompt" id="prompt">Loading the first question...</p>
     <p class="hint" id="hint"></p>
+    {# What the answer is measured against, where that is a convention rather
+       than a fact: which continent a transcontinental country counts as,
+       whether "largest city" means the city or the conurbation. #}
+    <p class="definition" id="definition" hidden></p>
+    <div class="media" id="media"></div>
     <div class="choices text" id="choices"></div>
 
     {# Where a correct answer lands: in the flow, directly under the choices
@@ -37,14 +49,27 @@
     </div>
   </section>
 
+  {# One region that announces one thing: the new question, or the verdict on
+     the last one. The whole stage used to be aria-live, so every repaint read
+     the prompt, the hint, four options and the score out again. #}
+  <p class="visually-hidden" id="liveStatus" role="status" aria-live="polite"></p>
+
+  {% if gaps %}
+    <p class="gap-note">
+      Not asked about {{ country }}, for want of recorded data:
+      {{ gaps.keys() | join(', ') }}.
+    </p>
+  {% endif %}
+
 </div>
 
 <div id="sheetHost"></div>
 
 <script>
-  window.LEARNGEO = { category: {{ category | tojson }},
+  window.LEARNGEO = { country: {{ country | tojson }}, category: {{ category | tojson }},
                       endless: {{ endless | tojson }},
-                      challenge: {{ challenge | tojson }} };
+                      challenge: {{ challenge | tojson }},
+                      run: {{ run_id | tojson }} };
 </script>
 {% endblock %}
 

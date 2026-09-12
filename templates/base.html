@@ -37,6 +37,7 @@
   </nav>
 </div>
 <main>{% block body %}{% endblock %}</main>
+<script src="{{ url_for('static', filename='js/scores.js') }}"></script>
 <script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
 {% block scripts %}{% endblock %}
 </body>

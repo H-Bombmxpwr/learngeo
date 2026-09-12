@@ -35,7 +35,7 @@
 
   var map = L.map("wmap", {
     worldCopyJump: false, attributionControl: false,
-    minZoom: 1, maxZoom: 7, zoomControl: true
+    minZoom: 0, maxZoom: 7, zoomControl: true, zoomSnap: 0.25
   }).setView([25, 8], 2);
 
   var layer = null, chosen = null;
@@ -118,7 +118,7 @@
         });
       }
     }).addTo(map);
-    setTimeout(function () { map.invalidateSize(); }, 60);
+    setTimeout(function () { map.invalidateSize(); map.fitBounds([[-58, -180], [82, 180]], {padding: [8, 8]}); }, 60);
   });
 })();
 </script>

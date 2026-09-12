@@ -16,13 +16,16 @@
     choices: document.getElementById("choices"),
     lifelines: document.getElementById("lifelines"),
     answerSlot: document.getElementById("answerSlot"),
-    sheetHost: document.getElementById("sheetHost")
+    sheetHost: document.getElementById("sheetHost"),
+    live: document.getElementById("liveStatus"),
+    definition: document.getElementById("definition"),
+    menu: document.getElementById("gameMenu")
   };
 
   var current = null;      // the question on screen
   var askedAt = 0;
   var locked = false;
-  var map = null, mapLayer = null, geoCache = null;
+  var map = null, mapLayer = null, pointLayer = null, geoCache = null;
   var scoreBefore = 0;
   var lastAnswer = null;   // kept so the bar can open the card on request
 
@@ -39,34 +42,116 @@
     return node;
   }
 
+  /* Every call names the run it means. Persistence is per run now, not per
+     browser, so a second tab is a second game rather than a hijacking of the
+     first -- but only if the tab says which one it is holding. */
+  function withRun(url) {
+    return url + (url.indexOf("?") === -1 ? "?" : "&") +
+      "run=" + encodeURIComponent(cfg.run || "");
+  }
+
   function post(url, body) {
-    return fetch(url, {
+    return fetch(withRun(url), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body || {})
+      body: JSON.stringify(Object.assign({ run: cfg.run }, body || {}))
     }).then(function (r) { return r.json(); });
+  }
+
+  /* A run that is gone, or one another tab has moved on, is not an error the
+     player can do anything about except reload -- so say that, once, rather
+     than failing silently or looping. */
+  function handleStale(data) {
+    if (!data || (!data.expired && !data.conflict)) return false;
+    locked = true;
+    el.answerSlot.innerHTML = "";
+    el.sheetHost.innerHTML = "";
+    var bar = h("div", { class: "answerbar" }, [
+      h("span", { class: "said wrong", text: data.expired ? "Run ended" : "Changed elsewhere" }),
+      h("span", { class: "was", text: data.error || "" })
+    ]);
+    bar.appendChild(button("Start a new run", "btn big", function () {
+      location.href = location.pathname + location.search.replace(/[?&]run=[^&]*/, "")
+        .replace(/^&/, "?");
+    }));
+    el.answerSlot.appendChild(bar);
+    announce(data.error || "This run has ended.");
+    return true;
+  }
+
+  /* One live region, saying one thing at a time. The whole stage used to be
+     aria-live="polite", so every repaint read the entire question, the hint,
+     the four options and the score out again. */
+  function announce(text) {
+    if (el.live) el.live.textContent = text;
   }
 
   // ---- run rail ---------------------------------------------------------
   function paintRun(run) {
     el.lives.innerHTML = "";
+    el.lives.hidden = run.endless;
     for (var i = 0; i < 3; i++) {
       el.lives.appendChild(h("span", { class: "life" + (i < run.lives ? "" : " spent") }));
     }
     el.score.textContent = run.score.toLocaleString();
     el.railStreak.textContent = run.streak >= 2 ? (run.streak + " in a row") : "";
     Array.prototype.forEach.call(el.lifelines.children, function (b) {
-      b.disabled = locked || !run.lifelines[b.dataset.kind];
+      b.disabled = locked || !run.lifelines[b.dataset.kind] ||
+        (b.dataset.kind === "fifty" && (!current || !current.choices.length));
     });
   }
 
   // ---- media renderers --------------------------------------------------
 
   /* Draw a country's GeoJSON as a bare silhouette. Equirectangular, scaled to
-     the shape's own bounding box, so size gives nothing away -- only shape. */
+     the shape's own bounding box, so size gives nothing away -- only shape.
+
+     Rings are unwrapped across the antimeridian first. Fiji, Russia, Kiribati
+     and New Zealand's outlying islands have coordinates at both +179 and
+     -179, and a bounding box drawn straight from those numbers is the whole
+     width of the world -- so the country arrived as two specks at opposite
+     edges of an empty rectangle. Shifting the negative half by +360 puts the
+     pieces back next to each other. */
+  function unwrap(polys) {
+    var crosses = false;
+    polys.forEach(function (poly) {
+      poly.forEach(function (ring) {
+        var west = false, east = false;
+        ring.forEach(function (pt) {
+          if (pt[0] < -150) west = true;
+          if (pt[0] > 150) east = true;
+        });
+        if (west && east) crosses = true;
+      });
+    });
+    // Two rings on opposite sides of the line count too: Fiji's islands are
+    // each tidy on their own and a hemisphere apart from each other.
+    if (!crosses) {
+      var anyWest = false, anyEast = false;
+      polys.forEach(function (poly) {
+        poly.forEach(function (ring) {
+          ring.forEach(function (pt) {
+            if (pt[0] < -150) anyWest = true;
+            if (pt[0] > 150) anyEast = true;
+          });
+        });
+      });
+      crosses = anyWest && anyEast;
+    }
+    if (!crosses) return polys;
+    return polys.map(function (poly) {
+      return poly.map(function (ring) {
+        return ring.map(function (pt) {
+          return pt[0] < 0 ? [pt[0] + 360, pt[1]] : pt;
+        });
+      });
+    });
+  }
+
   function outlineSVG(geometry) {
     var polys = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
-    var minX = 180, maxX = -180, minY = 90, maxY = -90;
+    polys = unwrap(polys);
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     polys.forEach(function (poly) {
       poly.forEach(function (ring) {
         ring.forEach(function (pt) {
@@ -109,17 +194,39 @@
 
   function loadGeo() {
     if (geoCache) return Promise.resolve(geoCache);
-    return fetch("/api/geo").then(function (r) { return r.json(); })
-      .then(function (g) { geoCache = g; return g; });
+    return fetch("/api/geo").then(function (r) {
+      if (!r.ok) throw new Error("geo " + r.status);
+      return r.json();
+    }).then(function (g) { geoCache = g; return g; });
+  }
+
+  var HOME_VIEW = [[-58, -180], [82, 180]];
+
+  function fitWorld() {
+    if (!map) return;
+    map.invalidateSize();
+    map.fitBounds(HOME_VIEW, { padding: [8, 8] });
   }
 
   function renderMap() {
+    // The media row is a flex row, so anything appended beside the map is
+    // laid out next to it: the reset button came out floating in the margin.
+    // Everything to do with the map goes in one positioned wrapper instead.
+    var wrap = h("div", { class: "map-wrap" });
     var host = h("div", { id: "map" });
-    el.media.appendChild(host);
+    // A map that is simply blank while it loads looks like a map that is
+    // broken, and on a slow connection it is blank for a long time.
+    var status = h("p", { class: "map-status", text: "Loading the map..." });
+    wrap.appendChild(host);
+    wrap.appendChild(status);
+    el.media.appendChild(wrap);
     return loadGeo().then(function (geo) {
+      if (!host.isConnected) return;
+      status.remove();
       map = L.map(host, {
         worldCopyJump: false, attributionControl: false,
-        minZoom: 1, maxZoom: 7, zoomControl: true
+        minZoom: 0, maxZoom: 7, zoomControl: true, zoomSnap: 0.25,
+        maxBounds: [[-85, -200], [85, 200]], maxBoundsViscosity: 0.8
       }).setView([20, 10], 2);
       mapLayer = L.geoJSON(geo, {
         style: function () {
@@ -137,8 +244,47 @@
           });
         }
       }).addTo(map);
+
+      /* Countries with no polygon in this dataset -- Singapore, Malta, every
+         Pacific and Caribbean microstate -- get a marker at their centre.
+         Without one they are not hard to click, they are absent: "find
+         Tuvalu" had no right answer anywhere on the map. */
+      pointLayer = L.layerGroup();
+      (geo.points || []).forEach(function (pt) {
+        var dot = L.circleMarker([pt.lat, pt.lon], {
+          radius: 7, weight: 2, color: "#3e8c9e", fillColor: "#12303f",
+          fillOpacity: 1, className: "map-point"
+        });
+        dot.featureId = pt.id;
+        dot.bindTooltip(pt.name, { direction: "top" });
+        dot.on("click", function () { if (!locked) answer(pt.id); });
+        dot.addTo(pointLayer);
+      });
+      pointLayer.addTo(map);
+
+      var reset = h("button", { class: "map-reset", type: "button",
+                                text: "Reset view",
+                                "aria-label": "Reset the map view" });
+      reset.addEventListener("click", function (e) {
+        e.preventDefault();
+        fitWorld();
+      });
+      wrap.appendChild(reset);
+
       // Nudge Leaflet: the container was sized after the map was created.
-      setTimeout(function () { map.invalidateSize(); }, 60);
+      setTimeout(function () {
+        if (!map) return;
+        fitWorld();
+        if (lastAnswer && locked) markChoices(lastAnswer, null);
+      }, 60);
+    }).catch(function () {
+      status.textContent = "The map could not be loaded.";
+      status.className = "map-status error";
+      // A map question with no map has to stay answerable, so the typed box
+      // appears whether or not this is challenge mode.
+      if (current && !el.choices.querySelector("input")) {
+        renderTypeIn(Object.assign({}, current, { answer_kind: "country" }));
+      }
     });
   }
 
@@ -150,6 +296,7 @@
       map.remove();
       map = null;
       mapLayer = null;
+      pointLayer = null;
     }
     el.media.innerHTML = "";
     var m = q.media || {};
@@ -193,11 +340,12 @@
       list.forEach(function (name, i) {
         var row = h("div", { class: "ac-row", role: "option" },
                     [h("b", { text: name })]);
+        // Same on a click: fill the box, and let them press Answer.
         row.addEventListener("mousedown", function (e) {
           e.preventDefault();          // do not blur the box before we read it
           input.value = name;
           close();
-          submit();
+          input.focus();
         });
         row.addEventListener("mouseenter", function () { mark(i); });
         box.appendChild(row);
@@ -246,7 +394,15 @@
         mark(n);
       } else if (e.key === "Enter") {
         e.preventDefault();
-        if (active >= 0 && rows[active]) input.value = rows[active];
+        // Choosing from the list fills the box; it does not answer. Picking
+        // the wrong row and losing a life to it in the same keystroke, with
+        // nothing in between, is the kind of thing people do once and then
+        // stop using the list.
+        if (active >= 0 && rows[active]) {
+          input.value = rows[active];
+          close();
+          return;
+        }
         submit();
       } else if (e.key === "Escape") {
         close();
@@ -261,13 +417,19 @@
     el.choices.appendChild(wrap);
     if (q.input === "text+map") {
       el.choices.appendChild(h("p", { class: "orclick",
-        text: "… or just click it on the map." }));
+        text: "… or click it on the map, if that is easier." }));
     }
-    setTimeout(function () { input.focus(); }, 40);
+    // Focus the box on a desktop, except on a map question, where the first
+    // thing most people want is the map, not a text field.
+    if (q.input !== "text+map" &&
+        window.matchMedia("(min-width: 700px)").matches) {
+      setTimeout(function () { input.focus(); }, 40);
+    }
   }
 
   function placeholderFor(q) {
-    return { country: "Type the country", capital: "Type the capital",
+    return { country: "Type the country", map: "Type the country",
+             capital: "Type the capital",
              city: "Type the city" }[q.answer_kind] || "Type your answer";
   }
 
@@ -275,8 +437,14 @@
   function renderChoices(q) {
     el.choices.innerHTML = "";
     if (q.challenge) { renderTypeIn(q); return; }
-    if (!q.choices.length) {                 // map questions answer by clicking
+    if (!q.choices.length) {
+      /* A map question has no options: it is answered by clicking a country,
+         which is no answer at all to somebody using a keyboard, a screen
+         reader, or a phone where Tuvalu is three pixels wide. The typed box
+         appears alongside the map and is judged the same way -- clicking and
+         typing are two ways into one question, not two questions. */
       el.choices.className = "choices";
+      renderTypeIn(Object.assign({}, q, { input: "text+map" }));
       return;
     }
     var flagsOnly = q.choices.every(function (c) { return c.image && !c.label; });
@@ -298,24 +466,51 @@
   }
 
   // ---- question flow ----------------------------------------------------
-  function nextQuestion() {
-    locked = false;
+  function nextQuestion(advance) {
+    locked = true;
+    lastAnswer = null;
     el.sheetHost.innerHTML = "";
     el.answerSlot.innerHTML = "";
-    fetch("/api/next").then(function (r) { return r.json(); }).then(function (q) {
-      if (q.error) { el.prompt.textContent = q.error; return; }
+    fetch(withRun("/api/next" + (advance === false ? "" : "?advance=1")))
+      .then(function (r) { return r.json(); }).then(function (q) {
+      if (handleStale(q)) return;
+      if (q.error) { el.prompt.textContent = q.error; announce(q.error); return; }
       if (q.done) { return; }
       current = q;
+      locked = false;
       askedAt = Date.now();
       el.prompt.textContent = q.prompt;
       el.hint.textContent = q.hint || "";
+      // What the answer is measured against. "Largest city" is not a fact
+      // until you say whether you mean the city or the conurbation, and a
+      // player who disagrees should be disagreeing with a stated rule.
+      if (el.definition) {
+        el.definition.textContent = q.definition || "";
+        el.definition.hidden = !q.definition;
+      }
       el.railCount.textContent = q.run_length
         ? ("Question " + q.question_no + " of " + q.run_length)
         : ("Question " + q.question_no);
       document.getElementById("railTitle").textContent = q.category_label;
       renderMedia(q);
       renderChoices(q);
+      (q.removed || []).forEach(function (key) {
+        Array.from(el.choices.children).forEach(function (btn) {
+          if (btn.dataset.key === String(key)) btn.classList.add("gone");
+        });
+      });
       paintRun(q.run);
+      announce(q.prompt);
+      if (q.restored_answer) {
+        locked = true;
+        lastAnswer = q.restored_answer;
+        markChoices(lastAnswer, null);
+        paintRun(lastAnswer.run);
+        if (window.GeoScores) window.GeoScores.record(lastAnswer);
+        if (lastAnswer.finished) showGameOver(lastAnswer); else showBar(lastAnswer);
+      }
+    }).catch(function () {
+      el.prompt.textContent = "Could not load the question. Refresh to try again; your run is saved.";
     });
   }
 
@@ -327,31 +522,18 @@
     post("/api/answer", { qid: current.qid, choice: key, text: typed,
                           ms: ms, skipped: !!skipped })
       .then(function (res) {
-        if (res.error) { el.prompt.textContent = res.error; return; }
+        if (handleStale(res)) return;
+        if (res.error) { locked = false; el.hint.textContent = res.error; paintRun(current.run); return; }
         markChoices(res, key);
         paintRun(res.run);
         lastAnswer = res;
-        // A wrong map click is the one case where the card is the wrong
-        // response: what you needed was to see where the country actually
-        // was. The map stays up with the answer flown to and lit, and the
-        // card waits behind a button.
-        if (!res.finished && !res.correct && map) {
-          showBar(res);
-          return;
-        }
-        if (res.finished) {
-          showGameOver(res);
-        } else if (!res.correct && res.focus) {
-          // The question was about a person or a city, so that is what comes
-          // up. The country is a button away.
-          showFocus(res);
-        } else if (res.correct) {
-          // Getting it right does not need a full page of teaching thrown at
-          // you. The card is one click away for anyone who wants it.
-          showBar(res);
-        } else {
-          showSheet(res);
-        }
+        if (window.GeoScores) window.GeoScores.record(res);
+        if (res.finished) showGameOver(res); else showBar(res);
+      }).catch(function () {
+        locked = false;
+        el.hint.textContent = "Connection interrupted. Try again or refresh to recover your answer.";
+        paintRun(current.run);
+
       });
   }
 
@@ -369,9 +551,9 @@
     });
     if (map && mapLayer) {
       mapLayer.eachLayer(function (layer) {
-        if (layer.feature.id === res.answer) {
+        if (layer.feature.id === res.answer_iso3) {
           layer.setStyle({ fillColor: "#6e8b4a", color: "#9dbd6e" });
-          map.fitBounds(layer.getBounds().pad(1.2));
+          map.fitBounds(layer.getBounds().pad(0.4), {maxZoom: 4});
         } else if (String(layer.feature.id) === String(given)) {
           layer.setStyle({ fillColor: "#b84a32", color: "#d4735c" });
         }
@@ -387,15 +569,18 @@
     var note = f ? (f.blurb || factLine(f)) : (res.card.blurb || "");
     var bar = h("div", { class: "answerbar" }, [
       h("span", { class: "said " + (res.correct ? "right" : "wrong"),
-                  text: res.correct ? "Correct" : "Not quite" }),
+                  text: res.skipped ? "Skipped" : (res.correct ? "Correct" : "Not quite") }),
       h("span", { class: "was",
                   text: res.answer_text || (f && f.title) || res.card.name }),
       h("span", { class: "gained",
                   text: res.correct ? ("+" + pointsGained(res))
-                                    : "shown in green on the map" })
+                                    : (map && res.answer_iso3 ? "shown in green on the map" : "Review the answer, then keep going") })
     ]);
     if (note) bar.appendChild(h("p", { class: "note", text: trim(note, 200) }));
+    announce((res.skipped ? "Skipped." : (res.correct ? "Correct." : "Not quite."))
+             + " The answer was " + (res.answer_text || res.card.name) + ".");
     bar.appendChild(button("Next question", "btn big", nextQuestion));
+    if (res.focus) bar.appendChild(button("About " + res.focus.title, "btn ghost", function () { showFocus(res); }));
     bar.appendChild(button("See the card", "btn ghost", function () {
       showSheet(res);
     }));
@@ -410,11 +595,11 @@
     var run = res.run;
     var out = run.lives <= 0 ? "Out of lives" : "Run complete";
     var pct = run.asked ? Math.round(100 * run.correct / run.asked) : 0;
-    var sheet = h("div", { class: "sheet gameover", role: "dialog",
+    var sheet = h("div", { class: "sheet gameover",
                            "aria-label": "Run over" }, [
       h("h2", { text: out }),
       h("p", { style: "color:#6b6255;margin:0",
-               text: "The answer was " + res.card.name + "." }),
+               text: "The answer was " + res.answer_text + "." }),
       h("div", { class: "final", text: run.score.toLocaleString() }),
       h("div", { style: "color:#857a68;font-size:.85rem", text: "points" }),
       h("div", { class: "tally" }, [
@@ -427,7 +612,7 @@
     ]);
     var actions = h("div", { class: "sheet-actions" });
     actions.appendChild(button("Play again", "btn big", function () {
-      post("/api/restart", { category: cfg.category, endless: cfg.endless })
+      post("/api/restart", { category: cfg.category, endless: cfg.endless, challenge: cfg.challenge, country: cfg.country })
         .then(nextQuestion);
     }));
     actions.appendChild(h("a", { class: "btn ghost", href: "/country/" + res.card.iso2,
@@ -435,10 +620,16 @@
     actions.appendChild(h("a", { class: "btn ghost", href: "/games",
                                  text: "Other games" }));
     sheet.appendChild(actions);
-    var back = h("div", { class: "sheet-back", style: "align-items:center" }, [sheet]);
-    el.sheetHost.innerHTML = "";
-    el.sheetHost.appendChild(back);
-    sheet.querySelector(".btn").focus();
+    var back = h("div", { class: "sheet-back", style: "align-items:center" },
+                 [sheet]);
+    // The end of a run is the one card with nothing behind it worth going
+    // back to, so dismissing it leaves the summary in place rather than
+    // pretending the run is still live.
+    presentSheet(sheet, back, function () { showGameOver(res); });
+    var play = sheet.querySelector(".sheet-actions .btn");
+    if (play) play.focus();
+    announce(out + ". " + run.score + " points, " + run.correct +
+             " of " + run.asked + " correct.");
   }
 
   // ---- the focus card: a person, or a city -----------------------------
@@ -489,17 +680,9 @@
     }
     body.push(actions);
 
-    var sheet = h("div", { class: "sheet focus", role: "dialog",
-                           "aria-label": f.title }, body);
+    var sheet = h("div", { class: "sheet focus", "aria-label": f.title }, body);
     var back = h("div", { class: "sheet-back" }, [sheet]);
-    back.addEventListener("click", function (e) {
-      if (e.target === back) nextQuestion();
-    });
-    el.sheetHost.innerHTML = "";
-    el.sheetHost.appendChild(back);
-    sheet.scrollTop = 0;
-    sheet.setAttribute("tabindex", "-1");
-    sheet.focus({ preventScroll: true });
+    presentSheet(sheet, back, function () { showBar(res); });
   }
 
   /* Mark the line on the country card that the question turned on, and bring
@@ -531,7 +714,7 @@
   // ---- the paper fact card ---------------------------------------------
   function showSheet(res) {
     var card = res.card;
-    var verdict = res.skipped ? "Skipped" : (res.correct ? "Correct" : "Not quite");
+    var verdict = res.skipped ? "Skipped" : (res.skipped ? "Skipped" : (res.correct ? "Correct" : "Not quite"));
     var body = [];
 
     body.push(h("div", { class: "verdict " + (res.correct ? "right" : "wrong") }, [
@@ -567,8 +750,12 @@
       })));
     }
     if (card.wars && card.wars.length) {
+      // The role, not just the name: "recorded participant" and "principal
+      // belligerent" are different claims, and the card used to show them as
+      // if they were the same one.
       body.push(chipStrip("Wars and conflicts", card.wars.map(function (wr) {
-        return chip("/topic/war/" + wr.key, wr.name, wr.start || null);
+        var sub = [wr.start, wr.role].filter(Boolean).join(" · ");
+        return chip("/topic/war/" + wr.key, wr.name, sub || null);
       })));
     }
     if (card.cities && card.cities.length) {
@@ -628,27 +815,20 @@
     }
     body.push(actions);
 
-    var sheet = h("div", { class: "sheet", role: "dialog", "aria-label": "Answer" }, body);
+    var sheet = h("div", { class: "sheet", "aria-label": "Answer" }, body);
     var back = h("div", { class: "sheet-back" }, [sheet]);
-    // Dismissing the card goes on with the run, unless it was opened from the
-    // bar after a correct answer -- then it goes back to the bar.
-    back.addEventListener("click", function (e) {
-      if (e.target !== back) return;
-      if (res.correct || map) showBar(res); else nextQuestion();
-    });
-    el.sheetHost.innerHTML = "";
-    el.sheetHost.appendChild(back);
-    // Focusing the first button dragged the card to its own bottom, so a
-    // wrong answer opened on the row of buttons rather than on the country.
-    // The card itself takes focus, at the top, where the reading starts.
-    sheet.scrollTop = 0;
-    sheet.setAttribute("tabindex", "-1");
-    sheet.focus({ preventScroll: true });
+    // Dismissing the card goes back to the answer bar, whichever way it was
+    // dismissed -- backdrop, Close or Escape. Focus returns to whatever
+    // opened it, which is how a card stops being a one-way door.
+    // The card itself takes focus, at the top, where the reading starts:
+    // focusing the first button dragged it to its own bottom, so a wrong
+    // answer opened on the row of buttons rather than on the country.
+    presentSheet(sheet, back, function () { showBar(res); });
     markHighlight(sheet, res);
   }
 
   function pointsGained(res) {
-    return (res.run.score - scoreBefore).toLocaleString();
+    return (res.points || 0).toLocaleString();
   }
 
   function fmt(n) {
@@ -702,6 +882,71 @@
     return h("div", { class: "person", "data-name": name }, kids);
   }
 
+  /* Cards are dialogs, and a dialog that only closes by clicking its
+     backdrop is one keyboard users cannot leave. Every card now gets an
+     explicit Close, answers to Escape, and keeps Tab inside itself while it
+     is open -- otherwise Tab walks off into the page behind, which is still
+     there, still focusable, and completely invisible. */
+  var openSheet = null;
+
+  function focusables(root) {
+    return Array.prototype.filter.call(
+      root.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      function (node) { return node.offsetParent !== null || node === root; });
+  }
+
+  function presentSheet(sheet, back, onClose) {
+    var restoreTo = document.activeElement;
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-modal", "true");
+    sheet.setAttribute("tabindex", "-1");
+
+    var close = h("button", { class: "sheet-close", type: "button",
+                              "aria-label": "Close", text: "\u00d7" });
+    close.addEventListener("click", dismiss);
+    sheet.insertBefore(close, sheet.firstChild);
+
+    function dismiss() {
+      if (openSheet !== state) return;
+      openSheet = null;
+      document.removeEventListener("keydown", onKey, true);
+      if (restoreTo && restoreTo.focus) restoreTo.focus();
+      onClose();
+    }
+
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        dismiss();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      var list = focusables(sheet);
+      if (!list.length) return;
+      var first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    var state = { dismiss: dismiss };
+    openSheet = state;
+    document.addEventListener("keydown", onKey, true);
+    back.addEventListener("click", function (e) {
+      if (e.target === back) dismiss();
+    });
+    el.sheetHost.innerHTML = "";
+    el.sheetHost.appendChild(back);
+    sheet.scrollTop = 0;
+    sheet.focus({ preventScroll: true });
+    return state;
+  }
+
   function button(label, cls, fn) {
     var b = h("button", { class: cls, text: label });
     b.addEventListener("click", fn);
@@ -729,8 +974,38 @@
     });
   });
 
+  /* Leaving a game used to mean navigating away and hoping. The run is saved
+     either way -- that is the point of keeping it server-side -- but "is this
+     saved?" is not a question a player should have to answer by experiment,
+     so the menu says so and offers the two things they might actually want. */
+  if (el.menu) {
+    el.menu.addEventListener("click", function (e) {
+      var act = e.target.closest("[data-act]");
+      if (!act) return;
+      if (act.dataset.act === "restart") {
+        if (!confirm("Start this game again from zero?")) return;
+        post("/api/restart", { category: cfg.category, endless: cfg.endless,
+                               challenge: cfg.challenge, country: cfg.country })
+          .then(function (res) {
+            // A restart is a new run, so the URL has to follow it.
+            if (res.run && res.run.id) {
+              location.href = location.pathname +
+                location.search.replace(/([?&])run=[^&]*/, "$1run=" + res.run.id);
+            }
+          });
+      } else if (act.dataset.act === "exit") {
+        if (!confirm("Leave this run? It will not be waiting for you.")) return;
+        post("/api/run/abandon", {}).then(function () {
+          location.href = "/games";
+        });
+      }
+    });
+  }
+
   // ---- keyboard: 1-4 to answer, Enter/Space to advance -------------------
   document.addEventListener("keydown", function (e) {
+    // While a card is open it owns Escape and Tab; see presentSheet.
+    if (e.key === "Escape") return;
     var sheetBtn = el.sheetHost.querySelector(".btn.big") ||
                    el.answerSlot.querySelector(".btn.big");
     if (sheetBtn && (e.key === "Enter" || e.key === " ")) {
@@ -745,5 +1020,5 @@
     }
   });
 
-  nextQuestion();
+  nextQuestion(false);
 })();

@@ -51,7 +51,8 @@
               </td>
               {% if kind == 'language' %}
                 <td class="num">
-                  {%- if r.detail.share %}{{ r.detail.share }}%
+                  {%- if r.detail.status %}<span class="badge">{{ r.detail.status }}</span>
+                  {%- elif r.detail.share %}{{ r.detail.share }}%
                   {%- if r.detail.official %}<span class="badge">official</span>{% endif %}
                   {%- elif r.detail.speakers %}{{ r.detail.speakers | commas }} speakers
                   {%- elif r.detail.official %}<span class="badge">official</span>

@@ -1,0 +1,29 @@
+<!doctype html><title>LearnGeo browser checks</title><pre id="result">RUNNING</pre><iframe id="game" style="width:390px;height:844px"></iframe><script>
+(async function(){
+ const result=document.getElementById('result'); const checks=[];
+ try {
+ for(const name of ['play','scores','site']) { new Function(await (await fetch('/static/js/'+name+'.js')).text()); checks.push(name+' syntax OK'); }
+ const frame=document.getElementById('game');
+ const wait=async(fn)=>{for(let i=0;i<160;i++){if(fn()) return; await new Promise(r=>setTimeout(r,100));} throw Error('timed out');};
+ frame.src='/play/everyday?endless=1';
+ await wait(()=>frame.contentDocument.querySelectorAll('.choice').length>0);
+ const prompt=frame.contentDocument.getElementById('prompt').textContent;
+ frame.contentWindow.location.reload();
+ await wait(()=>frame.contentDocument.querySelectorAll('.choice').length>0);
+ if(frame.contentDocument.getElementById('prompt').textContent!==prompt) throw Error('refresh changed question');
+ checks.push('refresh preserves question');
+ frame.contentDocument.querySelector('.choice').click();
+ await wait(()=>frame.contentDocument.querySelector('.answerbar'));
+ if(frame.contentDocument.querySelector('.sheet-back')) throw Error('forced card');
+ checks.push('answer inline; card optional');
+ if(!localStorage.getItem('learngeo.scores.v1')) throw Error('missing browser scores');
+ checks.push('scores saved');
+ frame.contentWindow.location.reload();
+ await wait(()=>frame.contentDocument.querySelector('.answerbar'));
+ checks.push('refresh restores feedback');
+ frame.contentDocument.querySelector('.answerbar .btn.big').click();
+ await wait(()=>!frame.contentDocument.querySelector('.answerbar') && frame.contentDocument.querySelectorAll('.choice').length>0);
+ checks.push('next question works');
+ result.textContent='PASS\n'+checks.join('\n');
+ }catch(e){result.textContent='FAIL '+e.stack+'\n'+checks.join('\n');}
+})();</script>

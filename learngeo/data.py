@@ -13,7 +13,7 @@ wander around.
 import json
 import os
 
-from . import supplement
+from . import provenance, supplement
 from .data_util import fold, slug, wiki_url
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,6 +96,9 @@ class World(object):
         # the fetched data. See supplement.py for why they cannot come from a
         # query.
         supplement.apply(self.countries)
+        # Then every sourced correction, last, so neither a dataset rebuild
+        # nor the supplement can put a wrong value back. See provenance.py.
+        provenance.apply(self.countries)
         self._derive_topics()
 
         self.by_iso3 = {}
@@ -379,9 +382,33 @@ class World(object):
         return self.shapes.get(c.get("iso3")) if c else None
 
     def continent_of(self, iso2):
+        """The one continent this country is filed under.
+
+        Not simply the first entry in the imported list: that list is
+        unordered and counts overseas territory, which is how France came to
+        be in Africa and Norway in Antarctica. provenance.py picks one by a
+        written-down rule and records that it did.
+        """
         c = self.countries.get(iso2) or {}
+        if c.get("continent_primary"):
+            return c["continent_primary"]
         conts = c.get("continents") or []
         return ent_name(conts[0]) if conts else "Unknown"
+
+    def continents_of(self, iso2):
+        """Every continent it genuinely spans, primary first."""
+        c = self.countries.get(iso2) or {}
+        primary = self.continent_of(iso2)
+        return [primary] + [x for x in (c.get("continent_also") or [])
+                            if x != primary]
+
+    def member_of_verified(self, iso2, org):
+        """Membership of the handful of organisations with a checked list."""
+        c = self.countries.get(iso2) or {}
+        return (c.get("verified_memberships") or {}).get(org)
+
+    def provenance(self, iso2):
+        return provenance.records(self.countries.get(iso2))
 
     def having(self, *fields):
         """ISO codes of countries that have every one of these fields."""

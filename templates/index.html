@@ -9,13 +9,14 @@
          width="76" height="76" style="margin-bottom:14px">
     <h1>Learn the world,<br>one question at a time.</h1>
     <p class="lede">
-      Every answer -- right or wrong -- comes back with the flag, the map, the
-      neighbours and the people. Miss a country once and it returns until you
-      know it.
+      Build your knowledge of countries, capitals, people and everyday life.
+      Get clear feedback, explore an optional fact card, and track your points
+      as you learn.
     </p>
   </header>
 
   {# The flag wall is the hero image: all 195 countries, dim until you know them. #}
+{% include "scoreboard.html" %}
   <div class="flagwall">
     {% for iso, c in stats.mastery_wall %}
       <a href="{{ url_for('country', iso2=iso) }}" data-level="{{ c.level }}" title="{{ c.name }}">

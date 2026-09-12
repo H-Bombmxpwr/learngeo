@@ -46,6 +46,14 @@
 
 {% block body %}
 <div class="wrap">
+  <a class="btn" href="{{ url_for('play', category='grand_tour', endless=1, country=c.iso2) }}">Practice {{ c.name }}</a>
+  {% if practice_gaps %}
+    {# A topic that never comes up looks like a topic the quiz forgot. Say
+       which ones have no data instead of quietly skipping them. #}
+    <p class="gap-note">No questions here on {{ practice_gaps.keys() | join(', ') }} &mdash; nothing recorded for {{ c.name }}.</p>
+  {% endif %}
+</div>
+<div class="wrap">
   <div class="paper-page">
 
     <div class="dossier-head">
@@ -103,7 +111,7 @@
             <div class="lang">
               <div>
                 <a href="{{ url_for('topic', kind='language', key=l.key) }}">{{ l.name }}</a>
-                {%- if l.official %}<span class="badge">official</span>{% endif %}
+                {%- if l.status %}<span class="badge">{{ l.status }}</span>{% endif %}{%- if l.official %}<span class="badge">official</span>{% endif %}
               </div>
               <div class="pct">
                 {%- if l.share %}{{ l.share }}%
@@ -180,13 +188,24 @@
     {% if c.wars %}
       <div class="section">
         <h2>Wars and conflicts</h2>
-        <p style="color:#6b6255;margin-top:0">Click one to see everyone else who fought in it.</p>
+        <p style="color:#6b6255;margin-top:0;max-width:64ch">
+          Conflicts this country is attached to. Click one to see the others.
+          Each says what kind of claim it is: a <b>principal belligerent</b> is
+          hand-checked against the modern state that succeeded the power that
+          fought, while a <b>recorded participant</b> comes from the bulk
+          import, which does not separate combat from funding, basing,
+          occupation or reconstruction. Neither list is complete, so a country
+          missing from a war may still have taken part &mdash; which is why the
+          quiz no longer asks who fought in what.
+        </p>
         <div class="chipset">
           {% for wr in c.wars %}
-            <a class="neighbour" href="{{ url_for('topic', kind='war', key=wr.qid or wr.name|lower|replace(' ','-')) }}">
+            <a class="neighbour" title="{{ wr.role_note }}"
+               href="{{ url_for('topic', kind='war', key=wr.qid or wr.name|lower|replace(' ','-')) }}">
               <span class="mark" aria-hidden="true">⚔</span>
               <span>{{ wr.name }}</span>
               {%- if wr.start %}<small class="yrs">{{ wr.start }}{% if wr.end and wr.end != wr.start %}&ndash;{{ wr.end }}{% elif not wr.end %}&ndash;now{% endif %}</small>{% endif %}
+              <small style="color:#857a68">{{ wr.role }}</small>
             </a>
           {% endfor %}
         </div>
@@ -302,6 +321,30 @@
       </div>
     {% endif %}
     #}
+
+    {% if provenance %}
+      <div class="section">
+        <h2>Checked facts</h2>
+        <p style="max-width:64ch;color:#6b6255">
+          Most of this page is imported in bulk and carries no source of its
+          own. These entries were checked by hand against the source named,
+          and are reapplied after every dataset rebuild so a refetch cannot
+          quietly put the old value back.
+        </p>
+        <ul class="provenance">
+          {% for field, rec in provenance %}
+            <li>
+              <span class="field">{{ field | replace('member:', 'Member of ') | replace('_', ' ') | capitalize }}</span>
+              {% if rec.definition %}&mdash; {{ rec.definition }}{% endif %}
+              {% if rec.note %}<br><span class="when">{{ rec.note }}</span>{% endif %}
+              <br>
+              <a href="{{ rec.source }}" target="_blank" rel="noopener">Source</a>
+              <span class="when">&middot; true as of {{ rec.as_of }} &middot; checked {{ rec.verified }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
 
     <div class="section">
       <a class="btn" href="{{ url_for('play', category='grand_tour') }}">Quiz me</a>

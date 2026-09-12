@@ -99,6 +99,59 @@ WARS = [
 ]
 
 
+# Wars fought between two states and no others of consequence. These are the
+# only conflicts the quiz asks "who fought whom" about, because a question
+# with two principals has one answer, and a question with fourteen does not.
+#
+# The rest of the table is the reason war participation is no longer asked
+# about at all. A list of principal belligerents cannot answer "did country X
+# take part", in either direction: it omits support roles, occupations,
+# volunteers and reconstruction, so absence proves nothing -- which is how the
+# United States came to be marked wrong for the Iraq War, and how Japanese
+# reconstruction funding came to read as combat. The dates, the order of
+# events and the named principals are all sourced facts; participation, as
+# modelled here, is not one.
+#
+# war name | ISO2 of the two principals
+BILATERAL = [
+    ("Franco-Prussian War", "FR", "DE"),
+    ("War of 1812", "US", "GB"),
+    ("Mexican-American War", "US", "MX"),
+    ("Falklands War", "GB", "AR"),
+    ("Iran-Iraq War", "IR", "IQ"),
+    ("Chaco War", "PY", "BO"),
+    ("Winter War", "FI", "RU"),
+    ("Algerian War", "DZ", "FR"),
+    ("Eritrean War of Independence", "ER", "ET"),
+    ("Russo-Japanese War", "RU", "JP"),
+    ("Second Sino-Japanese War", "CN", "JP"),
+    ("Cambodian-Vietnamese War", "KH", "VN"),
+    ("Greek War of Independence", "GR", "TR"),
+]
+
+# What "this country is attached to this war" is actually claiming. Written
+# onto every curated association so a country page, a fact card and the audit
+# all say the same limited thing.
+PARTICIPATION_ROLE = "principal belligerent"
+PARTICIPATION_NOTE = (
+    "Named as a principal belligerent, by the modern state that succeeded the "
+    "power that fought. Support, occupation and reconstruction roles are not "
+    "recorded, so a country missing from a war's list may still have taken "
+    "part.")
+
+# The fetched associations are a different claim again, and a much weaker one.
+# Wikidata's "participant" covers combat, funding, basing rights, occupation
+# and reconstruction without distinguishing between them -- which is why Japan
+# is attached to the Iraq War, and why an unqualified "fought in" built on top
+# of it was wrong in both directions. Every row gets a role now, so nothing on
+# a page claims more than its source supports.
+IMPORTED_ROLE = "recorded participant"
+IMPORTED_NOTE = (
+    "Listed as a participant by the imported source, which does not "
+    "distinguish combat from support, basing, occupation or reconstruction. "
+    "Not verified, and not a claim that this country fought.")
+
+
 # --------------------------------------------------------------------------
 # The people you would expect to find on a country's page
 # --------------------------------------------------------------------------
@@ -892,15 +945,29 @@ def apply(countries):
             if not c:
                 continue
             wars = c.setdefault("wars", [])
-            if any((w.get("name") or "").lower() == name.lower() for w in wars):
+            same = [w for w in wars
+                    if (w.get("name") or "").lower() == name.lower()]
+            if same:
+                # The fetched data already had this one. It still needs the
+                # role written on it: an untagged association is exactly the
+                # "fought in" claim that could not be justified, and the
+                # country page reads the role to say what it means.
+                for w in same:
+                    w.setdefault("role", PARTICIPATION_ROLE)
+                    w.setdefault("role_note", PARTICIPATION_NOTE)
                 continue
             wars.append({"name": name, "qid": qid, "wiki": wiki_url(name),
                          "start": start, "end": end, "fame": 400,
-                         "source": "curated"})
+                         "source": "curated", "role": PARTICIPATION_ROLE,
+                         "role_note": PARTICIPATION_NOTE})
 
     # Biggest conflicts first, so a fact card shows the wars people have heard
-    # of rather than three border skirmishes.
+    # of rather than three border skirmishes -- and every row says what kind
+    # of claim it is, curated or imported.
     for c in countries.values():
+        for w in c.get("wars") or []:
+            w.setdefault("role", IMPORTED_ROLE)
+            w.setdefault("role_note", IMPORTED_NOTE)
         if c.get("wars"):
             c["wars"].sort(key=lambda w: -(w.get("fame") or 0))
 
@@ -914,3 +981,46 @@ def apply(countries):
         c["landmarks"] = [m for m in _landmarks_for(iso)
                           if m["name"].lower() not in peaks]
     return countries
+
+
+# --------------------------------------------------------------------------
+# Lookups the question generators use
+# --------------------------------------------------------------------------
+
+def war_years():
+    """Curated war name -> (start, end). The only dated war data the quiz
+    trusts, because every row of it was written by hand against a source."""
+    return {name: (start, end) for name, start, end, _ in WARS}
+
+
+def bilateral_for(iso):
+    """The wars this country fought one-on-one, as (war, start, opponent)."""
+    years = war_years()
+    out = []
+    for name, a, b in BILATERAL:
+        if iso not in (a, b):
+            continue
+        start, _ = years.get(name, (None, None))
+        if start:
+            out.append((name, start, b if iso == a else a))
+    return out
+
+
+def curated_wars_for(iso):
+    """(name, start) for every curated war naming this country, dated."""
+    years = war_years()
+    out = []
+    for name, start, _end, isos in WARS:
+        if iso in isos.split() and start:
+            out.append((name, start))
+    return out
+
+
+def figures_for(iso):
+    """(name, what they are known for) for the hand-written figures."""
+    out = []
+    for entry in FIGURES.get(iso, []):
+        name, _, note = entry.partition("|")
+        if name and note:
+            out.append((name, note))
+    return out

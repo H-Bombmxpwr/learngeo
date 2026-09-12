@@ -232,3 +232,13 @@ by the host.
 Progress lives in `data/progress.db`, a local SQLite file, so on a host with an
 ephemeral filesystem it resets with every deploy. It would need a mounted
 volume, or a real database, to survive.
+# September 2026 game fixes
+
+Implementation notes, validation, data sources and prioritized remaining work are in
+[the LLM handoff](docs/LLM-HANDOFF-2026-09-11.md). The project aims to build useful
+knowledge of any country through games, trivia and optional fact cards.
+
+Run `python -m unittest discover -s tests -v` for regression checks and
+`python scripts/audit_data.py --output docs/data-audit.json` for the structural
+data audit. Browser scores are stored locally; anonymous active games and adaptive
+progress use SQLite. On Railway, set `LEARNGEO_DATA_DIR` to the mounted volume path.

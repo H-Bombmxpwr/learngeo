@@ -1,0 +1,520 @@
+{
+  "countries": 197,
+  "errors": [],
+  "warnings": [
+    "AD: no polygon (shown as a point on the map)",
+    "AG: missing landmarks",
+    "AG: no polygon (shown as a point on the map)",
+    "BB: no polygon (shown as a point on the map)",
+    "BH: missing landmarks",
+    "BH: no polygon (shown as a point on the map)",
+    "CV: missing landmarks",
+    "CV: no polygon (shown as a point on the map)",
+    "DJ: missing landmarks",
+    "DM: missing landmarks",
+    "DM: no polygon (shown as a point on the map)",
+    "FM: missing landmarks",
+    "FM: no polygon (shown as a point on the map)",
+    "GA: missing landmarks",
+    "GD: missing landmarks",
+    "GD: no polygon (shown as a point on the map)",
+    "GQ: missing landmarks",
+    "GW: missing landmarks",
+    "KI: missing landmarks",
+    "KI: no polygon (shown as a point on the map)",
+    "KM: missing landmarks",
+    "KM: no polygon (shown as a point on the map)",
+    "KN: missing landmarks",
+    "KN: no polygon (shown as a point on the map)",
+    "LC: missing landmarks",
+    "LC: no polygon (shown as a point on the map)",
+    "LI: missing landmarks",
+    "LI: no polygon (shown as a point on the map)",
+    "LR: missing landmarks",
+    "LS: missing landmarks",
+    "MC: missing landmarks",
+    "MC: no polygon (shown as a point on the map)",
+    "MH: missing landmarks",
+    "MH: no polygon (shown as a point on the map)",
+    "MR: missing landmarks",
+    "MU: no polygon (shown as a point on the map)",
+    "MV: no polygon (shown as a point on the map)",
+    "NR: missing landmarks",
+    "NR: no polygon (shown as a point on the map)",
+    "PW: missing landmarks",
+    "PW: no polygon (shown as a point on the map)",
+    "SB: missing landmarks",
+    "SC: missing landmarks",
+    "SC: no polygon (shown as a point on the map)",
+    "SG: no polygon (shown as a point on the map)",
+    "SL: missing landmarks",
+    "SM: missing landmarks",
+    "SM: no polygon (shown as a point on the map)",
+    "SR: missing landmarks",
+    "ST: missing landmarks",
+    "ST: no polygon (shown as a point on the map)",
+    "SZ: missing landmarks",
+    "TL: missing landmarks",
+    "TO: missing landmarks",
+    "TO: no polygon (shown as a point on the map)",
+    "TV: missing landmarks",
+    "TV: no polygon (shown as a point on the map)",
+    "VA: no polygon (shown as a point on the map)",
+    "VC: missing landmarks",
+    "VC: no polygon (shown as a point on the map)",
+    "VU: missing landmarks",
+    "WS: missing landmarks",
+    "WS: no polygon (shown as a point on the map)",
+    "XK: missing landmarks",
+    "XK: no polygon (shown as a point on the map)"
+  ],
+  "mode_country_coverage": {
+    "biggest_city": 153,
+    "border_count": 157,
+    "border_odd_one_out": 108,
+    "calling_code": 197,
+    "capital_of": 197,
+    "capital_to_country": 197,
+    "city_in_country": 197,
+    "city_rank": 165,
+    "city_to_country": 197,
+    "climate_of": 197,
+    "continent_of": 197,
+    "country_to_flag": 197,
+    "currency_of": 175,
+    "driving_side": 197,
+    "eu_member": 197,
+    "famous_person": 117,
+    "figure_known_for": 167,
+    "flag_to_country": 197,
+    "government_of": 191,
+    "higher_lower": 195,
+    "highest_point_of": 196,
+    "landmark_of": 159,
+    "landmark_to_country": 157,
+    "language_of": 197,
+    "leader_name": 194,
+    "leader_photo": 194,
+    "main_export": 195,
+    "main_industry": 192,
+    "main_resource": 194,
+    "map_click": 168,
+    "nato_member": 197,
+    "outline": 160,
+    "past_leader": 145,
+    "population_size": 154,
+    "religion_of": 25,
+    "trade_partner": 194,
+    "war_between": 21,
+    "war_order": 106,
+    "war_when": 106,
+    "which_borders_both": 139
+  },
+  "ambiguity": {
+    "unhandled": [
+      {
+        "kind": "language_share_undated",
+        "subject": "353 language rows",
+        "detail": "share recorded with no survey or date; the convention is stated but the figure is not sourced",
+        "handled": false
+      }
+    ],
+    "handled": [
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Bialowieza Forest",
+        "detail": "recorded in BY, PL",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Dead Sea",
+        "detail": "recorded in IL, JO",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Giant's Causeway",
+        "detail": "recorded in GB, IE",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Iguazu Falls",
+        "detail": "recorded in AR, BR",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Lake Titicaca",
+        "detail": "recorded in BO, PE",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Niagara Falls",
+        "detail": "recorded in CA, US",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Rub' al Khali",
+        "detail": "recorded in AE, SA",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Sahara",
+        "detail": "recorded in DZ, LY, TN",
+        "handled": true
+      },
+      {
+        "kind": "landmark_multi_country",
+        "subject": "Victoria Falls",
+        "detail": "recorded in ZM, ZW",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Amazon rainforest",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Aral Sea",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Atacama Desert",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Carpathian Mountains",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Caucasus Mountains",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Congo River",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Dead Sea",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Gobi Desert",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Great Rift Valley",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Iguazu Falls",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Kalahari Desert",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Lake Chad",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Lake Geneva",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Lake Malawi",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Lake Tanganyika",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Lake Titicaca",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Matterhorn",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Niagara Falls",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Nile",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Patagonia",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Sahara",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Sundarbans",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Victoria Falls",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "landmark_known_shared",
+        "subject": "Zambezi",
+        "detail": "named in provenance.SHARED_LANDMARKS; excluded from landmark questions",
+        "handled": true
+      },
+      {
+        "kind": "city_name_shared",
+        "subject": "kayes",
+        "detail": "in CG, ML",
+        "handled": true
+      },
+      {
+        "kind": "city_name_shared",
+        "subject": "tripoli",
+        "detail": "in LB, LY",
+        "handled": true
+      },
+      {
+        "kind": "city_name_shared",
+        "subject": "valencia",
+        "detail": "in ES, VE",
+        "handled": true
+      },
+      {
+        "kind": "city_rank_too_close",
+        "subject": "237 pairs",
+        "detail": "adjacent cities within 15%; not asked about",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "AZ",
+        "detail": "Asia / Europe; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "CY",
+        "detail": "Asia / Europe; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "EG",
+        "detail": "Africa / Asia; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "ES",
+        "detail": "Europe / Africa; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "FR",
+        "detail": "Europe / South America / Africa; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "GE",
+        "detail": "Asia / Europe; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "ID",
+        "detail": "Asia / Oceania; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "KZ",
+        "detail": "Asia / Europe; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "NL",
+        "detail": "Europe / North America; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "PA",
+        "detail": "North America / South America; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "PG",
+        "detail": "Oceania / Asia; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "RU",
+        "detail": "Europe / Asia; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "TR",
+        "detail": "Asia / Europe; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "US",
+        "detail": "North America / Oceania; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "transcontinental",
+        "subject": "YE",
+        "detail": "Asia / Africa; capital rule applied, both accepted",
+        "handled": true
+      },
+      {
+        "kind": "city_population_missing",
+        "subject": "PW",
+        "detail": "no city population recorded; size questions unavailable",
+        "handled": true
+      }
+    ]
+  },
+  "provenance": {
+    "countries_with_any_source": 62,
+    "countries_total": 197,
+    "fields_corrected": {
+      "capitals": 1,
+      "continents": 31,
+      "languages": 1,
+      "leaders": 1,
+      "member:European Union": 27,
+      "member:NATO": 32
+    },
+    "conventions": {
+      "continent": "Seven-continent model. A country spanning two continents is filed under the one containing its capital; the other is accepted too.",
+      "city_population": "City proper, not metropolitan area, as recorded by GeoNames. Census years differ between countries, so only gaps wider than 15 per cent are asked about.",
+      "language_share": "Most widely spoken language by share of the resident population, first and second language speakers together.",
+      "trade_partner": "Share of goods exports by value, CIA World Factbook, most recent year reported for that country.",
+      "war_participation": "Principal belligerents only, named by the modern state that succeeded the power that fought. Absence from the list is not evidence that a country took no part.",
+      "government_type": "The single form of government named by the CIA World Factbook.",
+      "membership": "Full member states only, as the organisation itself lists them.",
+      "highest_point": "Highest natural elevation inside the country's internationally recognised land territory."
+    },
+    "modes_with_a_stated_convention": [
+      "biggest_city",
+      "city_rank",
+      "continent_of",
+      "eu_member",
+      "government_of",
+      "highest_point_of",
+      "language_of",
+      "nato_member",
+      "trade_partner",
+      "war_between",
+      "war_order",
+      "war_when"
+    ],
+    "modes_relying_on_the_bulk_import": [
+      "border_count",
+      "border_odd_one_out",
+      "calling_code",
+      "capital_of",
+      "capital_to_country",
+      "city_in_country",
+      "city_to_country",
+      "climate_of",
+      "country_to_flag",
+      "currency_of",
+      "driving_side",
+      "famous_person",
+      "figure_known_for",
+      "flag_to_country",
+      "higher_lower",
+      "landmark_of",
+      "landmark_to_country",
+      "leader_name",
+      "leader_photo",
+      "main_export",
+      "main_industry",
+      "main_resource",
+      "map_click",
+      "outline",
+      "past_leader",
+      "population_size",
+      "religion_of",
+      "which_borders_both"
+    ],
+    "curated_war_rows": 52,
+    "bilateral_wars": 13
+  },
+  "limitations": [
+    "Structural validity does not establish factual accuracy.",
+    "Current leaders, governments, population and trade figures still need dated source verification; only the entries listed under provenance.fields_corrected have one.",
+    "War participation is not asked about. The curated table names principal belligerents only, which settles neither participation nor non-participation.",
+    "City population years and city/metro definitions are not recorded per city; the stated convention covers the definition but not the year.",
+    "Language shares carry no survey or date.",
+    "Border and historical-country mappings need explicit territorial conventions.",
+    "The ambiguity pass can only see ambiguity the data records. A landmark in two countries that only one of them lists reads as unambiguous here."
+  ]
+}

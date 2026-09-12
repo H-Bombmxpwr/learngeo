@@ -4,31 +4,45 @@
 {% block body %}
 <div class="wrap">
   <header class="hero" style="padding:40px 0 22px">
-    <h1>Ten ways to play</h1>
-    <p class="lede">
-      Every game comes two ways. A <b>scored run</b> is twelve questions and
-      three lives, with a streak multiplier and points for answering fast.
-      <b>Casual</b> is the same questions with no lives and no end &mdash; it
-      runs until you stop, which is the one to pick when you are learning
-      rather than proving. <b>Challenge</b> takes the four options away: you
-      type the answer, or click the country on the map. Spelling is judged
-      generously and correct answers are worth half as much again.
-    </p>
+    <p class="eyebrow">YOUR NEXT ADVENTURE</p>
+    <h1>Pick a topic. Find your rhythm.</h1>
+    <p class="lede">Play twelve questions with three lives, or keep learning in endless mode.
+    Choose multiple choice or Challenge for typed answers. Every mode earns points.</p>
   </header>
+
+  {% include "scoreboard.html" %}
+
+  <form class="country-study" action="{{ url_for('play', category='grand_tour') }}">
+    <h3>Study one country</h3>
+    <p>Endless practice on a single place, drawn from every topic it has data
+      for. Topics with nothing recorded are named on the page rather than
+      quietly skipped.</p>
+    <input type="hidden" name="endless" value="1">
+    <label>Country
+      <select name="country" required>
+        <option value="">Choose a country</option>
+        {% for name, iso in countries %}<option value="{{ iso }}">{{ name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Answer style
+      <select name="challenge">
+        <option value="0">Multiple choice</option>
+        <option value="1">Challenge &mdash; type your answer</option>
+      </select>
+    </label>
+    <button class="play-btn" type="submit">Start practice</button>
+  </form>
 
   <div class="gamelist">
     {% for key, name, blurb, modes in categories %}
       <div class="game{% if loop.first %} feature{% endif %}">
         <h3>{{ name }}</h3>
         <p>{{ blurb }}</p>
-        <div class="go">
-          <a class="play-btn" href="{{ url_for('play', category=key) }}">Scored run of 12</a>
-          <a class="play-btn casual" href="{{ url_for('play', category=key, endless=1) }}">Casual, endless</a>
-        </div>
-        <div class="go" style="margin-top:8px">
-          <a class="play-btn hard" href="{{ url_for('play', category=key, challenge=1) }}">Challenge</a>
-          <a class="play-btn hard casual" href="{{ url_for('play', category=key, endless=1, challenge=1) }}">Challenge, endless</a>
-        </div>
+        <form class="game-options" action="{{ url_for('play', category=key) }}">
+          <label>Answer style<select name="challenge"><option value="0">Multiple choice</option><option value="1">Challenge &mdash; type your answer</option></select></label>
+          <label>Run length<select name="endless"><option value="0">12 questions &mdash; 3 lives</option><option value="1">Endless &mdash; no lives</option></select></label>
+          <button class="play-btn" type="submit">Play {{ name }}</button>
+        </form>
       </div>
     {% endfor %}
   </div>

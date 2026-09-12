@@ -4,11 +4,13 @@
     python app.py                    # then open http://127.0.0.1:5000
 """
 import os
+import json
 import random
+import time
 import uuid
 from urllib.parse import quote_plus
 
-from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for, g
 
 
 def _load_env(path=".env"):
@@ -33,13 +35,14 @@ def _load_env(path=".env"):
 
 _load_env()
 
-from learngeo import matching, questions, store, supplement
+from learngeo import matching, provenance, questions, store, supplement
 from learngeo.data import TOPIC_FIELDS, ent_name, slug, world
 from learngeo.data_util import wiki_url
 
 app = Flask(__name__)
-# Only guards the local session cookie (score, current answer key). Override
-# with LEARNGEO_SECRET if you ever put this on a network.
+# Nothing about a run rides in a cookie any more -- answer keys, scores and
+# pending questions live in the database, keyed by run id -- so this only
+# signs whatever Flask itself needs. Set LEARNGEO_SECRET on a real host.
 app.secret_key = os.environ.get("LEARNGEO_SECRET", "learngeo-local-dev-key")
 
 RUN_LENGTH = 12       # questions in a standard run
@@ -49,6 +52,17 @@ BASE_POINTS = 100
 PLAYER_COOKIE = "learngeo_player"
 LEARN_COOKIE = "learngeo_learning"
 COOKIE_YEAR = 365 * 24 * 3600
+
+# A two-option question is one coin toss away from being answered by someone
+# who knows nothing, so it cannot be worth what a four-option one is. Driving
+# side and "is it in NATO" are the two-option ones; a map click, with 197
+# countries to choose between, is worth more than either.
+CHOICE_WEIGHT = {0: 1.25, 2: 0.5, 4: 1.0}
+
+# How long an unanswered question can sit before its elapsed time stops
+# counting towards the speed bonus. A refresh restarts the browser's clock, so
+# the server keeps its own and takes whichever is shorter.
+SPEED_WINDOW_MS = 12000
 
 
 def player_id():
@@ -60,10 +74,14 @@ def player_id():
     stored: the id is the only thing that identifies the browser, and it is
     generated here, not derived from anything.
     """
+    if hasattr(g, "player_id"):
+        return g.player_id
     pid = request.cookies.get(PLAYER_COOKIE)
     if pid and 8 <= len(pid) <= 40 and pid.isalnum():
-        return pid
-    return uuid.uuid4().hex[:24]
+        g.player_id = pid
+    else:
+        g.player_id = uuid.uuid4().hex[:24]
+    return g.player_id
 
 
 def learning_on():
@@ -80,11 +98,67 @@ def with_player(response):
     return response
 
 
+# --------------------------------------------------------------------------
+# Runs, one per tab
+# --------------------------------------------------------------------------
+# Persistence used to be keyed by browser: one active run, whichever tab
+# touched it last. Open a second tab, pick a different game, and the first
+# tab's run was gone -- and refreshing the first tab resumed the second tab's
+# game. A run now has an id of its own, it lives in the URL, and every API
+# call names the run it means. Two tabs are two runs.
+
+def load_run(run_id):
+    """Fetch a run and remember the version it was at, for the save."""
+    if not run_id:
+        return None
+    state, version = store.load_run(player_id(), run_id)
+    if state is not None:
+        g.run_version = version
+    return state
+
+
+def save_run(run):
+    """Write a run back, refusing to flatten a newer write from another tab."""
+    version = store.save_run(player_id(), run["id"], run,
+                             getattr(g, "run_version", 0))
+    if version is None:
+        return False
+    g.run_version = version
+    return True
+
+
+def requested_run_id():
+    """The run this request is about: a query parameter or a JSON field."""
+    rid = request.args.get("run")
+    if not rid and request.is_json:
+        rid = (request.get_json(silent=True) or {}).get("run")
+    return rid if rid and rid.isalnum() and len(rid) <= 40 else None
+
+
 @app.after_request
 def _keep_player(response):
     if request.endpoint and request.endpoint != "static":
         with_player(response)
+        response.headers["Cache-Control"] = "no-store"
     return response
+
+
+# Stale runs are swept once in a while rather than on a timer: there is no
+# scheduler here, and a fortnight-old run costs nothing until somebody asks
+# the database a question anyway.
+_LAST_SWEEP = [0.0]
+SWEEP_EVERY = 3600.0
+
+
+def maybe_sweep():
+    now = time.time()
+    if now - _LAST_SWEEP[0] < SWEEP_EVERY:
+        return
+    _LAST_SWEEP[0] = now
+    try:
+        store.cleanup_stale()
+    except Exception:
+        pass          # a failed tidy-up is never worth a failed request
 
 
 # --------------------------------------------------------------------------
@@ -114,12 +188,13 @@ def language_rows(c, limit=3):
     langs = [l for l in (c.get("languages") or []) if isinstance(l, dict)]
     out = []
     for i, lang in enumerate(langs):
-        if i >= limit and (lang.get("share") or 0) < 20:
-            break
+        if i >= limit and (lang.get("share") or 0) < 20 and not lang.get("status"):
+            continue
         out.append({
             "name": lang["name"],
             "share": lang.get("share"),
             "official": bool(lang.get("official")),
+            "status": lang.get("status"),
             "speakers": speaker_count(lang.get("speakers")),
             "wiki": lang.get("wiki"),
             "kind": "language",
@@ -195,6 +270,10 @@ def fact_card(iso2):
                   for n in w.neighbours(iso2, 8)]
     leaders = leader_rows(c, 3)
     bullets = []
+    if c.get("drives_on"):
+        bullets.append(("Driving side", c["drives_on"].capitalize()))
+    if c.get("calling_code"):
+        bullets.append(("Calling code", c["calling_code"]))
     if c.get("capitals"):
         bullets.append(("Capital", ", ".join(
             ent_name(x) for x in c["capitals"][:2])))
@@ -212,6 +291,9 @@ def fact_card(iso2):
     langs = language_line(c)
     if langs:
         bullets.append(("Languages", langs))
+    if c.get("national_languages"):
+        bullets.append(("National language", ", ".join(c["national_languages"])))
+        bullets.append(("Working languages", ", ".join(c["working_languages"])))
     for label, value in economy_lines(c)[:2]:
         bullets.append((label, value))
     all_neighbours = w.neighbours(iso2)
@@ -346,11 +428,13 @@ def focus_card(highlight, iso2):
 
 
 # --------------------------------------------------------------------------
-# Run state, kept in the session cookie
+# Run state, persisted in SQLite and scoped to the browser cookie
 # --------------------------------------------------------------------------
 
-def new_run(category, endless=False, challenge=False):
-    session["run"] = {
+def new_run(category, endless=False, challenge=False, country=None):
+    run = {
+        "id": uuid.uuid4().hex,
+        "country": country,
         "category": category,
         "endless": endless,
         # Challenge mode takes the four options away: you type the answer, or
@@ -364,18 +448,17 @@ def new_run(category, endless=False, challenge=False):
         "lives": STARTING_LIVES,
         "lifelines": {"fifty": 1, "peek": 1, "skip": 1},
         "recent": [],
+        # How often each question type has come up, so a run spreads itself
+        # over the topics instead of over the dice. See questions.balanced_mode.
+        "mode_counts": {},
         "pending": {},
         "over": False,
+        "started_at": time.time(),
     }
-    session.modified = True
-    return session["run"]
-
-
-def run_state():
-    r = session.get("run")
-    if not r:
-        r = new_run("grand_tour")
-    return r
+    g.run_version = 0
+    store.save_run(player_id(), run["id"], run, 0)
+    g.run_version = 1
+    return run
 
 
 def modes_for(category):
@@ -384,9 +467,15 @@ def modes_for(category):
 
 
 def public(run):
-    return {k: run.get(k) for k in
-            ("category", "endless", "challenge", "score", "streak",
-             "best_streak", "asked", "correct", "lives", "lifelines", "over")}
+    out = {k: run.get(k) for k in
+           ("id", "country", "category", "endless", "challenge", "score",
+            "streak", "best_streak", "asked", "correct", "lives", "lifelines",
+            "over")}
+    # The browser keeps its own score history and can only report what it is
+    # told. Sending the distinct countries a run has covered lets it show
+    # what was learned alongside what was scored.
+    out["countries_seen"] = sorted({pair[0] for pair in run.get("recent") or []})
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -411,9 +500,17 @@ def home():
 @app.route("/games")
 def games():
     """Every game in one place, each offered both ways round: a scored run of
-    twelve with three lives, or casual practice that never ends."""
+    twelve with three lives, or casual practice that never ends.
+
+    Country practice was only reachable from a country's own page, which meant
+    finding the country first and knowing the button was there. It is offered
+    here too, as a list of every country in the dataset.
+    """
+    w = world()
+    countries = sorted(((w.name(i), i) for i in w.all_isos))
     return render_template("games.html", categories=questions.CATEGORIES,
-                           stats=store.overview(world(), player_id()))
+                           countries=countries,
+                           stats=store.overview(w, player_id()))
 
 
 @app.route("/map")
@@ -458,20 +555,66 @@ def sources():
         "cities": sum(len(w.get(i).get("cities") or []) for i in w.all_isos),
         "economy": sum(1 for i in w.all_isos if w.get(i).get("economy")),
     }
-    return render_template("sources.html", counts=counts)
+    return render_template("sources.html", counts=counts,
+                           conventions=sorted(provenance.CONVENTIONS.items()))
 
 
 @app.route("/play/<category>")
 def play(category):
+    """The stage. Always lands on a URL naming the run it is showing.
+
+    Arriving without one resumes the newest run of this exact shape, or starts
+    a fresh one, and then redirects so the id is in the address bar. That
+    redirect is what makes refresh, back, bookmarking and a second tab all
+    behave: the tab's own run is written down where only that tab can see it.
+    """
     if category not in questions.CATEGORY_MODES:
         return redirect(url_for("home"))
+    maybe_sweep()
     endless = request.args.get("endless") == "1"
     challenge = request.args.get("challenge") == "1"
-    new_run(category, endless, challenge)
-    title = next((n for k, n, _, _ in questions.CATEGORIES if k == category), "Quiz")
+    country = request.args.get("country", "").upper() or None
+    if country and not world().get(country):
+        return redirect(url_for("games"))
+    shape = {"category": category, "endless": endless,
+             "challenge": challenge, "country": country}
+
+    requested = requested_run_id()
+    run = load_run(requested)
+    # A run id in the URL that will not load is the interesting case: it means
+    # the browser is not returning its cookie, so every redirect would mint a
+    # fresh run and bounce again -- an endless loop, not a game. One hop is
+    # all this is allowed, so a browser that blocks cookies gets a playable
+    # run with a stale id in the address bar rather than an error page.
+    unowned = bool(requested) and run is None
+    if run and any(run.get(k) != v for k, v in shape.items()):
+        # The settings in the URL win over the run named in it: a link to the
+        # endless version of a game has to start the endless version.
+        run = None
+    if run is None and not unowned:
+        run, version = store.latest_run(player_id(), shape)
+        if run and not run.get("over"):
+            g.run_version = version
+        else:
+            run = None
+    if run is None:
+        run = new_run(category, endless, challenge, country)
+    if requested != run["id"] and not unowned:
+        args = dict(request.args, run=run["id"])
+        return redirect(url_for("play", category=category, **args))
+
+    title = next((n for k, n, _, _ in questions.CATEGORIES if k == category),
+                 "Quiz")
+    # What this country simply has no data for, said out loud rather than
+    # quietly never asked about.
+    gaps = {}
+    if country:
+        gaps = questions.missing_topics(
+            world(), country, sorted(questions.COUNTRY_STUDY_MODES))
     return render_template("play.html", category=category, title=title,
                            endless=endless, challenge=challenge,
-                           run_length=RUN_LENGTH)
+                           run_length=RUN_LENGTH, country=country,
+                           run_id=run["id"], gaps=gaps)
 
 
 @app.route("/atlas")
@@ -506,6 +649,11 @@ def country(iso2):
     return render_template("country.html", c=c, card=fact_card(iso2),
                            mastery=stats["mastery"].get(iso2),
                            linked=linked,
+                           # Which facts on this page have a source behind
+                           # them, and what that source actually says.
+                           provenance=sorted(w.provenance(iso2).items()),
+                           practice_gaps=questions.missing_topics(
+                               w, iso2, sorted(questions.COUNTRY_STUDY_MODES)),
                            languages=language_rows(c, 5),
                            leaders=leader_rows(c),
                            economy=c.get("economy") or {},
@@ -580,17 +728,50 @@ def progress():
 @app.route("/api/next")
 def api_next():
     w = world()
-    run = run_state()
+    run = load_run(requested_run_id())
+    if run is None:
+        return jsonify({"error": "That run has expired. Start a new one.",
+                        "expired": True}), 409
+
+    if run.get("last_response") and request.args.get("advance") != "1":
+        return jsonify(dict(run["current_payload"],
+                            restored_answer=run["last_response"]))
+    if run.get("pending") and run.get("current_payload"):
+        return jsonify(dict(run["current_payload"], run=public(run)))
     if run["over"]:
         return jsonify({"done": True, "run": public(run)})
 
+    run.pop("last_response", None)
     modes = modes_for(run["category"])
+    typed_only = False
+    if run.get("challenge"):
+        typed = [m for m in modes if m not in questions.CHOICE_REQUIRED]
+        # Some games have nothing that can be typed: every Alliances question
+        # is a yes or no, and "yes" typed blind is a coin toss. Rather than
+        # refuse to start, the run plays as multiple choice and says so.
+        typed_only = not typed
+        modes = typed if typed else modes
+    if run.get("country"):
+        modes = [m for m in modes if m in questions.COUNTRY_STUDY_MODES]
+        # Only what this country can actually be asked about. Retrying a
+        # generator forty times in the hope that Tuvalu grows a land border
+        # is not a plan.
+        modes = questions.supported_modes(w, run["country"], modes)
+    if not modes:
+        return jsonify({"error": "No questions for this combination. "
+                                 "Choose Grand Tour for country practice."}), 400
+
     rng = random
     q = None
     avoid = [tuple(x) for x in run["recent"][-14:]]
+    counts = run.setdefault("mode_counts", {})
     for _ in range(40):
-        iso, mode = store.pick(w, modes, rng, avoid=avoid,
-                               player=player_id(), adaptive=learning_on())
+        if run.get("country"):
+            iso = run["country"]
+            mode = questions.balanced_mode(rng, modes, counts)
+        else:
+            iso, mode = store.pick(w, modes, rng, avoid=avoid,
+                                   player=player_id(), adaptive=learning_on())
         gen = questions.MODES[mode][2]
         try:
             q = gen(w, iso, rng)
@@ -599,10 +780,11 @@ def api_next():
         if q:
             break
     if not q:
-        return jsonify({"error": "Could not build a question. Is the dataset built?"}), 500
+        return jsonify({"error": "Could not build a question. "
+                                 "Is the dataset built?"}), 500
 
     kind = q.get("answer_kind") or "text"
-    challenge = bool(run.get("challenge")) and kind != "map"
+    challenge = bool(run.get("challenge")) and kind != "map" and not typed_only
 
     qid = uuid.uuid4().hex[:12]
     run["pending"] = {qid: {"answer": q["answer"], "mode": q["mode"],
@@ -610,9 +792,14 @@ def api_next():
                             "highlight": q.get("highlight"),
                             "answer_kind": kind,
                             "also": q.get("also") or [],
+                            "choice_count": len(q.get("choices") or []),
+                            # The server's own clock on this question. A
+                            # refresh restarts the browser's, and the speed
+                            # bonus should not be a reward for refreshing.
+                            "asked_at": time.time(),
                             "challenge": challenge}}
     run["recent"] = (run["recent"] + [[q["subject"], q["mode"]]])[-18:]
-    session.modified = True
+    counts[q["mode"]] = counts.get(q["mode"], 0) + 1
 
     payload = {k: q[k] for k in ("mode", "prompt", "hint", "media", "choices")}
     payload["qid"] = qid
@@ -622,55 +809,78 @@ def api_next():
     payload["run_length"] = None if run["endless"] else RUN_LENGTH
     payload["answer_kind"] = kind
     payload["challenge"] = challenge
+    # What the answer is measured against, where that is a convention rather
+    # than a fact. Shown under the question: "largest city" means nothing
+    # until you say whether you mean the city or the conurbation.
+    payload["definition"] = q.get("definition")
+    if typed_only:
+        payload["note"] = ("This game has no typed answers -- every question "
+                           "is a yes or no -- so it is played with options.")
     if challenge:
         # No options to choose between, so they are not sent at all -- and a
         # country answer gets the map as a second way in, since pointing at
         # Chad is a fair way to prove you know where Chad is.
         payload["choices"] = []
         payload["input"] = "text"
-        if kind == "country":
+        if kind == "country" and not q["media"]:
             payload["media"] = {"type": "map"}
             payload["input"] = "text+map"
+    run["current_payload"] = payload
+    if not save_run(run):
+        return jsonify({"error": "This run was changed in another tab. "
+                                 "Refresh to pick it up.", "conflict": True}), 409
     return jsonify(payload)
 
 
 @app.route("/api/answer", methods=["POST"])
 def api_answer():
+    """Score one answer, as a single transaction, exactly once.
+
+    The four writes an answer causes -- the mastery card, the answer log, the
+    finished-run row and the run state itself -- now land together or not at
+    all, and the question id is the idempotency key: submit the same answer
+    twice and the second submission gets the first one's response back rather
+    than a second score. See store.commit_answer.
+    """
     body = request.get_json(force=True) or {}
-    run = run_state()
+    run = load_run(requested_run_id())
+    if run is None:
+        return jsonify({"error": "That run has expired. Start a new one.",
+                        "expired": True}), 409
     qid = body.get("qid")
+
+    already = store.stored_answer(player_id(), run["id"], qid)
+    if already is not None:
+        return jsonify(already)
+
     pending = run.get("pending", {}).get(qid)
     if not pending:
         return jsonify({"error": "That question expired -- start a new one."}), 400
 
     given = body.get("choice")
     typed = body.get("text")
-    ms = body.get("ms")
+    ms = elapsed_ms(pending, body.get("ms"))
     skipped = bool(body.get("skipped"))
     if skipped:
+        if run["lifelines"]["skip"] <= 0:
+            return jsonify({"error": "No skips remaining."}), 400
+        run["lifelines"]["skip"] -= 1
+        run["streak"] = 0
         correct = False
     elif typed is not None:
         # Challenge mode: judged on meaning, not spelling. See matching.py.
         correct = matching.judge(world(), typed, pending)
+    elif pending.get("answer_kind") in ("country", "map"):
+        correct = matching.judge(world(), str(given or ""), pending)
     else:
         correct = str(given) == str(pending["answer"])
-
-    if not skipped and learning_on():
-        store.record(pending["subject"], pending["mode"], correct, ms,
-                     player=player_id())
 
     run["asked"] += 1
     if correct:
         run["correct"] += 1
         run["streak"] += 1
         run["best_streak"] = max(run["best_streak"], run["streak"])
-        speed = 1.0
-        if isinstance(ms, int) and ms < 12000:
-            speed = 1.0 + (12000 - ms) / 24000.0     # up to +50% for fast answers
-        multiplier = min(4, 1 + run["streak"] // 3)
-        # No four options to guess between, so it is worth half as much again.
-        hard = 1.5 if pending.get("challenge") else 1.0
-        run["score"] += int(BASE_POINTS * multiplier * speed * hard)
+        run["score"] += award(run, pending, ms)
     elif not skipped:
         run["streak"] = 0
         # Casual runs have no lives to lose: they are practice, and being
@@ -678,30 +888,33 @@ def api_answer():
         if not run["endless"]:
             run["lives"] -= 1
 
-    finished = run["lives"] <= 0 or (not run["endless"] and run["asked"] >= RUN_LENGTH)
+    finished = run["lives"] <= 0 or (not run["endless"]
+                                     and run["asked"] >= RUN_LENGTH)
     if finished:
         run["over"] = True
-        if learning_on():
-            store.record_run(run["category"], run["score"], run["asked"],
-                             run["correct"], run["best_streak"],
-                             player=player_id())
     run["pending"] = {}
-    session.modified = True
 
     highlight = pending.get("highlight")
     answer = pending["answer"]
     # In challenge mode there is no winning button to light up, so the answer
     # has to arrive as words.
     answer_text = answer
+    c = None
     if pending.get("answer_kind") in ("country", "map"):
         iso = answer if len(str(answer)) == 2 else None
         c = world().by_iso3.get(answer) if iso is None else world().get(answer)
         answer_text = c["name"] if c else answer
-    return jsonify({
+    response = {
+        "qid": qid,
+        "points": run["score"] - run["current_payload"]["run"]["score"],
         "correct": correct,
         "skipped": skipped,
         "answer": answer,
         "answer_text": answer_text,
+        "answer_iso3": (c.get("iso3") if c else None)
+                       if pending.get("answer_kind") in ("country", "map") else None,
+        "subject": pending["subject"],
+        "mode": pending["mode"],
         "card": fact_card(pending["subject"]),
         # What the question was actually about: a person or a city gets its
         # own card, and anything else marks a line on the country's.
@@ -709,7 +922,59 @@ def api_answer():
         "highlight": highlight,
         "run": public(run),
         "finished": finished,
-    })
+    }
+    run["last_response"] = response
+
+    learning = learning_on() and not skipped
+    version, stored = store.commit_answer(
+        player_id(), run["id"], qid, response, run,
+        getattr(g, "run_version", 0),
+        mastery=(pending["subject"], pending["mode"], correct, ms)
+                if learning else None,
+        finished_run=(run["category"], run["score"], run["asked"],
+                      run["correct"], run["best_streak"])
+                     if finished and learning_on() else None)
+    if version is None:
+        return jsonify({"error": "This run was changed in another tab. "
+                                 "Refresh to pick it up.", "conflict": True}), 409
+    g.run_version = version
+    return jsonify(stored)
+
+
+def elapsed_ms(pending, reported):
+    """How long the question was on screen, believing whichever is longer.
+
+    The browser's clock restarts on a refresh, so "refresh, then answer"
+    reports a second and earns the full speed bonus for a question that has
+    been open for a minute. The server's clock is set when the question is
+    handed out and does not restart, so it is never an understatement --
+    taking the larger of the two makes the bonus impossible to refresh into
+    existence. It costs an honest player a little on a slow connection, which
+    is the right side to be wrong on for a bonus nobody is ranked by.
+    """
+    server = None
+    if pending.get("asked_at"):
+        server = int((time.time() - pending["asked_at"]) * 1000)
+    if not isinstance(reported, int) or reported < 0:
+        return server
+    return reported if server is None else max(reported, server)
+
+
+def award(run, pending, ms):
+    """Points for one correct answer.
+
+    Three multipliers, and a fourth that stops a coin toss paying what real
+    recall pays: a two-option question is worth half a four-option one, and a
+    bare map click -- 197 countries, no options at all -- is worth more.
+    """
+    speed = 1.0
+    if isinstance(ms, int) and 0 <= ms < SPEED_WINDOW_MS:
+        speed = 1.0 + (SPEED_WINDOW_MS - ms) / (SPEED_WINDOW_MS * 2.0)
+    streak = min(4, 1 + run["streak"] // 3)
+    # No four options to guess between, so it is worth half as much again.
+    hard = 1.5 if pending.get("challenge") else 1.0
+    width = CHOICE_WEIGHT.get(pending.get("choice_count"), 1.0)
+    return int(BASE_POINTS * streak * speed * hard * width)
 
 
 @app.route("/api/lifeline", methods=["POST"])
@@ -717,12 +982,13 @@ def api_lifeline():
     body = request.get_json(force=True) or {}
     kind = body.get("kind")
     qid = body.get("qid")
-    run = run_state()
+    run = load_run(requested_run_id())
+    if run is None:
+        return jsonify({"error": "That run has expired.", "expired": True}), 409
     pending = run.get("pending", {}).get(qid)
-    if not pending or run["lifelines"].get(kind, 0) <= 0:
+    if kind not in ("fifty", "peek") or not pending or run["lifelines"].get(kind, 0) <= 0:
         return jsonify({"error": "Not available"}), 400
     run["lifelines"][kind] -= 1
-    session.modified = True
 
     out = {"run": public(run)}
     if kind == "fifty":
@@ -730,18 +996,44 @@ def api_lifeline():
         wrong = [k for k in keys if str(k) != str(pending["answer"])]
         random.shuffle(wrong)
         out["remove"] = wrong[:max(0, len(wrong) - 1)]
+        run["current_payload"]["removed"] = out["remove"]
     elif kind == "peek":
         out["peek"] = world().summary_line(pending["subject"])
+        run["current_payload"]["hint"] = out["peek"]
+    out["run"] = public(run)
+    if not save_run(run):
+        return jsonify({"error": "This run was changed in another tab. "
+                                 "Refresh to pick it up.", "conflict": True}), 409
     return jsonify(out)
 
 
 @app.route("/api/geo")
 def api_geo():
-    return jsonify(world().geojson)
+    """The quiz map: polygons, plus a point for every country without one.
+
+    Twenty-six countries have no shape in this GeoJSON -- Singapore, Malta,
+    Bahrain, every Pacific and Caribbean microstate -- and on a polygon-only
+    map they are not merely hard to click, they are not there. Asked to find
+    Tuvalu, you could not. Each gets a marker at its recorded centre instead,
+    so it is a real target with a real name rather than an absence.
+    """
+    w = world()
+    geo = w.geojson
+    features = [f for f in geo["features"] if f.get("id") != "ATA"]
+    have = {f.get("id") for f in features}
+    points = []
+    for iso in w.all_isos:
+        c = w.get(iso)
+        if c.get("iso3") in have or c.get("lat") is None or c.get("lon") is None:
+            continue
+        points.append({"id": c.get("iso3") or iso, "iso2": iso,
+                       "name": c["name"], "lat": c["lat"], "lon": c["lon"]})
+    return jsonify(dict(geo, features=features, points=points))
 
 
 # Which set of names the challenge box should offer for each question type.
 SUGGEST_DOMAIN = {
+    "landmark_to_country": "country",
     "flag_to_country": "country", "country_to_flag": "country",
     "outline": "country", "capital_to_country": "country",
     "which_borders_both": "country", "border_odd_one_out": "country",
@@ -800,12 +1092,70 @@ def api_learning():
     return resp
 
 
+@app.route("/api/forget", methods=["POST"])
+def api_forget():
+    """Erase some named part of what the server holds for this browser.
+
+    "Forget everything" used to mean mastery, the answer log and finished
+    runs, and leave the game in progress sitting there to be resumed. The
+    scopes are named now, and the page offers them one at a time, because a
+    reset that quietly does three-quarters of the job is worse than one that
+    says what it does. Scores kept in the browser are cleared by the browser;
+    the page says which button does which.
+    """
+    body = request.get_json(force=True) or {}
+    scopes = body.get("scopes")
+    if scopes is not None and not isinstance(scopes, list):
+        return jsonify({"error": "scopes must be a list"}), 400
+    cleared = store.forget(player_id(), scopes)
+    return jsonify({"cleared": cleared,
+                    "scopes": sorted(store.FORGET_SCOPES)})
+
+
+@app.route("/api/progress/export")
+def api_export():
+    """Everything the server holds for this browser, as a file to keep."""
+    blob = store.export_data(player_id())
+    resp = jsonify(blob)
+    resp.headers["Content-Disposition"] = (
+        "attachment; filename=learngeo-progress.json")
+    return resp
+
+
+@app.route("/api/progress/import", methods=["POST"])
+def api_import():
+    body = request.get_json(force=True, silent=True)
+    if body is None:
+        return jsonify({"error": "That file is not JSON."}), 400
+    blob = body.get("data") if isinstance(body, dict) and "data" in body else body
+    try:
+        counts = store.import_data(player_id(), blob,
+                                   replace=bool(isinstance(body, dict)
+                                                and body.get("replace")))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"imported": counts})
+
+
 @app.route("/api/restart", methods=["POST"])
 def api_restart():
+    """Start a fresh run, leaving the old one to be swept in its own time."""
     body = request.get_json(force=True) or {}
+    old = requested_run_id()
     run = new_run(body.get("category", "grand_tour"), bool(body.get("endless")),
-                  bool(body.get("challenge")))
+                  bool(body.get("challenge")), body.get("country"))
+    if old and old != run["id"]:
+        store.drop_run(player_id(), old)
     return jsonify({"run": public(run)})
+
+
+@app.route("/api/run/abandon", methods=["POST"])
+def api_abandon():
+    """Leave a run for good. What the in-game Exit button does."""
+    rid = requested_run_id()
+    if rid:
+        store.drop_run(player_id(), rid)
+    return jsonify({"abandoned": bool(rid)})
 
 
 @app.template_filter("commas")

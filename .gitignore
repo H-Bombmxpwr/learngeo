@@ -31,3 +31,9 @@ Thumbs.db
 # Cached source dumps, re-downloaded on demand by the build scripts
 data/cities15000.zip
 data/factbook.zip
+
+# Local browser verification artifacts
+data/browser-test/
+data/edge-test*/
+data/browser-dom.txt
+data/*-game.png
