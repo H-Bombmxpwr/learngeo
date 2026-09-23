@@ -13,7 +13,7 @@ wander around.
 import json
 import os
 
-from . import provenance, supplement
+from . import provenance, supplement, explore, demonyms
 from .data_util import fold, slug, wiki_url
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +41,7 @@ def ent_name(x):
 # thread worth pulling -- which is as true of "crude petroleum" and "tropical"
 # as it is of "Spanish".
 TOPIC_FIELDS = {
+    "civilizations": ("civilization", "Civilizations & empires", "civilization or empire"),
     "languages":    ("language", "Languages", "language"),
     "currencies":   ("currency", "Currencies", "currency"),
     "government":   ("government", "Forms of government", "form of government"),
@@ -99,6 +100,8 @@ class World(object):
         # Then every sourced correction, last, so neither a dataset rebuild
         # nor the supplement can put a wrong value back. See provenance.py.
         provenance.apply(self.countries)
+        explore.apply(self.countries)
+        demonyms.apply(self.countries)
         self._derive_topics()
 
         self.by_iso3 = {}
@@ -239,7 +242,7 @@ class World(object):
             c = self.countries[iso]
             rows.append({"label": c["name"], "sub": self.continent_of(iso),
                          "kind": "country", "url": "/country/" + iso,
-                         "flag": c["flag_thumb"], "alt": [iso, c.get("iso3") or ""],
+                         "flag": c["flag_thumb"], "alt": [iso, c.get("iso3") or ""] + c.get("demonym_answers", []),
                          "rank": 0})
         for kind, bucket in self.topics.items():
             noun = next((sing for _, (k, _, sing) in TOPIC_FIELDS.items()
@@ -306,6 +309,8 @@ class World(object):
         names = set()
         if kind == "country":
             names = {self.countries[i]["name"] for i in self.all_isos}
+        elif kind == "demonym":
+            names = {n for c in self.countries.values() for n in c.get("demonyms", [])}
         elif kind == "city":
             for iso in self.all_isos:
                 names.update(c["name"] for c in self.countries[iso].get("cities") or []

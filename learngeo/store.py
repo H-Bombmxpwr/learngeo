@@ -256,7 +256,7 @@ def latest_run(player, match=None):
             # A finished run is still resumable -- the final card has to
             # survive a refresh -- but it is never what a fresh visit wants.
             pass
-        if match and any(state.get(k) != v for k, v in match.items()):
+        if match and any(state.get(k, 12 if k == "length" else None) != v for k, v in match.items()):
             continue
         return state, row["version"]
     return None, 0
@@ -589,7 +589,7 @@ def _pool(world, modes, ceiling):
     return list(world.all_isos)
 
 
-def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True):
+def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True, eligible=None):
     """Choose the next (iso2, mode). `modes` is the list of allowed mode keys.
 
     With `adaptive` off nothing is consulted and nothing is remembered: a
@@ -602,11 +602,15 @@ def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True):
     avoid = set(avoid)
     now = time.time()
     modes = list(modes)
+    eligible = eligible or (lambda iso, mode: True)
+    def pairs(isos):
+        return [(i, m) for i in isos for m in modes if eligible(i, m)]
 
     if not adaptive:
         recent = {a[0] for a in avoid}
         pool = [i for i in world.all_isos if i not in recent] or list(world.all_isos)
-        return rng.choice(pool), rng.choice(modes)
+        choices = pairs(pool) or pairs(world.all_isos)
+        return rng.choice(choices)
 
     with connect() as conn:
         ceiling = unlocked_tier(conn, player)
@@ -641,7 +645,7 @@ def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True):
     # gone would send the generator looking for a country that is not there.
     due = [(r["iso2"], r["mode"]) for r in due
            if (r["iso2"], r["mode"]) not in avoid
-           and r["mode"] in modes and world.get(r["iso2"])]
+           and r["mode"] in modes and world.get(r["iso2"]) and eligible(r["iso2"], r["mode"])]
 
     # Countries asked about recently, whatever the question was. Two questions
     # about Chad in five is what "the same questions" actually feels like,
@@ -649,6 +653,9 @@ def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True):
     recent_countries = {a[0] for a in avoid}
 
     candidates = _pool(world, modes, ceiling)
+    if not pairs(candidates):
+        candidates = list(world.all_isos)
+    candidates = [i for i in candidates if any(eligible(i, m) for m in modes)]
     fresh = [i for i in candidates if i not in recent_countries] or candidates
     # One in six questions still comes from the mastered pile, so knowing
     # something is not the same as never seeing it again.
@@ -656,7 +663,7 @@ def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True):
         thinned = [i for i in fresh if i not in mastered]
         if len(thinned) >= 12:
             fresh = thinned
-    unseen = [(i, m) for i in fresh for m in modes
+    unseen = [(i, m) for i, m in pairs(fresh)
               if (i, m) not in last and (i, m) not in avoid]
 
     # Review earns its turn, but never at the cost of new material: while
@@ -673,10 +680,9 @@ def pick(world, modes, rng=None, avoid=(), player=LOCAL, adaptive=True):
     # Everything has been seen at least once. Go round in order of longest
     # untouched rather than uniformly at random, which is what actually
     # stopped the same handful coming back.
-    stale = [(i, m) for i in fresh for m in modes if (i, m) not in avoid]
+    stale = [(i, m) for i, m in pairs(fresh) if (i, m) not in avoid]
     if not stale:
-        stale = [(i, m) for i in candidates for m in modes] or [
-            (rng.choice(world.all_isos), rng.choice(modes))]
+        stale = pairs(candidates) or pairs(world.all_isos)
     stale.sort(key=lambda p: last.get(p, 0.0))
     # A little jitter over the oldest quarter, so the order is not identical
     # every run.

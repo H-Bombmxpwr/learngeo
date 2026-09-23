@@ -10,7 +10,7 @@ import time
 import uuid
 from urllib.parse import quote_plus
 
-from flask import Flask, jsonify, redirect, render_template, request, url_for, g
+from flask import Flask, jsonify, redirect, render_template, request, url_for, g, send_file
 
 
 def _load_env(path=".env"):
@@ -35,7 +35,7 @@ def _load_env(path=".env"):
 
 _load_env()
 
-from learngeo import matching, provenance, questions, store, supplement
+from learngeo import matching, provenance, questions, store, supplement, explore, lessons, demonyms
 from learngeo.data import TOPIC_FIELDS, ent_name, slug, world
 from learngeo.data_util import wiki_url
 
@@ -270,6 +270,8 @@ def fact_card(iso2):
                   for n in w.neighbours(iso2, 8)]
     leaders = leader_rows(c, 3)
     bullets = []
+    if c.get("demonyms"):
+        bullets.append(("People are called", " / ".join(c["demonyms"])))
     if c.get("drives_on"):
         bullets.append(("Driving side", c["drives_on"].capitalize()))
     if c.get("calling_code"):
@@ -431,12 +433,18 @@ def focus_card(highlight, iso2):
 # Run state, persisted in SQLite and scoped to the browser cookie
 # --------------------------------------------------------------------------
 
-def new_run(category, endless=False, challenge=False, country=None):
+def run_length(value):
+    return int(value) if str(value) in {"5", "12", "25"} else RUN_LENGTH
+
+
+def new_run(category, endless=False, challenge=False, country=None, length=12):
+    challenge = bool(challenge and questions.game_options(category, world(), country)["typed"])
     run = {
         "id": uuid.uuid4().hex,
         "country": country,
         "category": category,
         "endless": endless,
+        "length": run_length(length),
         # Challenge mode takes the four options away: you type the answer, or
         # for anything whose answer is a country, click it on the map.
         "challenge": challenge,
@@ -468,7 +476,7 @@ def modes_for(category):
 
 def public(run):
     out = {k: run.get(k) for k in
-           ("id", "country", "category", "endless", "challenge", "score",
+           ("id", "country", "category", "endless", "challenge", "length", "score",
             "streak", "best_streak", "asked", "correct", "lives", "lifelines",
             "over")}
     # The browser keeps its own score history and can only report what it is
@@ -509,6 +517,7 @@ def games():
     w = world()
     countries = sorted(((w.name(i), i) for i in w.all_isos))
     return render_template("games.html", categories=questions.CATEGORIES,
+                           options={k: questions.game_options(k) for k in questions.CATEGORY_MODES},
                            countries=countries,
                            stats=store.overview(w, player_id()))
 
@@ -572,12 +581,14 @@ def play(category):
         return redirect(url_for("home"))
     maybe_sweep()
     endless = request.args.get("endless") == "1"
-    challenge = request.args.get("challenge") == "1"
+    challenge = request.args.get("challenge") == "1" and questions.game_options(category)["typed"]
+    length = run_length(request.args.get("length"))
     country = request.args.get("country", "").upper() or None
     if country and not world().get(country):
         return redirect(url_for("games"))
+    challenge = bool(challenge and questions.game_options(category, world(), country)["typed"])
     shape = {"category": category, "endless": endless,
-             "challenge": challenge, "country": country}
+             "challenge": challenge, "country": country, "length": length}
 
     requested = requested_run_id()
     run = load_run(requested)
@@ -587,7 +598,7 @@ def play(category):
     # all this is allowed, so a browser that blocks cookies gets a playable
     # run with a stale id in the address bar rather than an error page.
     unowned = bool(requested) and run is None
-    if run and any(run.get(k) != v for k, v in shape.items()):
+    if run and any(run.get(k, RUN_LENGTH if k == "length" else None) != v for k, v in shape.items()):
         # The settings in the URL win over the run named in it: a link to the
         # endless version of a game has to start the endless version.
         run = None
@@ -598,7 +609,7 @@ def play(category):
         else:
             run = None
     if run is None:
-        run = new_run(category, endless, challenge, country)
+        run = new_run(category, endless, challenge, country, length)
     if requested != run["id"] and not unowned:
         args = dict(request.args, run=run["id"])
         return redirect(url_for("play", category=category, **args))
@@ -610,10 +621,10 @@ def play(category):
     gaps = {}
     if country:
         gaps = questions.missing_topics(
-            world(), country, sorted(questions.COUNTRY_STUDY_MODES))
+            world(), country, [m for m in modes_for(category) if m in questions.COUNTRY_STUDY_MODES])
     return render_template("play.html", category=category, title=title,
                            endless=endless, challenge=challenge,
-                           run_length=RUN_LENGTH, country=country,
+                           run_length=length, country=country,
                            run_id=run["id"], gaps=gaps)
 
 
@@ -647,6 +658,10 @@ def country(iso2):
     stats = store.overview(w, player_id())
     linked = {f: w.topics_for(iso2, f) for f in TOPIC_FIELDS}
     return render_template("country.html", c=c, card=fact_card(iso2),
+                           discovery=explore.dossier(w, iso2),
+                           practice_sections={k: any(lessons.available(w, iso2, m) for m in ms)
+                                              for k, ms in questions.CATEGORY_MODES.items()
+                                              if ms and all(m in lessons.MODES for m in ms)},
                            mastery=stats["mastery"].get(iso2),
                            linked=linked,
                            # Which facts on this page have a source behind
@@ -745,7 +760,7 @@ def api_next():
     modes = modes_for(run["category"])
     typed_only = False
     if run.get("challenge"):
-        typed = [m for m in modes if m not in questions.CHOICE_REQUIRED]
+        typed = [m for m in modes if m not in questions.CHOICE_REQUIRED and m != "map_click"]
         # Some games have nothing that can be typed: every Alliances question
         # is a yes or no, and "yes" typed blind is a coin toss. Rather than
         # refuse to start, the run plays as multiple choice and says so.
@@ -765,16 +780,30 @@ def api_next():
     q = None
     avoid = [tuple(x) for x in run["recent"][-14:]]
     counts = run.setdefault("mode_counts", {})
+    lesson_seen = set(run.get("lesson_seen", []))
+    lesson_pool = {}
+    for lesson_mode in set(modes) & set(lessons.MODES):
+        available = {i: lessons.bank(w)[i][lesson_mode] for i in
+                     ([run["country"]] if run.get("country") else w.all_isos)
+                     if lessons.bank(w)[i][lesson_mode]}
+        fresh = {i for i, rows in available.items() if any(r["id"] not in lesson_seen for r in rows)}
+        if not fresh and available:
+            completed = {r["id"] for rows in available.values() for r in rows}
+            lesson_seen -= completed
+            run["lesson_seen"] = [key for key in run.get("lesson_seen", []) if key not in completed]
+        lesson_pool[lesson_mode] = fresh or set(available)
     for _ in range(40):
         if run.get("country"):
             iso = run["country"]
             mode = questions.balanced_mode(rng, modes, counts)
         else:
             iso, mode = store.pick(w, modes, rng, avoid=avoid,
-                                   player=player_id(), adaptive=learning_on())
+                                   player=player_id(), adaptive=learning_on(),
+                                   eligible=lambda i, m: m not in lesson_pool or i in lesson_pool[m])
         gen = questions.MODES[mode][2]
         try:
-            q = gen(w, iso, rng)
+            q = (lessons.question(w, iso, mode, rng, run.get("lesson_seen", []))
+                 if mode in lessons.MODES else gen(w, iso, rng))
         except Exception:
             q = None
         if q:
@@ -792,6 +821,10 @@ def api_next():
                             "highlight": q.get("highlight"),
                             "answer_kind": kind,
                             "also": q.get("also") or [],
+                            "explanation": q.get("explanation"),
+                            "source": q.get("source"),
+                            "source_label": q.get("source_label"),
+                            "learn_url": q.get("learn_url"),
                             "choice_count": len(q.get("choices") or []),
                             # The server's own clock on this question. A
                             # refresh restarts the browser's, and the speed
@@ -800,13 +833,15 @@ def api_next():
                             "challenge": challenge}}
     run["recent"] = (run["recent"] + [[q["subject"], q["mode"]]])[-18:]
     counts[q["mode"]] = counts.get(q["mode"], 0) + 1
+    if q.get("lesson_id"):
+        run["lesson_seen"] = (run.get("lesson_seen", []) + [q["lesson_id"]])[-1000:]
 
     payload = {k: q[k] for k in ("mode", "prompt", "hint", "media", "choices")}
     payload["qid"] = qid
     payload["category_label"] = questions.MODES[q["mode"]][0]
     payload["run"] = public(run)
     payload["question_no"] = run["asked"] + 1
-    payload["run_length"] = None if run["endless"] else RUN_LENGTH
+    payload["run_length"] = None if run["endless"] else run.get("length", RUN_LENGTH)
     payload["answer_kind"] = kind
     payload["challenge"] = challenge
     # What the answer is measured against, where that is a convention rather
@@ -814,8 +849,7 @@ def api_next():
     # until you say whether you mean the city or the conurbation.
     payload["definition"] = q.get("definition")
     if typed_only:
-        payload["note"] = ("This game has no typed answers -- every question "
-                           "is a yes or no -- so it is played with options.")
+        payload["note"] = "These questions use visible answer choices rather than typed answers."
     if challenge:
         # No options to choose between, so they are not sent at all -- and a
         # country answer gets the map as a second way in, since pointing at
@@ -889,7 +923,7 @@ def api_answer():
             run["lives"] -= 1
 
     finished = run["lives"] <= 0 or (not run["endless"]
-                                     and run["asked"] >= RUN_LENGTH)
+                                     and run["asked"] >= run.get("length", RUN_LENGTH))
     if finished:
         run["over"] = True
     run["pending"] = {}
@@ -911,6 +945,10 @@ def api_answer():
         "skipped": skipped,
         "answer": answer,
         "answer_text": answer_text,
+        "explanation": pending.get("explanation"),
+        "source": pending.get("source"),
+        "source_label": pending.get("source_label"),
+        "learn_url": pending.get("learn_url"),
         "answer_iso3": (c.get("iso3") if c else None)
                        if pending.get("answer_kind") in ("country", "map") else None,
         "subject": pending["subject"],
@@ -1031,8 +1069,15 @@ def api_geo():
     return jsonify(dict(geo, features=features, points=points))
 
 
+@app.route("/data/demonyms.json")
+def demonym_data():
+    """Distribute the attributed ODbL-derived demonym database separately."""
+    return send_file(demonyms.DATA_PATH, mimetype="application/json", as_attachment=True)
+
+
 # Which set of names the challenge box should offer for each question type.
 SUGGEST_DOMAIN = {
+    "demonym_of": "demonym",
     "landmark_to_country": "country",
     "flag_to_country": "country", "country_to_flag": "country",
     "outline": "country", "capital_to_country": "country",
@@ -1143,7 +1188,7 @@ def api_restart():
     body = request.get_json(force=True) or {}
     old = requested_run_id()
     run = new_run(body.get("category", "grand_tour"), bool(body.get("endless")),
-                  bool(body.get("challenge")), body.get("country"))
+                  bool(body.get("challenge")), body.get("country"), body.get("length", RUN_LENGTH))
     if old and old != run["id"]:
         store.drop_run(player_id(), old)
     return jsonify({"run": public(run)})

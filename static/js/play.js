@@ -566,7 +566,7 @@
     // Getting it right is not proof you knew it, so the bar still says what
     // the thing was -- one line, in case the fourth option was a guess.
     var f = res.focus;
-    var note = f ? (f.blurb || factLine(f)) : (res.card.blurb || "");
+    var note = res.explanation || (f ? (f.blurb || factLine(f)) : (res.card.blurb || ""));
     var bar = h("div", { class: "answerbar" }, [
       h("span", { class: "said " + (res.correct ? "right" : "wrong"),
                   text: res.skipped ? "Skipped" : (res.correct ? "Correct" : "Not quite") }),
@@ -576,7 +576,11 @@
                   text: res.correct ? ("+" + pointsGained(res))
                                     : (map && res.answer_iso3 ? "shown in green on the map" : "Review the answer, then keep going") })
     ]);
-    if (note) bar.appendChild(h("p", { class: "note", text: trim(note, 200) }));
+    if (note) bar.appendChild(h("p", { class: "note", text: res.explanation ? note : trim(note, 200) }));
+    if (res.source) bar.appendChild(h("a", { class: "lesson-source", href: res.source,
+      target: "_blank", rel: "noopener", text: res.source_label || "Read the source" }));
+    if (res.learn_url) bar.appendChild(h("a", { class: "lesson-source", href: res.learn_url,
+      target: "_blank", rel: "noopener", text: "Explore this topic" }));
     announce((res.skipped ? "Skipped." : (res.correct ? "Correct." : "Not quite."))
              + " The answer was " + (res.answer_text || res.card.name) + ".");
     bar.appendChild(button("Next question", "btn big", nextQuestion));
@@ -611,8 +615,11 @@
       ])
     ]);
     var actions = h("div", { class: "sheet-actions" });
+    if (res.explanation) sheet.appendChild(h("p", { class: "note", text: res.explanation }));
+    if (res.source) sheet.appendChild(h("a", { href: res.source, target: "_blank", rel: "noopener", text: res.source_label || "Read the source" }));
+    if (res.learn_url) actions.appendChild(h("a", { class: "btn ghost", href: res.learn_url, text: "Explore this topic" }));
     actions.appendChild(button("Play again", "btn big", function () {
-      post("/api/restart", { category: cfg.category, endless: cfg.endless, challenge: cfg.challenge, country: cfg.country })
+      post("/api/restart", { category: cfg.category, endless: cfg.endless, length: cfg.length, challenge: cfg.challenge, country: cfg.country })
         .then(nextQuestion);
     }));
     actions.appendChild(h("a", { class: "btn ghost", href: "/country/" + res.card.iso2,
@@ -984,7 +991,7 @@
       if (!act) return;
       if (act.dataset.act === "restart") {
         if (!confirm("Start this game again from zero?")) return;
-        post("/api/restart", { category: cfg.category, endless: cfg.endless,
+        post("/api/restart", { category: cfg.category, endless: cfg.endless, length: cfg.length,
                                challenge: cfg.challenge, country: cfg.country })
           .then(function (res) {
             // A restart is a new run, so the URL has to follow it.

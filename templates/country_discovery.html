@@ -1,0 +1,102 @@
+{% macro practice(category, label='Practice this section') -%}
+  {% if practice_sections.get(category) %}<p><a class="btn ghost section-practice" href="{{ url_for('play', category=category, country=c.iso2, endless=1) }}">{{ label }} &rarr;</a></p>{% endif %}
+{%- endmacro %}
+
+<nav class="discovery-nav" aria-label="Explore this country">
+  <a href="#people-name">People</a>
+  <a href="#trivia">Test yourself</a><a href="#civilizations">Who lived here?</a>
+  <a href="#history">History</a><a href="#belief">Religion</a><a href="#keep-exploring">Keep exploring</a>
+</nav>
+
+<section class="section" id="people-name">
+  <p class="eyebrow">WHAT PEOPLE ARE CALLED</p>
+  <h2>{{ c.demonyms | join(' / ') }}</h2>
+  <p>These are English <b>demonyms</b> for people from {{ c.name }}. A demonym describes a connection to a place; it does not mean everyone shares an ethnicity, language or religion.</p>
+  <small><a href="https://github.com/mledoze/countries" target="_blank" rel="noopener">Demonym source: mledoze/countries</a> &middot; <a href="{{ url_for('demonym_data') }}">Download the attributed dataset (ODbL)</a></small>
+  {{ practice('demonyms', 'Practice demonyms') }}
+</section>
+
+<section class="section" id="trivia">
+  <p class="eyebrow">START WITH A QUESTION</p>
+  <h2>Trivia essentials</h2>
+  {{ practice('country_knowledge') }}
+  <p>Try answering before opening each card. These are study prompts, not a ranking of how often questions appear in quizzes.</p>
+  <div class="discovery-grid">
+    {% for item in discovery.trivia %}
+    <details class="study-card">
+      <summary>{{ item.question }}</summary>
+      <p>{{ item.answer }}</p>
+      <small>{% if item.imported %}From the atlas dataset; {% endif %}<a href="{{ item.source }}" target="_blank" rel="noopener">{{ 'Country reference' if item.imported else 'Read the source' }}</a></small>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section" id="civilizations">
+  <p class="eyebrow">SAME LAND, DIFFERENT WORLDS</p>
+  <h2>Civilizations, flags &amp; standards</h2>
+  {{ practice('ancient_world') }}
+  {{ practice('historical_flags', 'Practice these historical flags') }}
+  <p>Modern borders are a starting point for exploring the past. These cultures and states occupied some of the same land; they were not the same country. Dates describe each civilization or state as a whole, not continuous rule over every place listed.</p>
+  {% if discovery.eras %}
+  <div class="discovery-grid">
+    {% for era in discovery.eras %}
+    <article class="study-card era-card">
+      {% if era.image %}<img class="historical-flag" src="{{ url_for('static', filename='images/' ~ era.image) }}" alt="{{ era.name }}: {{ era.symbol }}" loading="lazy">{% endif %}
+      {% if era.credit %}<small><a href="{{ era.image_source }}" target="_blank" rel="noopener">{{ era.credit }}</a></small>{% endif %}
+      <span class="badge">{{ era.kind }}</span>
+      <h3>{{ era.name }}</h3><b class="era-date">{{ era.dates }}</b>
+      <p>{{ era.scope }}</p><p>{{ era.symbol }}</p>
+      <a href="{{ era.source }}" target="_blank" rel="noopener">Explore the evidence &amp; illustrations &rarr;</a>
+      {% if era.related %}
+      <h4>Follow it across today's borders</h4>
+      <div class="chipset">{% for other in era.related %}<a class="neighbour" href="{{ url_for('country', iso2=other.iso2) }}#civilizations">{{ other.name }}</a>{% endfor %}</div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="coverage-note">A sourced civilization and flag trail has not been added for {{ c.name }} yet. No ancient flag is inferred from the modern one.</p>
+  {% endif %}
+  <p><a href="{{ discovery.history_source }}" target="_blank" rel="noopener">Explore the history of this land</a> &middot; <a href="{{ url_for('topic_kind', kind='civilization') }}">Browse civilizations &amp; empires</a></p>
+</section>
+
+<section class="section" id="history">
+  <h2>Turning points</h2>
+  {{ practice('turning_points') }}
+  {% if discovery.timeline %}
+  <p>A few starting points, not a complete history.</p>
+  <ol class="history-timeline">{% for date, text in discovery.timeline %}<li><b>{{ date }}</b><p>{{ text }}</p></li>{% endfor %}</ol>
+  {% else %}<p>A curated timeline is not available yet. Explore the country's history and the historical figures below.</p>{% endif %}
+  <a href="{{ discovery.history_source }}" target="_blank" rel="noopener">Read the historical overview &rarr;</a>
+</section>
+
+<section class="section" id="belief">
+  <h2>Religion: state &amp; society</h2>
+  {{ practice('beliefs') }}
+  <p>An official religion is a legal status. The largest religious group is a population measure. Neither describes every person's beliefs.</p>
+  {% set religion = discovery.religion %}
+  {% if religion %}
+  <div class="discovery-grid">
+    <article class="study-card"><h3>Official status</h3><p>{{ religion.official }}</p><a href="{{ religion.official_source }}" target="_blank" rel="noopener">Status reference</a></article>
+    <article class="study-card"><h3>Religious affiliation</h3>
+      {% if religion.largest %}<p><b>Largest religious group: {{ religion.largest }}</b></p>{% endif %}
+      <small>{{ religion.year }}</small>
+      {% for name, share in religion.groups %}<div class="religion-row"><span>{{ name }}</span><b>{{ share }}%</b></div><div class="meter"><i style="width:{{ share }}%"></i></div>{% endfor %}
+      <p>{{ religion.note }}</p><a href="{{ religion.source }}" target="_blank" rel="noopener">Affiliation source &amp; methodology</a>
+    </article>
+  </div>
+  {% else %}
+  <p class="coverage-note">Official status and a dated affiliation breakdown have not been checked for this country. The atlas's religion tags are not a population ranking.</p>
+  {% endif %}
+  {% if linked.religions %}{{ chips(linked.religions, 'religion', 'Explore recorded traditions') }}{% endif %}
+</section>
+
+<section class="section" id="keep-exploring">
+  <h2>Choose your next rabbit hole</h2>
+  <div class="chipset">
+    {% for label, anchor in discovery.reading %}<a class="neighbour" href="{{ discovery.article }}#{{ anchor }}" target="_blank" rel="noopener">{{ label }} of {{ c.name }} &nearr;</a>{% endfor %}
+    <a class="neighbour" href="{{ url_for('topic_kind', kind='civilization') }}">Civilizations across borders</a>
+    <a class="neighbour" href="{{ url_for('topics_index') }}">Languages, landmarks &amp; shared connections</a>
+  </div>
+</section>

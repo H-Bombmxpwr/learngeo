@@ -14,7 +14,7 @@ server-side, so the answer never rides along with the question.
 """
 import random
 
-from . import provenance, supplement
+from . import provenance, supplement, lessons
 from .data import ent_name
 from .data_util import fold
 
@@ -1069,9 +1069,20 @@ MODES = {
     "figure_known_for":  ("History", "Who were they?", figure_known_for),
 }
 
+MODES.update({mode: (label, description, lessons.generator(mode))
+              for mode, (label, description) in lessons.MODES.items()})
+
 # What the front page offers. "Grand Tour" mixes everything.
 CATEGORIES = [
     ("grand_tour", "Grand Tour", "Everything, shuffled. The full quiz show.", None),
+    ("demonyms", "What Are People Called?", "Demonyms: Dutch, Canadian, Malagasy and more.", ["demonym_of"]),
+    ("ancient_world", "Civilizations & Empires", "Where they were, when they existed, and what their symbols meant.",
+     ["civilization_place", "civilization_dates", "civilization_symbol", "historical_flag"]),
+    ("historical_flags", "Historical Flags & Standards", "Recognize earlier states, with reconstructions clearly labeled.", ["historical_flag"]),
+    ("turning_points", "Turning Points", "Match historical events to their recorded dates.", ["history_timeline"]),
+    ("beliefs", "Religion & Society", "Official status, dated affiliation figures, and how to read them.",
+     ["religion_status", "religion_affiliation", "religion_context"]),
+    ("country_knowledge", "Country Notebook", "Play the facts and trivia from the country pages.", ["country_trivia", "country_notebook"]),
     ("everyday", "Everyday Life", "Practical facts: driving, calling codes and money.", ["driving_side", "calling_code", "currency_of"]),
     ("flags", "Flags", "Flags in both directions.", ["flag_to_country", "country_to_flag"]),
     ("shapes", "Shapes", "Name the country from its silhouette alone.", ["outline"]),
@@ -1088,7 +1099,7 @@ CATEGORIES = [
     ("landmarks", "Landmarks", "Wonders, mountains and the highest points.",
      ["landmark_of", "highest_point_of", "landmark_to_country"]),
     ("history", "History", "When it happened, who fought whom, who they were.",
-     ["war_when", "war_order", "war_between", "figure_known_for", "past_leader"]),
+     ["war_when", "war_order", "war_between", "figure_known_for", "past_leader", "history_timeline", "civilization_dates"]),
     ("world", "Climate & Numbers", "Climate, size, population.",
      ["climate_of", "higher_lower", "continent_of", "population_size"]),
     ("institutions", "Alliances", "Who belongs to what.",
@@ -1106,6 +1117,7 @@ CHOICE_REQUIRED = {"country_to_flag", "border_odd_one_out", "which_borders_both"
                    # a phrase nobody would type unprompted.
                    "eu_member", "nato_member", "war_order", "population_size",
                    "figure_known_for"}
+CHOICE_REQUIRED.update(set(lessons.MODES) - lessons.TYPED)
 
 COUNTRY_STUDY_MODES = {"country_to_flag", "capital_of", "currency_of", "language_of",
     "government_of", "continent_of", "border_count", "border_odd_one_out", "leader_name",
@@ -1113,6 +1125,18 @@ COUNTRY_STUDY_MODES = {"country_to_flag", "capital_of", "currency_of", "language
     "main_resource", "trade_partner", "landmark_of", "highest_point_of", "climate_of",
     "driving_side", "calling_code", "eu_member", "nato_member", "population_size",
     "war_when", "war_order", "war_between", "figure_known_for"}
+COUNTRY_STUDY_MODES.update(lessons.MODES)
+
+
+def game_options(category, world=None, iso=None):
+    modes = CATEGORY_MODES.get(category) or list(MODES)
+    if world is not None and iso:
+        modes = supported_modes(world, iso, [m for m in modes if m in COUNTRY_STUDY_MODES])
+    typed = [m for m in modes if m not in CHOICE_REQUIRED and m != "map_click"]
+    return {"typed": bool(typed), "mixed": bool(typed) and len(typed) < len(modes),
+            "label": "Click the map" if modes == ["map_click"] else
+                     "Choices + map" if category == "grand_tour" else
+                     "Yes / no" if category == "institutions" else "Choose an answer"}
 
 
 # --------------------------------------------------------------------------

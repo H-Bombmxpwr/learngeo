@@ -10,7 +10,8 @@
     <p style="color:#6b6255;margin-top:0">
       {{ rows | length }}
       {%- if rows | length == 1 %} country{% else %} countries{% endif %}
-      {%- if kind == 'war' %} took part
+      {%- if kind == 'civilization' %} have territory overlapping this historical civilization or state
+      {%- elif kind == 'war' %} took part
       {%- elif kind == 'language' %} speak it
       {%- elif kind == 'government' or kind == 'govtype' %} are governed this way
       {%- elif kind == 'export' %} sell it
@@ -29,6 +30,7 @@
     {% if node.wiki %}
       <p><a href="{{ node.wiki }}" target="_blank" rel="noopener">Read about {{ node.name }} on Wikipedia</a></p>
     {% endif %}
+    {% if kind == 'civilization' %}<p>Selected connections, not a complete map of the empire. Modern borders and identities do not carry back into antiquity. Open a country to see the dates and territorial context.</p>{% endif %}
 
     <div class="section" style="border-top:none;padding-top:6px">
       <table class="plain">

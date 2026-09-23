@@ -16,7 +16,7 @@
   </header>
 
   {# The flag wall is the hero image: all 195 countries, dim until you know them. #}
-{% include "scoreboard.html" %}
+  {% include "scoreboard.html" %}
   <div class="flagwall">
     {% for iso, c in stats.mastery_wall %}
       <a href="{{ url_for('country', iso2=iso) }}" data-level="{{ c.level }}" title="{{ c.name }}">
@@ -26,6 +26,7 @@
   </div>
 
   <div class="modes">
+    <a class="mode feature" href="{{ url_for('topic_kind', kind='civilization') }}"><strong>Same land, different worlds</strong><span>Follow civilizations across modern borders. Explore historical flags, ancient standards and the evidence behind them.</span></a>
     {% for key, name, blurb, modes in categories %}
       <a class="mode{% if loop.first %} feature{% endif %}" href="{{ url_for('play', category=key) }}">
         <strong>{{ name }}</strong>

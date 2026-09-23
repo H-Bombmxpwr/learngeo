@@ -829,6 +829,30 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .provenance .field { font-weight: 600; }
 .provenance .when { color: #857a68; }
 
+/* Country reading trails remain useful with scripting disabled. */
+.discovery-nav { display:flex; flex-wrap:wrap; gap:10px 20px; padding:18px 0; border-block:1px solid #cfc4ae; }
+.discovery-nav a { font-weight:600; }
+.discovery-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:16px; }
+.study-card { border:1px solid #d8cdb8; border-radius:10px; padding:20px; background:#f8f3e8; min-width:0; }
+.study-card summary { cursor:pointer; font-weight:650; line-height:1.5; }
+.study-card summary:focus-visible { outline:3px solid #28758a; outline-offset:6px; }
+.study-card h3 { margin:12px 0 8px; }
+.study-card h4 { margin-bottom:10px; }
+.study-card p { line-height:1.65; }
+.study-card small, .era-date { color:#665b4c; }
+.historical-flag { display:block; width:160px; height:100px; object-fit:contain; border:1px solid #b6ab98; margin:0 0 18px; background:#ede5d6; }
+.history-timeline { list-style:none; padding:0 0 0 22px; border-left:2px solid #ac7046; }
+.history-timeline li { margin:0 0 22px; }
+.history-timeline p { margin:6px 0; }
+.religion-row { display:flex; justify-content:space-between; gap:16px; margin-top:16px; }
+.coverage-note { padding:14px 18px; background:#eee6d5; border-left:3px solid #ac7046; }
+.section[id] { scroll-margin-top:24px; }
+.game-options .session-note, .game-options .style-note { flex:1 0 100%; line-height:1.5; }
+.game-options [hidden] { display:none !important; }
+.fixed-answer { align-self:center; }
+.lesson-source { display:inline-block; margin:0 18px 12px 0; }
+.section-practice { font-size:.88rem; }
+
 @media (max-width: 640px) {
   .country-study { flex-direction: column; align-items: stretch; }
   .country-study select, .country-study .play-btn { width: 100%; }

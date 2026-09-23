@@ -1,0 +1,601 @@
+{
+  "source": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
+  "attribution": "mledoze/countries contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "retrieved": "2026-09-23",
+  "source_sha256": "99b85dda36895c79caf72e191d035e4b9d82e811ee34f9ca15dfa67d7c561ba8",
+  "countries": {
+    "AD": [
+      "Andorran"
+    ],
+    "AE": [
+      "Emirati"
+    ],
+    "AF": [
+      "Afghan"
+    ],
+    "AG": [
+      "Antiguan, Barbudan"
+    ],
+    "AL": [
+      "Albanian"
+    ],
+    "AM": [
+      "Armenian"
+    ],
+    "AO": [
+      "Angolan"
+    ],
+    "AR": [
+      "Argentine"
+    ],
+    "AT": [
+      "Austrian"
+    ],
+    "AU": [
+      "Australian"
+    ],
+    "AZ": [
+      "Azerbaijani"
+    ],
+    "BA": [
+      "Bosnian, Herzegovinian"
+    ],
+    "BB": [
+      "Barbadian"
+    ],
+    "BD": [
+      "Bangladeshi"
+    ],
+    "BE": [
+      "Belgian"
+    ],
+    "BF": [
+      "Burkinabe"
+    ],
+    "BG": [
+      "Bulgarian"
+    ],
+    "BH": [
+      "Bahraini"
+    ],
+    "BI": [
+      "Burundian"
+    ],
+    "BJ": [
+      "Beninese"
+    ],
+    "BN": [
+      "Bruneian"
+    ],
+    "BO": [
+      "Bolivian"
+    ],
+    "BR": [
+      "Brazilian"
+    ],
+    "BS": [
+      "Bahamian"
+    ],
+    "BT": [
+      "Bhutanese"
+    ],
+    "BW": [
+      "Motswana"
+    ],
+    "BY": [
+      "Belarusian"
+    ],
+    "BZ": [
+      "Belizean"
+    ],
+    "CA": [
+      "Canadian"
+    ],
+    "CD": [
+      "Congolese"
+    ],
+    "CF": [
+      "Central African"
+    ],
+    "CG": [
+      "Congolese"
+    ],
+    "CH": [
+      "Swiss"
+    ],
+    "CI": [
+      "Ivorian"
+    ],
+    "CL": [
+      "Chilean"
+    ],
+    "CM": [
+      "Cameroonian"
+    ],
+    "CN": [
+      "Chinese"
+    ],
+    "CO": [
+      "Colombian"
+    ],
+    "CR": [
+      "Costa Rican"
+    ],
+    "CU": [
+      "Cuban"
+    ],
+    "CV": [
+      "Cape Verdian"
+    ],
+    "CY": [
+      "Cypriot"
+    ],
+    "CZ": [
+      "Czech"
+    ],
+    "DE": [
+      "German"
+    ],
+    "DJ": [
+      "Djibouti"
+    ],
+    "DK": [
+      "Danish"
+    ],
+    "DM": [
+      "Dominican"
+    ],
+    "DO": [
+      "Dominican"
+    ],
+    "DZ": [
+      "Algerian"
+    ],
+    "EC": [
+      "Ecuadorean"
+    ],
+    "EE": [
+      "Estonian"
+    ],
+    "EG": [
+      "Egyptian"
+    ],
+    "ER": [
+      "Eritrean"
+    ],
+    "ES": [
+      "Spanish"
+    ],
+    "ET": [
+      "Ethiopian"
+    ],
+    "FI": [
+      "Finnish"
+    ],
+    "FJ": [
+      "Fijian"
+    ],
+    "FM": [
+      "Micronesian"
+    ],
+    "FR": [
+      "French"
+    ],
+    "GA": [
+      "Gabonese"
+    ],
+    "GB": [
+      "British"
+    ],
+    "GD": [
+      "Grenadian"
+    ],
+    "GE": [
+      "Georgian"
+    ],
+    "GH": [
+      "Ghanaian"
+    ],
+    "GM": [
+      "Gambian"
+    ],
+    "GN": [
+      "Guinean"
+    ],
+    "GQ": [
+      "Equatorial Guinean"
+    ],
+    "GR": [
+      "Greek"
+    ],
+    "GT": [
+      "Guatemalan"
+    ],
+    "GW": [
+      "Guinea-Bissauan"
+    ],
+    "GY": [
+      "Guyanese"
+    ],
+    "HN": [
+      "Honduran"
+    ],
+    "HR": [
+      "Croatian"
+    ],
+    "HT": [
+      "Haitian"
+    ],
+    "HU": [
+      "Hungarian"
+    ],
+    "ID": [
+      "Indonesian"
+    ],
+    "IE": [
+      "Irish"
+    ],
+    "IL": [
+      "Israeli"
+    ],
+    "IN": [
+      "Indian"
+    ],
+    "IQ": [
+      "Iraqi"
+    ],
+    "IR": [
+      "Iranian"
+    ],
+    "IS": [
+      "Icelander"
+    ],
+    "IT": [
+      "Italian"
+    ],
+    "JM": [
+      "Jamaican"
+    ],
+    "JO": [
+      "Jordanian"
+    ],
+    "JP": [
+      "Japanese"
+    ],
+    "KE": [
+      "Kenyan"
+    ],
+    "KG": [
+      "Kirghiz"
+    ],
+    "KH": [
+      "Cambodian"
+    ],
+    "KI": [
+      "I-Kiribati"
+    ],
+    "KM": [
+      "Comoran"
+    ],
+    "KN": [
+      "Kittitian or Nevisian"
+    ],
+    "KP": [
+      "North Korean"
+    ],
+    "KR": [
+      "South Korean"
+    ],
+    "KW": [
+      "Kuwaiti"
+    ],
+    "KZ": [
+      "Kazakhstani"
+    ],
+    "LA": [
+      "Laotian"
+    ],
+    "LB": [
+      "Lebanese"
+    ],
+    "LC": [
+      "Saint Lucian"
+    ],
+    "LI": [
+      "Liechtensteiner"
+    ],
+    "LK": [
+      "Sri Lankan"
+    ],
+    "LR": [
+      "Liberian"
+    ],
+    "LS": [
+      "Mosotho"
+    ],
+    "LT": [
+      "Lithuanian"
+    ],
+    "LU": [
+      "Luxembourger"
+    ],
+    "LV": [
+      "Latvian"
+    ],
+    "LY": [
+      "Libyan"
+    ],
+    "MA": [
+      "Moroccan"
+    ],
+    "MC": [
+      "Monegasque"
+    ],
+    "MD": [
+      "Moldovan"
+    ],
+    "ME": [
+      "Montenegrin"
+    ],
+    "MG": [
+      "Malagasy"
+    ],
+    "MH": [
+      "Marshallese"
+    ],
+    "MK": [
+      "Macedonian"
+    ],
+    "ML": [
+      "Malian"
+    ],
+    "MM": [
+      "Burmese"
+    ],
+    "MN": [
+      "Mongolian"
+    ],
+    "MR": [
+      "Mauritanian"
+    ],
+    "MT": [
+      "Maltese"
+    ],
+    "MU": [
+      "Mauritian"
+    ],
+    "MV": [
+      "Maldivan"
+    ],
+    "MW": [
+      "Malawian"
+    ],
+    "MX": [
+      "Mexican"
+    ],
+    "MY": [
+      "Malaysian"
+    ],
+    "MZ": [
+      "Mozambican"
+    ],
+    "NA": [
+      "Namibian"
+    ],
+    "NE": [
+      "Nigerien"
+    ],
+    "NG": [
+      "Nigerian"
+    ],
+    "NI": [
+      "Nicaraguan"
+    ],
+    "NL": [
+      "Dutch"
+    ],
+    "NO": [
+      "Norwegian"
+    ],
+    "NP": [
+      "Nepalese"
+    ],
+    "NR": [
+      "Nauruan"
+    ],
+    "NZ": [
+      "New Zealander"
+    ],
+    "OM": [
+      "Omani"
+    ],
+    "PA": [
+      "Panamanian"
+    ],
+    "PE": [
+      "Peruvian"
+    ],
+    "PG": [
+      "Papua New Guinean"
+    ],
+    "PH": [
+      "Filipino"
+    ],
+    "PK": [
+      "Pakistani"
+    ],
+    "PL": [
+      "Polish"
+    ],
+    "PS": [
+      "Palestinian"
+    ],
+    "PT": [
+      "Portuguese"
+    ],
+    "PW": [
+      "Palauan"
+    ],
+    "PY": [
+      "Paraguayan"
+    ],
+    "QA": [
+      "Qatari"
+    ],
+    "RO": [
+      "Romanian"
+    ],
+    "RS": [
+      "Serbian"
+    ],
+    "RU": [
+      "Russian"
+    ],
+    "RW": [
+      "Rwandan"
+    ],
+    "SA": [
+      "Saudi Arabian"
+    ],
+    "SB": [
+      "Solomon Islander"
+    ],
+    "SC": [
+      "Seychellois"
+    ],
+    "SD": [
+      "Sudanese"
+    ],
+    "SE": [
+      "Swedish"
+    ],
+    "SG": [
+      "Singaporean"
+    ],
+    "SI": [
+      "Slovene"
+    ],
+    "SK": [
+      "Slovak"
+    ],
+    "SL": [
+      "Sierra Leonean"
+    ],
+    "SM": [
+      "Sammarinese"
+    ],
+    "SN": [
+      "Senegalese"
+    ],
+    "SO": [
+      "Somali"
+    ],
+    "SR": [
+      "Surinamer"
+    ],
+    "SS": [
+      "South Sudanese"
+    ],
+    "ST": [
+      "Sao Tomean"
+    ],
+    "SV": [
+      "Salvadoran"
+    ],
+    "SY": [
+      "Syrian"
+    ],
+    "SZ": [
+      "Swazi"
+    ],
+    "TD": [
+      "Chadian"
+    ],
+    "TG": [
+      "Togolese"
+    ],
+    "TH": [
+      "Thai"
+    ],
+    "TJ": [
+      "Tadzhik"
+    ],
+    "TL": [
+      "East Timorese"
+    ],
+    "TM": [
+      "Turkmen"
+    ],
+    "TN": [
+      "Tunisian"
+    ],
+    "TO": [
+      "Tongan"
+    ],
+    "TR": [
+      "Turkish"
+    ],
+    "TT": [
+      "Trinidadian"
+    ],
+    "TV": [
+      "Tuvaluan"
+    ],
+    "TW": [
+      "Taiwanese"
+    ],
+    "TZ": [
+      "Tanzanian"
+    ],
+    "UA": [
+      "Ukrainian"
+    ],
+    "UG": [
+      "Ugandan"
+    ],
+    "US": [
+      "American"
+    ],
+    "UY": [
+      "Uruguayan"
+    ],
+    "UZ": [
+      "Uzbekistani"
+    ],
+    "VA": [
+      "Vatican"
+    ],
+    "VC": [
+      "Saint Vincentian"
+    ],
+    "VE": [
+      "Venezuelan"
+    ],
+    "VN": [
+      "Vietnamese"
+    ],
+    "VU": [
+      "Ni-Vanuatu"
+    ],
+    "WS": [
+      "Samoan"
+    ],
+    "XK": [
+      "Kosovar"
+    ],
+    "YE": [
+      "Yemeni"
+    ],
+    "ZA": [
+      "South African"
+    ],
+    "ZM": [
+      "Zambian"
+    ],
+    "ZW": [
+      "Zimbabwean"
+    ]
+  }
+}

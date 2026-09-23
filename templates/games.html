@@ -6,8 +6,8 @@
   <header class="hero" style="padding:40px 0 22px">
     <p class="eyebrow">YOUR NEXT ADVENTURE</p>
     <h1>Pick a topic. Find your rhythm.</h1>
-    <p class="lede">Play twelve questions with three lives, or keep learning in endless mode.
-    Choose multiple choice or Challenge for typed answers. Every mode earns points.</p>
+    <p class="lede">Choose a short quiz with three lives, or explore with unlimited practice.
+    Each game shows the answer styles it supports. Every mode earns points.</p>
   </header>
 
   {% include "scoreboard.html" %}
@@ -39,8 +39,14 @@
         <h3>{{ name }}</h3>
         <p>{{ blurb }}</p>
         <form class="game-options" action="{{ url_for('play', category=key) }}">
-          <label>Answer style<select name="challenge"><option value="0">Multiple choice</option><option value="1">Challenge &mdash; type your answer</option></select></label>
-          <label>Run length<select name="endless"><option value="0">12 questions &mdash; 3 lives</option><option value="1">Endless &mdash; no lives</option></select></label>
+          {% set opt = options[key] %}
+          {% if opt.typed %}
+          <label>Answer style<select name="challenge"><option value="0">{{ opt.label }}</option><option value="1">Type your answer</option></select></label>
+          {% else %}<p class="fixed-answer">Answer by: <b>{{ opt.label }}</b></p>{% endif %}
+          <label>Session<select name="endless" class="session-style"><option value="0">Quiz &mdash; 3 lives</option><option value="1">Practice &mdash; unlimited, no lives</option></select></label>
+          <label class="question-limit">Question limit<select name="length"><option value="5">5 &mdash; quick round</option><option value="12" selected>12 &mdash; standard</option><option value="25">25 &mdash; deep dive</option></select></label>
+          <small class="session-note">Quiz ends at the question limit or when all three lives are lost.</small>
+          {% if opt.mixed %}<small class="style-note">Typing uses only questions with a specific written answer; visual selection and comparison questions are left out.</small>{% endif %}
           <button class="play-btn" type="submit">Play {{ name }}</button>
         </form>
       </div>
@@ -57,4 +63,21 @@
     <div><b>{{ stats.tier }}</b><small>difficulty tier unlocked</small></div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.game-options').forEach(function (form) {
+  var session = form.querySelector('.session-style');
+  function sync() {
+    var practice = session.value === '1';
+    form.querySelector('.question-limit').hidden = practice;
+    form.querySelector('[name="length"]').disabled = practice;
+    form.querySelector('.session-note').textContent = practice
+      ? 'Keep learning for as long as you like. Exit whenever you are ready.'
+      : 'Quiz ends at the question limit or when all three lives are lost.';
+  }
+  session.addEventListener('change', sync); sync();
+});
+</script>
 {% endblock %}

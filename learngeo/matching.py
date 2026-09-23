@@ -178,6 +178,10 @@ def judge(world, given, pending):
     if kind == "number":
         digits = (given or "").strip()
         return bool(digits) and digits == str(answer)
+    if kind == "demonym":
+        # Nigerian and Nigerien are both real answers, one letter apart.
+        # Do not turn one nationality into another through fuzzy matching.
+        return normalise(given) in {normalise(v) for v in [answer] + list(pending.get("also") or [])}
     return matches_text(given, answer, pending.get("also") or ())
 
 
