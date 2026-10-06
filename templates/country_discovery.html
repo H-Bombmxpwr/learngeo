@@ -1,10 +1,12 @@
 {% macro practice(category, label='Practice this section') -%}
-  {% if practice_sections.get(category) %}<p><a class="btn ghost section-practice" href="{{ url_for('play', category=category, country=c.iso2, endless=1) }}">{{ label }} &rarr;</a></p>{% endif %}
+  {% set count = practice_sections.get(category, 0) %}
+  {% if count >= section_min %}<p><a class="btn ghost section-practice" href="{{ url_for('play', category=category, country=c.iso2, endless=1) }}">{{ label }} &rarr;</a> <small>{{ count }} questions</small></p>
+  {% elif count %}<p><a class="btn ghost section-practice" href="{{ url_for('play', category=category, endless=1) }}">{{ label }} around the world &rarr;</a></p>{% endif %}
 {%- endmacro %}
 
 <nav class="discovery-nav" aria-label="Explore this country">
   <a href="#people-name">People</a>
-  <a href="#trivia">Test yourself</a><a href="#civilizations">Who lived here?</a>
+  <a href="#civilizations">Who lived here?</a>
   <a href="#history">History</a><a href="#belief">Religion</a><a href="#keep-exploring">Keep exploring</a>
 </nav>
 
@@ -14,22 +16,6 @@
   <p>These are English <b>demonyms</b> for people from {{ c.name }}. A demonym describes a connection to a place; it does not mean everyone shares an ethnicity, language or religion.</p>
   <small><a href="https://github.com/mledoze/countries" target="_blank" rel="noopener">Demonym source: mledoze/countries</a> &middot; <a href="{{ url_for('demonym_data') }}">Download the attributed dataset (ODbL)</a></small>
   {{ practice('demonyms', 'Practice demonyms') }}
-</section>
-
-<section class="section" id="trivia">
-  <p class="eyebrow">START WITH A QUESTION</p>
-  <h2>Trivia essentials</h2>
-  {{ practice('country_knowledge') }}
-  <p>Try answering before opening each card. These are study prompts, not a ranking of how often questions appear in quizzes.</p>
-  <div class="discovery-grid">
-    {% for item in discovery.trivia %}
-    <details class="study-card">
-      <summary>{{ item.question }}</summary>
-      <p>{{ item.answer }}</p>
-      <small>{% if item.imported %}From the atlas dataset; {% endif %}<a href="{{ item.source }}" target="_blank" rel="noopener">{{ 'Country reference' if item.imported else 'Read the source' }}</a></small>
-    </details>
-    {% endfor %}
-  </div>
 </section>
 
 <section class="section" id="civilizations">

@@ -12,7 +12,7 @@ class ExplorationTests(Base):
             with self.subTest(iso=iso):
                 response = self.client.get('/country/' + iso)
                 self.assertEqual(response.status_code, 200)
-                self.assertIn(b'Trivia essentials', response.data)
+                self.assertNotIn(b'Trivia essentials', response.data)
                 self.assertIn(b'Religion: state', response.data)
 
     def test_shared_civilizations_and_assets(self):

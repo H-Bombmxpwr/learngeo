@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Commonplace · The trivia studio</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/logo.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/trivia.css') }}">
+  <script defer src="{{ url_for('static', filename='js/trivia-core.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/trivia.js') }}"></script>
+</head>
+<body data-bank-url="{{ url_for('trivia.bank') }}">
+<a class="skip-link" href="#content">Skip to content</a>
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('trivia.home') }}"><span class="brand-mark" aria-hidden="true">c.</span><span>commonplace<small>A STUDIO FOR CURIOUS MINDS</small></span></a>
+  <p class="nav-label">YOUR PRACTICE</p>
+  <nav aria-label="Trivia studio">
+    <button data-view="home" class="nav-item active"><span aria-hidden="true">◈</span> Study desk</button>
+    <button data-view="explore" class="nav-item"><span aria-hidden="true">⌘</span> Rabbit holes</button>
+    <button data-view="library" class="nav-item"><span aria-hidden="true">▤</span> Knowledge library</button>
+    <button data-view="progress" class="nav-item"><span aria-hidden="true">↗</span> Your progress</button>
+    <button data-view="notebook" class="nav-item"><span aria-hidden="true">＋</span> My notebook</button>
+    <button data-view="benchmarks" class="nav-item"><span aria-hidden="true">◎</span> JetPunk practice</button>
+  </nav>
+  <div class="sidebar-note"><span class="tiny-label">THE IDEA</span><p>Don't just recognise<br>the answer.<br><em>Learn to find it.</em></p><span class="small muted">Recall. Connect. Revisit.</span></div>
+  <a class="atlas-link" href="{{ url_for('geography_home') }}">↗ The geography wing</a>
+  <p class="storage-note">Saved in this browser.<br>Export a backup in Your progress.</p>
+</aside>
+<main id="content" tabindex="-1">
+  <header class="topbar"><span>THE GENERAL KNOWLEDGE STUDIO</span><span id="today"></span></header>
+  <div id="storage-warning" class="notice" role="alert" hidden>Browser storage is unavailable. This session works, but export a backup before leaving to keep your progress.</div>
+  <div id="message" class="notice" role="status" hidden></div>
+  <section id="view"><div class="loading">Opening your study desk…</div></section>
+  <noscript><p>This study tool needs JavaScript for practice and local progress. Enable it and reload.</p></noscript>
+  <footer>Small discoveries, remembered. <span>Commonplace · A world of connected knowledge</span></footer>
+</main>
+<dialog id="card-dialog" aria-labelledby="dialog-title"><button class="dialog-close" aria-label="Close">×</button><div id="dialog-content"></div></dialog>
+</body>
+</html>

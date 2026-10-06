@@ -347,6 +347,18 @@
       </div>
     {% endif %}
 
+    {# Said separately from "Checked facts": these corrections come from a
+       review of the whole dataset, not from a source read on the day. #}
+    {% if c.reviewed %}
+      <div class="section">
+        <p class="coverage-note" style="max-width:64ch">
+          Corrected in an AI-assisted review of the imported data
+          ({{ c.reviewed.date }}), not yet checked against a named source:
+          {{ c.reviewed.fields | map('replace', '_', ' ') | join(', ') }}.
+        </p>
+      </div>
+    {% endif %}
+
     <div class="section">
       <a class="btn" href="{{ url_for('play', category='grand_tour') }}">Quiz me</a>
       <a class="btn ghost" href="{{ url_for('atlas') }}">Back to the atlas</a>

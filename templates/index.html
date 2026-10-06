@@ -26,6 +26,7 @@
   </div>
 
   <div class="modes">
+    <a class="mode feature" href="{{ url_for('trivia.home') }}"><strong>Beyond geography: the trivia studio</strong><span>Build general knowledge with typed recall, explanations and spaced reviews. History, science, books, culture and more.</span></a>
     <a class="mode feature" href="{{ url_for('topic_kind', kind='civilization') }}"><strong>Same land, different worlds</strong><span>Follow civilizations across modern borders. Explore historical flags, ancient standards and the evidence behind them.</span></a>
     {% for key, name, blurb, modes in categories %}
       <a class="mode{% if loop.first %} feature{% endif %}" href="{{ url_for('play', category=key) }}">

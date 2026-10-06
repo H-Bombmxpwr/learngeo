@@ -45,7 +45,9 @@ class LessonTests(Base):
                     self.assertEqual(len(bank[iso][mode]), len(eras))
                 self.assertEqual(len(bank[iso]['historical_flag']), sum(bool(e['image']) for e in eras))
                 self.assertEqual(len(bank[iso]['history_timeline']), len(explore.TIMELINES.get(iso, [])))
-                self.assertEqual(len(bank[iso]['country_trivia']), len(explore.TRIVIA.get(iso, [])))
+                prompts = {r['prompt'] for r in bank[iso]['country_notebook']}
+                for question, _, _ in explore.TRIVIA.get(iso, []):
+                    self.assertIn(question, prompts)
                 self.assertEqual(bool(bank[iso]['religion_status']), iso in explore.RELIGION)
                 self.assertTrue(bank[iso]['country_notebook'])
         self.assertEqual(len(bank['IN']['religion_affiliation']), 5)
@@ -98,6 +100,8 @@ class LessonTests(Base):
         self.assertFalse(self.run_data(run)['challenge'])
         for _ in range(4):
             q = self.client.get('/api/next?run=' + run + '&advance=1').json
+            if q.get('done'):
+                break   # Japan's few religion questions have all been asked
             self.assertNotEqual(q['mode'], 'religion_affiliation')
             self.client.post('/api/answer?run=' + run, json={
                 'qid': q['qid'], 'choice': self.answer_for(run, q['qid'])})
@@ -117,11 +121,12 @@ class LessonTests(Base):
                 'qid': q['qid'], 'choice': self.answer_for(run, q['qid'])})
 
     def test_finished_run_keeps_the_last_lesson_explanation(self):
+        # The United Kingdom has one demonym question, so a run scoped to it
+        # ends after that one rather than asking it five times.
         run = self.start('/play/demonyms?country=GB&challenge=1&length=5')
-        for _ in range(5):
-            q = self.client.get('/api/next?run=' + run + '&advance=1').json
-            result = self.client.post('/api/answer?run=' + run, json={
-                'qid': q['qid'], 'text': 'British'}).json
+        q = self.client.get('/api/next?run=' + run + '&advance=1').json
+        result = self.client.post('/api/answer?run=' + run, json={
+            'qid': q['qid'], 'text': 'British'}).json
         self.assertTrue(result['finished'])
         self.assertEqual(result['learn_url'], '/country/GB#people-name')
         self.assertTrue(result['explanation'])

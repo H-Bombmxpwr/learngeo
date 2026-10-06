@@ -1,7 +1,7 @@
 [project]
 name = "learngeo"
 version = "0.1.0"
-description = "A world-knowledge quiz show: flags, borders, maps, leaders and famous faces, with a fact card after every answer."
+description = "Commonplace: connected general knowledge, spaced recall, rabbit holes, and the LearnGeo atlas."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

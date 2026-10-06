@@ -13,7 +13,7 @@ wander around.
 import json
 import os
 
-from . import provenance, supplement, explore, demonyms
+from . import provenance, review, supplement, explore, demonyms
 from .data_util import fold, slug, wiki_url
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -100,6 +100,10 @@ class World(object):
         # Then every sourced correction, last, so neither a dataset rebuild
         # nor the supplement can put a wrong value back. See provenance.py.
         provenance.apply(self.countries)
+        # Then the whole-dataset review: plainly wrong imported values,
+        # corrected from general knowledge rather than a checked source, and
+        # labelled that way. See review.py.
+        review.apply(self.countries)
         explore.apply(self.countries)
         demonyms.apply(self.countries)
         self._derive_topics()

@@ -22,12 +22,21 @@ ALIASES = {
     'BW': ['Batswana', 'Botswanan', 'Botswanans'],
     'LS': ['Basotho', 'Mosotho'], 'PH': ['Filipina', 'Filipinas', 'Filipinos'],
     'SZ': ['Swati', 'Swatis', 'emaSwati', 'Swazis'],
+    'KG': ['Kirghiz'], 'TJ': ['Tadzhik'], 'EC': ['Ecuadorean'],
+}
+# Where the source's first form is misspelled or archaic. The old form stays
+# accepted as a typed answer through ALIASES; this is what is shown.
+PREFERRED = {
+    'DJ': ['Djiboutian'], 'KG': ['Kyrgyz', 'Kyrgyzstani'],
+    'TJ': ['Tajik', 'Tajikistani'], 'MV': ['Maldivian'],
+    'CV': ['Cape Verdean'], 'KM': ['Comorian'], 'SR': ['Surinamese'],
+    'EC': ['Ecuadorian'],
 }
 
 
 def apply(countries):
     for iso, c in countries.items():
-        names = list(DATA['countries'].get(iso, []))
+        names = list(PREFERRED.get(iso) or DATA['countries'].get(iso, []))
         if iso == 'PH':
             names.sort(key=lambda n: n != 'Filipino')
         c['demonyms'] = names

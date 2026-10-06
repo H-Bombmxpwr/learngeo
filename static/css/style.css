@@ -761,7 +761,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 /* What the answer is measured against, where that is a convention rather than
    a fact. Quieter than the hint, because it is a footnote, not a clue. */
 .definition {
-  margin: 2px 0 10px; font-size: .82rem; line-height: 1.5;
+  margin: 12px 0 4px; font-size: .82rem; line-height: 1.5;
   color: var(--stage-dim, #8aa3ad); max-width: 62ch;
   border-left: 2px solid var(--ink-2); padding-left: 10px;
 }

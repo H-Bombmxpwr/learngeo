@@ -17,9 +17,10 @@
   <nav class="nav">
     <a class="brand" href="{{ url_for('home') }}">
       <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="" width="30" height="30">
-      Learn<span>Geo</span>
+      Common<span>place</span>
     </a>
     <a href="{{ url_for('games') }}">Games</a>
+    <a href="{{ url_for('trivia.home') }}">Trivia studio</a>
     <a href="{{ url_for('play', category='grand_tour') }}">Play</a>
     <a href="{{ url_for('atlas') }}">Atlas</a>
     <a href="{{ url_for('world_map') }}">Map</a>

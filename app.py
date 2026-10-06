@@ -1,4 +1,4 @@
-"""LearnGeo -- a world-knowledge quiz show.
+"""Commonplace -- connected general knowledge with the LearnGeo geography wing.
 
     python scripts/fetch_data.py     # once, builds the dataset
     python app.py                    # then open http://127.0.0.1:5000
@@ -40,6 +40,8 @@ from learngeo.data import TOPIC_FIELDS, ent_name, slug, world
 from learngeo.data_util import wiki_url
 
 app = Flask(__name__)
+from learngeo.trivia import trivia
+app.register_blueprint(trivia)
 # Nothing about a run rides in a cookie any more -- answer keys, scores and
 # pending questions live in the database, keyed by run id -- so this only
 # signs whatever Flask itself needs. Set LEARNGEO_SECRET on a real host.
@@ -492,6 +494,11 @@ def public(run):
 
 @app.route("/")
 def home():
+    return render_template("trivia.html")
+
+
+@app.route("/geography")
+def geography_home():
     w = world()
     stats = store.overview(w, player_id())
     # The flag wall: every country, ordered so the world reads west to east,
@@ -648,6 +655,36 @@ def atlas():
     return render_template("atlas.html", rows=rows, continents=continents, stats=stats)
 
 
+# A section's practice button plays that country's own questions only when
+# there are enough of them to be a run. The United States has four religion
+# questions and one demonym, and an endless run over four questions is the
+# same four questions forever; below this the button opens the worldwide
+# game instead.
+SECTION_MIN = 5
+
+
+def section_pools(w, iso2):
+    """Category -> how many questions this country has in it, for the
+    sections whose games are built from the country page's own content."""
+    out = {}
+    for key, modes in questions.CATEGORY_MODES.items():
+        if modes and all(m in lessons.MODES for m in modes):
+            ids = {r["id"] for m in modes
+                   for r in lessons.bank(w)[iso2].get(m, [])}
+            out[key] = len(ids)
+    return out
+
+
+def section_exhausted(w, run):
+    """A one-country run over a section's questions has asked all of them."""
+    country = run.get("country")
+    modes = modes_for(run["category"])
+    if not country or not modes or not all(m in lessons.MODES for m in modes):
+        return False
+    ids = {r["id"] for m in modes for r in lessons.bank(w)[country].get(m, [])}
+    return bool(ids) and ids <= set(run.get("lesson_seen", []))
+
+
 @app.route("/country/<iso2>")
 def country(iso2):
     iso2 = iso2.upper()
@@ -659,9 +696,8 @@ def country(iso2):
     linked = {f: w.topics_for(iso2, f) for f in TOPIC_FIELDS}
     return render_template("country.html", c=c, card=fact_card(iso2),
                            discovery=explore.dossier(w, iso2),
-                           practice_sections={k: any(lessons.available(w, iso2, m) for m in ms)
-                                              for k, ms in questions.CATEGORY_MODES.items()
-                                              if ms and all(m in lessons.MODES for m in ms)},
+                           practice_sections=section_pools(w, iso2),
+                           section_min=SECTION_MIN,
                            mastery=stats["mastery"].get(iso2),
                            linked=linked,
                            # Which facts on this page have a source behind
@@ -772,6 +808,15 @@ def api_next():
         # generator forty times in the hope that Tuvalu grows a land border
         # is not a plan.
         modes = questions.supported_modes(w, run["country"], modes)
+        # A lesson mode with one question for this country used to come
+        # straight back round, because modes are rotated evenly: the United
+        # States' religion practice asked the same four questions on a loop.
+        # Once a mode's questions have all been asked it sits out.
+        seen = set(run.get("lesson_seen", []))
+        fresh = [m for m in modes if m not in lessons.MODES
+                 or any(r["id"] not in seen
+                        for r in lessons.bank(w)[run["country"]].get(m, []))]
+        modes = fresh or modes
     if not modes:
         return jsonify({"error": "No questions for this combination. "
                                  "Choose Grand Tour for country practice."}), 400
@@ -922,8 +967,11 @@ def api_answer():
         if not run["endless"]:
             run["lives"] -= 1
 
-    finished = run["lives"] <= 0 or (not run["endless"]
-                                     and run["asked"] >= run.get("length", RUN_LENGTH))
+    finished = (run["lives"] <= 0
+                or (not run["endless"] and run["asked"] >= run.get("length", RUN_LENGTH))
+                # Every question this country has in the section has been
+                # asked: end rather than go round again.
+                or section_exhausted(world(), run))
     if finished:
         run["over"] = True
     run["pending"] = {}

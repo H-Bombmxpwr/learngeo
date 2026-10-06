@@ -1082,7 +1082,7 @@ CATEGORIES = [
     ("turning_points", "Turning Points", "Match historical events to their recorded dates.", ["history_timeline"]),
     ("beliefs", "Religion & Society", "Official status, dated affiliation figures, and how to read them.",
      ["religion_status", "religion_affiliation", "religion_context"]),
-    ("country_knowledge", "Country Notebook", "Play the facts and trivia from the country pages.", ["country_trivia", "country_notebook"]),
+    ("country_knowledge", "Country Notebook", "Play the facts and trivia from the country pages.", ["country_notebook"]),
     ("everyday", "Everyday Life", "Practical facts: driving, calling codes and money.", ["driving_side", "calling_code", "currency_of"]),
     ("flags", "Flags", "Flags in both directions.", ["flag_to_country", "country_to_flag"]),
     ("shapes", "Shapes", "Name the country from its silhouette alone.", ["outline"]),

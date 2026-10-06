@@ -1,4 +1,86 @@
-# LearnGeo
+# Commonplace — general knowledge, connected
+
+The app now opens into **Commonplace**, a general-knowledge study desk. The
+original LearnGeo atlas, country dossiers, maps and games remain available in
+the **geography wing**, at `/geography`.
+
+Start from the parent Python workspace:
+
+```powershell
+python study_trivia.py
+```
+
+Open **http://127.0.0.1:5055/**. Alternatively, the existing `uv run python app.py`
+command still starts the app on port 5000. Keep using the same address and port:
+Commonplace progress is stored per browser origin.
+
+### What you can do
+
+- **Study:** twelve typed-recall prompts, mixing due reviews and new discoveries.
+  Wrong and hinted answers return after intervening cards and are due again in
+  ten minutes. Successful recalls expand the review interval. Session state
+  survives refresh in the same tab.
+- **Challenge:** twenty questions across subjects, with a four-minute deadline
+  that continues through navigation and reloads. Unanswered questions count
+  against the challenge score without changing their learning schedule.
+- **Rabbit holes:** search connected people, works and places; follow named
+  relationships; keep a breadcrumb trail; practise a node or the whole trail.
+- **Library:** filter by subject, difficulty, curated/generated/personal source,
+  due/new/saved/hidden status. Answers stay closed until you open a study card.
+- **Notebook:** add missed facts in your own words, with aliases, explanation,
+  memory cue and a reference link. Save existing cards for later.
+- **JetPunk practice:** links to the 92 quizzes listed in JoeRainford's
+  [Extremely Hard General Knowledge series](https://www.jetpunk.com/series/228770/extremely-hard-general-knowledge)
+  when reviewed. Log scores manually to measure transfer to outside quizzes.
+- **Progress:** subject recall, review counts, and JSON backup/restore. The older
+  geography games retain their separate SQLite-backed progress.
+
+### Content and expansion
+
+`learngeo/trivia_bank.py` contains 120 original teaching cards across 12 subjects.
+`data/trivia_graph.json` contains thousands of additional cards and linked entities
+generated from **CC0 Wikidata structured facts**. The exact coverage, source dates,
+license, topic counts and missing slices are in its `manifest` and shown in the app.
+Question wording is generated locally; the JetPunk question collection is not copied.
+No account, API key, paid AI service or runtime data request is needed to study.
+Source links naturally require internet access when opened.
+
+Generated facts are community maintained, not individually verified. Disputed or
+incorrect attributions can exist. Inspect source links and hide questionable cards;
+restore them using the library's Hidden filter. Difficulty is editorial for the
+120 teaching cards and approximated by Wikidata sitelink counts for imported cards.
+Multiple named answers are grouped and accepted. This collection is broad, not
+an exhaustive or evenly distributed encyclopedia of every subject.
+
+Rebuild or expand the local dataset:
+
+```powershell
+uv run python scripts/build_trivia.py --limit 1000
+```
+
+The builder caches small query batches under ignored `data/trivia-cache/`, resumes
+completed slices, keeps source timestamps, and refuses to replace an existing
+dataset with a smaller partial result. Use `--refresh` for a full new snapshot.
+Restart the Flask process after rebuilding. Commit the generated graph for deploys;
+do not run the importer during a web request or startup.
+
+The product/data plan is in [COMMONPLACE-PLAN.md](docs/COMMONPLACE-PLAN.md).
+Implementation: `learngeo/trivia.py`, `templates/trivia.html`,
+`static/js/trivia-core.js`, `static/js/trivia.js`, `static/css/trivia.css`.
+
+### Checks
+
+```powershell
+uv run python -m unittest discover -s tests -v
+uv run --with playwright python tests/browser_trivia.py
+```
+
+The browser check uses installed Microsoft Edge in headless mode, a temporary
+server and fresh browser profile. It exercises recall, hints, scheduling, reload,
+challenge expiry, personal cards, escaping, score logs, backup/restore, the graph,
+trail practice and narrow-screen layouts. Screenshots are written to `docs/`.
+
+## The LearnGeo geography wing
 
 A world-knowledge quiz show and a linked encyclopaedia in one. Flags, outlines,
 land borders, capitals, largest cities, leaders past and present, historical

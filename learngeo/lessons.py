@@ -19,7 +19,6 @@ MODES = {
     'religion_status': ('Religion', 'Distinguish state religion from population affiliation'),
     'religion_affiliation': ('Religion', 'Recall a sourced religious affiliation snapshot'),
     'religion_context': ('Religion', 'Interpret religion data'),
-    'country_trivia': ('Trivia', 'Country trivia essentials'),
     'country_notebook': ('Country notebook', 'Recall recorded country facts'),
 }
 TYPED = {'demonym_of', 'historical_flag'}
@@ -157,13 +156,13 @@ def bank(world):
         curated = len(explore.TRIVIA.get(iso, []))
         for index, item in enumerate(d['trivia']):
             if index < curated:
-                add(iso, 'country_trivia', iso + '/' + str(index), item['question'], item['answer'],
+                add(iso, 'country_notebook', iso + '/trivia/' + str(index), item['question'], item['answer'],
                     wrong=TRIVIA_WRONG[iso][index], source=item['source'])
             else:
                 prompt = item['question']
                 # Full-set prompts avoid treating another valid capital/language as wrong.
                 if prompt.startswith(('What capital', 'Which currencies', 'Which languages', 'Which countries share')):
-                    prompt = 'For %s, which complete recorded list answers: %s' % (name, prompt)
+                    prompt = prompt + ' Pick the complete list.'
                 else:
                     prompt = name + ': ' + prompt
                 field = ('capitals' if 'capital' in item['question'] else 'currencies' if 'currencies' in item['question'] else
@@ -186,7 +185,7 @@ def bank(world):
             names = [v.get('name', '') if isinstance(v, dict) else str(v) for v in values]
             names = sorted(set(n for n in names if n))
             if names:
-                add(iso, 'country_notebook', iso + '/' + field, 'Which complete list of %s is recorded for %s?' % (label, name),
+                add(iso, 'country_notebook', iso + '/' + field, 'Which list gives all the recorded %s of %s?' % (label, name),
                     ', '.join(names), pool=field, source=c.get('wiki_url'), definition=imported)
         economy = c.get('economy') or {}
         for field, label in [('exports', 'exports'), ('imports', 'imports'), ('resources', 'natural resources'),
@@ -194,7 +193,7 @@ def bank(world):
             values = economy.get(field) or []
             names = sorted(set(str(v) for v in values if isinstance(v, str) and v))
             if names:
-                add(iso, 'country_notebook', iso + '/economy/' + field, 'Which complete set of %s is recorded for %s?' % (label, name),
+                add(iso, 'country_notebook', iso + '/economy/' + field, 'Which list gives the main %s of %s?' % (label, name),
                     ', '.join(names), pool=field, source=c.get('wiki_url'), definition=imported)
     # Deduplicate each shared pool once, rather than redoing it for every
     # country that asks about the same field.

@@ -36,4 +36,5 @@ data/factbook.zip
 data/browser-test/
 data/edge-test*/
 data/browser-dom.txt
+data/trivia-cache/
 data/*-game.png
