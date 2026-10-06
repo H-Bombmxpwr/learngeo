@@ -6,7 +6,7 @@
   <div class="paper-page">
     <p style="margin:0 0 6px"><a href="{{ url_for('topics_index') }}">All topics</a></p>
     <h1>{{ label }}</h1>
-    <p style="color:#6b6255">{{ nodes | length }} of them, most widely shared first.</p>
+    <p style="color:var(--ink-soft)">{{ nodes | length }} of them, most widely shared first.</p>
 
     <div class="filters">
       <input id="search" type="search" placeholder="Find one" aria-label="Find one">

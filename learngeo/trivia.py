@@ -1,9 +1,17 @@
-"""General-knowledge study area. Original prompts; no runtime scraping or AI calls."""
+"""General-knowledge study area. Original prompts; no runtime scraping or AI calls.
+
+The one runtime lookup is /trivia/thumbs: a picture and a one-line description
+from Wikipedia for names in the answer suggestions, cached on disk and never
+needed for studying to work."""
 import json
 import gzip
+import os
+import threading
 from functools import lru_cache
 from pathlib import Path
 import uuid
+
+import requests
 from flask import Blueprint, Response, jsonify, render_template, request
 
 from . import store
@@ -148,3 +156,85 @@ def connections(qid, per_topic=8):
 @lru_cache(maxsize=1)
 def _card_levels():
     return {c["id"]: c["level"] for c in graph().get("cards", [])}
+
+
+# --------------------------------------------------------------------------
+# Pictures for answer suggestions: Wikipedia page images, looked up by title.
+# --------------------------------------------------------------------------
+
+WIKI_API = "https://en.wikipedia.org/w/api.php"
+WIKI_HEADERS = {"User-Agent": "CommonplaceStudy/1.0 (personal educational study app; thumbnails for answer suggestions)"}
+THUMBS_MAX = 24
+_thumbs = None
+_thumbs_lock = threading.Lock()
+
+
+def _thumbs_path():
+    return Path(store.DATA_DIR) / "trivia-cache" / "wiki-thumbs.json"
+
+
+def _thumb_cache():
+    global _thumbs
+    if _thumbs is None:
+        try:
+            _thumbs = json.loads(_thumbs_path().read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _thumbs = {}
+    return _thumbs
+
+
+def fetch_thumbs(titles):
+    """Title -> {"thumb", "description"} or None, straight from Wikipedia.
+    Follows normalisation and redirects so "Cervantes" finds the page it
+    points at. Raises on a network failure so nothing wrong gets cached."""
+    response = requests.get(WIKI_API, headers=WIKI_HEADERS, timeout=6, params={
+        "action": "query", "format": "json", "formatversion": "2", "redirects": "1",
+        "prop": "pageimages|description", "piprop": "thumbnail", "pithumbsize": "160",
+        "titles": "|".join(titles)})
+    response.raise_for_status()
+    query = response.json().get("query", {})
+    hop = {r["from"]: r["to"] for r in query.get("normalized", []) + query.get("redirects", [])}
+    pages = {p["title"]: p for p in query.get("pages", []) if not p.get("missing")}
+    out = {}
+    for title in titles:
+        name = title
+        for _ in range(3):
+            name = hop.get(name, name)
+        page = pages.get(name)
+        if page and (page.get("thumbnail") or page.get("description")):
+            out[title] = {"thumb": page.get("thumbnail", {}).get("source", ""),
+                          "description": page.get("description", "")[:160]}
+        else:
+            out[title] = None
+    return out
+
+
+@trivia.get("/thumbs")
+def thumbs():
+    wanted = []
+    for title in request.args.getlist("t"):
+        title = " ".join(title.split())[:200]
+        if title and "|" not in title and title not in wanted:
+            wanted.append(title)
+    wanted = wanted[:THUMBS_MAX]
+    cache = _thumb_cache()
+    missing = [t for t in wanted if t not in cache]
+    if missing and not os.environ.get("COMMONPLACE_OFFLINE"):
+        try:
+            found = fetch_thumbs(missing)
+        except (requests.RequestException, ValueError, KeyError):
+            found = {}
+        if found:
+            with _thumbs_lock:
+                cache.update(found)
+                try:
+                    path = _thumbs_path()
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    tmp = path.with_suffix(".tmp")
+                    tmp.write_text(json.dumps(cache, ensure_ascii=False), encoding="utf-8")
+                    tmp.replace(path)
+                except OSError:
+                    pass  # an unwritable disk only costs a repeat lookup
+    response = jsonify({t: cache.get(t) for t in wanted})
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response

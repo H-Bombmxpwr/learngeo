@@ -1,31 +1,20 @@
-/* LearnGeo
-   Two surfaces: you play on a dark stage, you learn on atlas paper.
+/* The geography wing of Commonplace.
+   Same paper, ink and green as the study desk (tokens in shell.css).
    Mastery is shown with the elevation tints of a physical atlas --
-   sea, lowland green, ochre, sienna -- so knowledge literally rises. */
+   sea, lowland green, ochre -- so knowledge literally rises. */
 
 :root {
-  --ink:      #0a1d2a;
-  --ink-2:    #12303f;
-  --ink-3:    #1c4356;
-  --ink-line: #23566c;
+  /* Shared tokens (paper, surface, ink, muted, line, green, orange) live in
+     shell.css. These are the atlas's own: elevation tints for mastery. */
+  --sea:      #4f8a8b;
+  --moss:     #61816a;
+  --ochre:    #c58b2f;
+  --sienna:   #b74729;
+  --oxide:    #b74729;
 
-  --paper:    #f3ead9;
-  --paper-2:  #e6d8bf;
-  --paper-3:  #cbb896;
-  --graphite: #2a2620;
-
-  --sea:      #3e8c9e;
-  --moss:     #6e8b4a;
-  --ochre:    #e0a33c;
-  --sienna:   #b8623a;
-  --oxide:    #b84a32;
-
-  --stage-text: #e8f1f4;
-  --stage-dim:  #8fb0bd;
-
-  --r-sm: 3px;
-  --r-md: 8px;
-  --shadow-lift: 0 18px 50px -12px rgba(0, 0, 0, .65);
+  --r-sm: 4px;
+  --r-md: 6px;
+  --shadow-lift: 0 18px 40px -16px rgba(32, 53, 46, .35);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -37,79 +26,46 @@
 
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--stage-text);
-  font-family: "Newsreader", Georgia, serif;
-  font-size: 17px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, .display, button, .choice, .rail, .nav {
-  font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
-}
+h1, h2, h3, .display { font-family: var(--serif); font-weight: 500; }
+button, .choice, .rail { font-family: var(--sans); }
 
-h1, h2, h3 { line-height: 1.08; margin: 0 0 .4em; font-weight: 700; }
+h1, h2, h3 { line-height: 1.12; margin: 0 0 .4em; font-weight: 500; }
 h1 { font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -.025em; }
 h2 { font-size: clamp(1.35rem, 2.6vw, 1.9rem); letter-spacing: -.015em; }
 h3 { font-size: 1.1rem; letter-spacing: -.01em; }
 
-a { color: var(--sea); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a { color: var(--green); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
 /* ISO codes and coordinates only -- these are real codes, so they get the
    typewriter face. Nothing else does. */
 .code {
-  font-family: "DM Mono", ui-monospace, monospace;
+  font-family: var(--mono);
   font-size: .78em;
   letter-spacing: .06em;
 }
 
 :focus-visible {
-  outline: 2px solid var(--ochre);
+  outline: 2px solid #d48b47;
   outline-offset: 3px;
   border-radius: 2px;
 }
 
-.wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+.wrap { max-width: 1240px; }
 .narrow { max-width: 760px; }
 
-/* ---------- graticule: the lat/long grid, the app's one background device */
-.graticule {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    repeating-linear-gradient(to bottom, rgba(62,140,158,.13) 0 1px, transparent 1px 84px),
-    repeating-linear-gradient(to right,  rgba(62,140,158,.09) 0 1px, transparent 1px 84px);
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 42%, #000 30%, transparent 100%);
-}
-.graticule::after {           /* the equator sits heavier, as on a real map */
-  content: ""; position: absolute; left: 0; right: 0; top: 42%;
-  border-top: 1px solid rgba(224,163,60,.22);
-}
-
-/* ---------- site chrome */
-.nav {
-  position: relative; z-index: 2;
-  display: flex; align-items: baseline; gap: 26px;
-  padding: 20px 0 26px;
-  border-bottom: 1px solid var(--ink-2);
-}
-.nav .brand {
-  font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em;
-  color: var(--stage-text); text-decoration: none;
-}
-.nav .brand span { color: var(--ochre); }
-.nav a:not(.brand) {
-  color: var(--stage-dim); text-decoration: none; font-size: .95rem;
-}
-.nav a:not(.brand):hover, .nav a[aria-current] { color: var(--stage-text); }
-.nav .spacer { margin-left: auto; }
-
-main { position: relative; z-index: 1; padding-bottom: 80px; }
-
 /* ---------- home ------------------------------------------------------- */
-.hero { padding: 54px 0 30px; }
+.hero { padding: 6px 0 26px; }
+.hero h1 em { color: var(--orange); font-style: italic; }
 .hero p.lede {
-  max-width: 54ch; color: var(--stage-dim); font-size: 1.16rem; margin: 0 0 28px;
+  max-width: 58ch; color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 28px;
 }
 
 /* the flag wall: every country, dim until you know it */
@@ -119,52 +75,52 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
 }
 .flagwall img {
   display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover;
-  filter: saturate(.18) brightness(.42); transition: filter .5s ease;
+  filter: grayscale(1) opacity(.45); transition: filter .5s ease;
 }
-.flagwall a[data-level="1"] img { filter: saturate(.5) brightness(.66); }
-.flagwall a[data-level="2"] img { filter: saturate(.78) brightness(.85); }
+.flagwall a[data-level="1"] img { filter: grayscale(.6) opacity(.65); }
+.flagwall a[data-level="2"] img { filter: grayscale(.25) opacity(.8); }
 .flagwall a[data-level="3"] img { filter: none; }
 .flagwall a:hover img { filter: none; }
 
 .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr)); gap: 14px; }
 .mode {
   display: block; padding: 20px 20px 22px; text-decoration: none;
-  background: var(--ink-2); border: 1px solid transparent;
-  border-left: 3px solid var(--sea); border-radius: 0 var(--r-md) var(--r-md) 0;
-  color: var(--stage-text); transition: background .18s ease, border-color .18s ease;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid var(--green-soft); border-radius: 0 var(--r-md) var(--r-md) 0;
+  color: var(--ink); transition: background .18s ease, border-color .18s ease;
 }
-.mode:hover { background: var(--ink-3); border-left-color: var(--ochre); }
-.mode strong { display: block; font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 1.14rem; font-weight: 700; margin-bottom: 5px; }
-.mode span { color: var(--stage-dim); font-size: .93rem; line-height: 1.45; }
-.mode.feature { border-left-color: var(--ochre); background: #16394a; }
+.mode:hover { background: var(--wash); border-left-color: var(--green); }
+.mode strong { display: block; font-family: var(--serif);
+  font-size: 1.3rem; font-weight: 500; margin-bottom: 5px; }
+.mode span { color: var(--muted); font-size: .93rem; line-height: 1.45; }
+.mode.feature { border-left-color: var(--orange); }
 
 .statline {
   display: flex; flex-wrap: wrap; gap: 30px; margin: 34px 0 0;
-  padding-top: 22px; border-top: 1px solid var(--ink-2);
+  padding-top: 22px; border-top: 1px solid var(--line);
 }
 .statline div { line-height: 1.2; }
 .statline b {
-  display: block; font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 1.7rem; font-weight: 700; color: var(--ochre);
+  display: block; font-family: var(--serif);
+  font-size: 2rem; font-weight: 500; color: var(--ink);
 }
-.statline small { color: var(--stage-dim); font-size: .88rem; }
+.statline small { color: var(--muted); font-size: .88rem; }
 
 /* ---------- the play stage --------------------------------------------- */
 .rail {
   display: flex; align-items: center; gap: 18px;
-  padding: 14px 0; border-bottom: 1px solid var(--ink-2);
-  font-size: .92rem; color: var(--stage-dim);
+  padding: 14px 0; border-bottom: 1px solid var(--line);
+  font-size: .92rem; color: var(--muted);
 }
 .lives { display: flex; gap: 6px; }
 .life { width: 11px; height: 11px; border-radius: 50%; background: var(--oxide); }
-.life.spent { background: var(--ink-3); }
+.life.spent { background: var(--wash); }
 .rail .score {
-  margin-left: auto; font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 1.4rem; font-weight: 700; color: var(--stage-text);
+  margin-left: auto; font-family: var(--serif);
+  font-size: 1.6rem; font-weight: 500; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
-.rail .streak { color: var(--ochre); font-weight: 600; }
+.rail .streak { color: var(--orange); font-weight: 600; }
 
 .stage { padding: 30px 0 20px; text-align: center; }
 
@@ -179,15 +135,15 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
   filter: grayscale(.25) contrast(1.05);
 }
 .media svg.outline { width: min(430px, 86vw); height: 250px; }
-.media svg.outline path { fill: var(--ochre); stroke: none; }
+.media svg.outline path { fill: var(--green-soft); stroke: none; }
 
 .prompt {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: clamp(1.3rem, 3.2vw, 1.95rem); font-weight: 700;
-  letter-spacing: -.018em; line-height: 1.2;
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3.4vw, 2.2rem); font-weight: 500;
+  letter-spacing: -.02em; line-height: 1.2;
   max-width: 22ch; margin: 0 auto 8px;
 }
-.hint { color: var(--stage-dim); font-size: .95rem; margin: 0 0 26px; font-style: italic; }
+.hint { color: var(--muted); font-size: .95rem; margin: 0 0 26px; font-style: italic; }
 
 .choices { display: grid; gap: 11px; max-width: 640px; margin: 0 auto; }
 .choices.text  { grid-template-columns: repeat(2, 1fr); }
@@ -197,16 +153,17 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
 .choice {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   min-height: 62px; padding: 12px 16px; cursor: pointer;
-  background: var(--ink-2); color: var(--stage-text);
-  border: 1px solid var(--ink-3); border-radius: var(--r-md);
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: var(--r-md);
   font-size: 1.02rem; font-weight: 600; text-align: center;
   transition: background .14s ease, border-color .14s ease, transform .14s ease;
 }
-.choice:hover:not(:disabled) { background: var(--ink-3); border-color: var(--sea); }
+.choice:hover:not(:disabled) { background: var(--wash); border-color: var(--green-soft); }
 .choice:disabled { cursor: default; }
 .choice.gone { opacity: .18; pointer-events: none; }
 .choice.right { background: var(--moss); border-color: var(--moss); color: #fff; }
 .choice.wrong { background: var(--oxide); border-color: var(--oxide); color: #fff; }
+.choice.right, .choice.wrong { opacity: 1; }
 .choice img.mini { width: 34px; height: 23px; object-fit: cover; border-radius: 2px; flex: none; }
 .choices.flags .choice { min-height: 118px; padding: 10px; }
 .choices.flags .choice img { width: 100%; max-height: 96px; object-fit: contain; }
@@ -216,32 +173,32 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
 .lifelines { display: flex; gap: 10px; justify-content: center; margin: 26px 0 0; }
 .lifeline {
   padding: 8px 15px; cursor: pointer; font-size: .88rem; font-weight: 600;
-  background: transparent; color: var(--stage-dim);
-  border: 1px solid var(--ink-3); border-radius: 100px;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--line-strong); border-radius: 100px;
 }
-.lifeline:hover:not(:disabled) { color: var(--ochre); border-color: var(--ochre); }
+.lifeline:hover:not(:disabled) { color: var(--green); border-color: var(--green); }
 .lifeline:disabled { opacity: .3; cursor: default; }
 
 /* the clickable world map */
 #map {
-  width: 100%; height: min(58vh, 480px); background: var(--ink);
-  border: 1px solid var(--ink-2); border-radius: var(--r-md);
+  width: 100%; height: min(58vh, 480px); background: #dce6e4;
+  border: 1px solid var(--line); border-radius: var(--r-md);
 }
 /* Leaflet gives its panes z-index 400 and its controls 800. The map container
    is positioned but has no z-index of its own, so those numbers competed with
    the rest of the page and the map painted straight through the fact card.
    A z-index here makes the map its own stacking context, and the whole thing
    sits below the sheet. */
-.leaflet-container { background: var(--ink) !important; outline: none; z-index: 0; }
+.leaflet-container { background: #dce6e4 !important; outline: none; z-index: 0; }
 
 /* ---------- the paper sheet: where the learning happens ---------------- */
 .sheet-back {
-  position: fixed; inset: 0; z-index: 900; background: rgba(4, 12, 18, .72);
+  position: fixed; inset: 0; z-index: 900; background: rgba(32, 53, 46, .45);
   display: flex; align-items: flex-end; justify-content: center;
 }
 .sheet {
   width: min(940px, 100%); max-height: 92vh; overflow-y: auto;
-  background: var(--paper); color: var(--graphite);
+  background: var(--surface); color: var(--ink);
   border-radius: 14px 14px 0 0; padding: 0 0 26px;
   animation: rise .34s cubic-bezier(.2, .8, .25, 1);
 }
@@ -250,7 +207,7 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
 .verdict {
   display: flex; align-items: center; gap: 12px;
   padding: 16px 28px; color: #fff;
-  font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 1.06rem;
+  font-family: var(--sans); font-weight: 700; font-size: 1.06rem;
   border-radius: 14px 14px 0 0;
 }
 .verdict.right { background: var(--moss); }
@@ -260,146 +217,135 @@ main { position: relative; z-index: 1; padding-bottom: 80px; }
 .card-head { display: flex; gap: 20px; align-items: flex-start; padding: 24px 28px 6px; }
 .card-head img.flag {
   width: 132px; flex: none; border-radius: 3px;
-  border: 1px solid var(--paper-3); box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  border: 1px solid var(--line-strong); box-shadow: 0 4px 14px rgba(0,0,0,.18);
 }
-.card-head h2 { margin: 0 0 4px; color: var(--graphite); }
-.card-head .code { color: #7d7263; }
+.card-head h2 { margin: 0 0 4px; color: var(--ink); }
+.card-head .code { color: var(--muted); }
 .card-head p {
-  margin: 8px 0 0; font-size: 1.02rem; line-height: 1.55; max-width: 62ch; color: #3d372f;
+  margin: 8px 0 0; font-size: 1.02rem; line-height: 1.55; max-width: 62ch; color: var(--ink-soft);
 }
 
 .facts {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(184px, 1fr));
   gap: 0; margin: 20px 28px 0;
-  border-top: 1px solid var(--paper-2);
+  border-top: 1px solid var(--line);
 }
-.fact { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--paper-2); }
-.fact dt { font-size: .78rem; color: #857a68; margin-bottom: 2px;
-  font-family: "Bricolage Grotesque", sans-serif; }
+.fact { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); }
+.fact dt { font-size: .78rem; color: var(--muted); margin-bottom: 2px;
+  font-family: var(--sans); }
 .fact dd { margin: 0; font-size: 1rem; font-weight: 500; line-height: 1.35; }
 
 .strip { padding: 18px 28px 0; }
-.strip h3 { font-size: .84rem; color: #857a68; font-weight: 600; margin-bottom: 9px; }
+.strip h3 { font-size: .84rem; color: var(--muted); font-weight: 600; margin-bottom: 9px; }
 .people { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; }
 .person { width: 96px; flex: none; text-align: left; }
 .person img {
   width: 96px; height: 116px; object-fit: cover; object-position: 50% 20%;
-  border-radius: 3px; background: var(--paper-2); filter: grayscale(.2);
+  border-radius: 3px; background: var(--line); filter: grayscale(.2);
 }
 .person b { display: block; font-size: .84rem; font-weight: 600; margin-top: 6px; line-height: 1.25; }
-.person small { color: #857a68; font-size: .76rem; }
+.person small { color: var(--muted); font-size: .76rem; }
 
 .neighbours { display: flex; flex-wrap: wrap; gap: 7px; }
 .neighbour {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 5px 11px 5px 6px; background: #fff; color: var(--graphite);
-  border: 1px solid var(--paper-2); border-radius: 100px;
+  padding: 5px 11px 5px 6px; background: #fff; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 100px;
   font-size: .87rem; text-decoration: none;
 }
-.neighbour:hover { border-color: var(--sienna); }
+.neighbour:hover { border-color: var(--green-soft); background: var(--wash); }
 .neighbour img { width: 22px; height: 15px; object-fit: cover; border-radius: 2px; }
 
 .sheet-actions {
   display: flex; gap: 12px; align-items: center;
-  padding: 24px 28px 0; margin-top: 20px; border-top: 1px solid var(--paper-2);
+  padding: 24px 28px 0; margin-top: 20px; border-top: 1px solid var(--line);
 }
 .btn {
   padding: 13px 26px; cursor: pointer; border: none; border-radius: var(--r-md);
-  font-family: "Bricolage Grotesque", sans-serif; font-size: 1rem; font-weight: 700;
-  background: var(--graphite); color: var(--paper); text-decoration: none;
+  font-family: var(--sans); font-size: 1rem; font-weight: 700;
+  background: var(--green); color: var(--surface); text-decoration: none;
   display: inline-flex; align-items: center;
 }
-.btn:hover { background: #453e35; }
-.btn.ghost { background: transparent; color: #6b6255; border: 1px solid var(--paper-3); }
+.btn:hover { background: #1b3b2f; }
+.btn.ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--line-strong); }
 .btn.ghost:hover { background: rgba(0,0,0,.04); }
-.btn.big { font-size: 1.1rem; padding: 16px 34px; background: var(--ochre); color: #23180a; }
-.btn.big:hover { background: #eeb350; }
+.btn.big { font-size: 1.05rem; padding: 15px 32px; background: var(--orange); color: #fff; }
+.btn.big:hover { background: #9d3b21; }
 
 /* ---------- atlas + dossier + progress, all on paper -------------------- */
 .paper-page {
-  background: var(--paper); color: var(--graphite);
-  border-radius: var(--r-md); padding: 34px 34px 42px; margin-top: 26px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 34px 34px 42px;
 }
-.paper-page h1, .paper-page h2, .paper-page h3 { color: var(--graphite); }
-.paper-page a { color: var(--sienna); }
+.paper-page h1, .paper-page h2, .paper-page h3 { color: var(--ink); }
+.paper-page a { color: var(--green); }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 18px 0 22px; }
 .filters input {
   flex: 1 1 220px; min-width: 180px; padding: 10px 13px;
-  border: 1px solid var(--paper-3); border-radius: var(--r-sm);
-  background: #fff; font: inherit; font-size: .96rem; color: var(--graphite);
+  border: 1px solid var(--line-strong); border-radius: var(--r-sm);
+  background: #fff; font: inherit; font-size: .96rem; color: var(--ink);
 }
 .chip {
   padding: 7px 14px; cursor: pointer; font-size: .87rem; font-weight: 600;
-  font-family: "Bricolage Grotesque", sans-serif;
-  background: transparent; color: #6b6255;
-  border: 1px solid var(--paper-3); border-radius: 100px;
+  font-family: var(--sans);
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--line-strong); border-radius: 100px;
 }
-.chip[aria-pressed="true"] { background: var(--graphite); color: var(--paper); border-color: var(--graphite); }
+.chip[aria-pressed="true"] { background: var(--green); color: var(--surface); border-color: var(--green); }
 
 .country-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 2px;
 }
 .country-cell {
   display: flex; align-items: center; gap: 11px; padding: 10px 12px;
-  text-decoration: none; color: var(--graphite); background: #fff;
-  border-left: 4px solid var(--paper-2);
+  text-decoration: none; color: var(--ink); background: #fff;
+  border-left: 4px solid var(--line);
 }
 .country-cell:hover { background: #fffdf7; }
 .country-cell img { width: 34px; height: 23px; object-fit: cover; border-radius: 2px; flex: none; }
 .country-cell b { font-size: .94rem; font-weight: 600; line-height: 1.2; }
-.country-cell small { display: block; color: #8a8071; font-size: .76rem; }
+.country-cell small { display: block; color: var(--muted); font-size: .76rem; }
 /* elevation tints: sea -> lowland -> ochre -> sienna, as on a physical atlas */
-.country-cell[data-level="0"] { border-left-color: var(--paper-2); }
+.country-cell[data-level="0"] { border-left-color: var(--line); }
 .country-cell[data-level="1"] { border-left-color: var(--sea); }
 .country-cell[data-level="2"] { border-left-color: var(--moss); }
 .country-cell[data-level="3"] { border-left-color: var(--ochre); }
 
-.legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: .84rem; color: #6b6255; margin-bottom: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: .84rem; color: var(--ink-soft); margin-bottom: 16px; }
 .legend i { display: inline-block; width: 13px; height: 13px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
 
 .dossier-head { display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
-.dossier-head img.flag { width: 210px; border: 1px solid var(--paper-3); border-radius: 3px; }
+.dossier-head img.flag { width: 210px; border: 1px solid var(--line-strong); border-radius: 3px; }
 .dossier-head .blurb { flex: 1 1 340px; }
 .dossier-head .blurb p { max-width: 66ch; line-height: 1.62; }
 
-.section { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--paper-2); }
+.section { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); }
 .leader-row { display: flex; flex-wrap: wrap; gap: 20px; }
 .leader { display: flex; gap: 13px; align-items: flex-start; width: 290px; }
 .leader img { width: 76px; height: 92px; object-fit: cover; object-position: 50% 20%;
-  border-radius: 3px; background: var(--paper-2); flex: none; }
+  border-radius: 3px; background: var(--line); flex: none; }
 .leader b { display: block; font-size: .98rem; }
-.leader small { color: #857a68; font-size: .82rem; }
+.leader small { color: var(--muted); font-size: .82rem; }
 
-.bar { height: 9px; background: var(--paper-2); border-radius: 100px; overflow: hidden; }
+.bar { height: 9px; background: var(--line); border-radius: 100px; overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--moss); }
 
 table.plain { width: 100%; border-collapse: collapse; font-size: .95rem; }
-table.plain th { text-align: left; font-size: .8rem; color: #857a68; font-weight: 600;
-  padding: 6px 10px 6px 0; border-bottom: 1px solid var(--paper-2); }
-table.plain td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--paper-2); }
+table.plain th { text-align: left; font-size: .8rem; color: var(--muted); font-weight: 600;
+  padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+table.plain td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); }
 table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
-.empty { color: #857a68; font-style: italic; }
+.empty { color: var(--muted); font-style: italic; }
 
 /* ---------- narrow screens ---------------------------------------------
    The site is used on a phone as much as anything, and two things break
    first: the nav (seven links plus a search box on one row) and anything
    laid out in fixed columns. */
 
-@media (max-width: 900px) {
-  .nav {
-    flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 14px 0 16px;
-  }
-  .nav .brand { flex: 0 0 auto; margin-right: 4px; }
-  .sitesearch { order: 99; flex: 1 0 100%; margin-left: 0; }
-  .sitesearch input { width: 100%; }
-  .ac { left: 0; right: auto; width: 100%; }
-}
-
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  .wrap { padding: 0 15px; }
 
   .choices.text, .choices.flags { grid-template-columns: 1fr; }
   .choices.pair { grid-template-columns: repeat(2, 1fr); }
@@ -415,7 +361,7 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .sheet-actions .btn { flex: 1 1 auto; justify-content: center; }
   .sheet { max-height: 94vh; border-radius: 12px 12px 0 0; }
 
-  .hero { padding: 30px 0 20px; }
+  .hero { padding: 0 0 18px; }
   .media { min-height: 150px; margin-bottom: 18px; }
   .media img.portrait { width: 165px; height: 205px; }
   .media svg.outline { height: 190px; }
@@ -456,75 +402,45 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
 
-/* ---------- the search box in the header ------------------------------- */
-.sitesearch { position: relative; margin-left: auto; z-index: 30; }
-.sitesearch input {
-  width: min(300px, 42vw); padding: 8px 12px;
-  background: var(--ink-2); color: var(--stage-text);
-  border: 1px solid var(--ink-3); border-radius: 100px;
-  font: inherit; font-size: .9rem;
-}
-.sitesearch input::placeholder { color: #6d8d9b; }
-.sitesearch input:focus { border-color: var(--sea); outline: none; }
-.ac {
-  position: absolute; top: calc(100% + 7px); right: 0;
-  width: min(390px, 88vw); max-height: 62vh; overflow-y: auto;
-  background: var(--paper); border-radius: var(--r-md);
-  box-shadow: var(--shadow-lift); padding: 5px; z-index: 40;
-}
-.ac-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px; border-radius: var(--r-sm);
-  color: var(--graphite); text-decoration: none;
-}
-.ac-row.on, .ac-row:hover { background: var(--paper-2); }
-.ac-row img { width: 28px; height: 19px; object-fit: cover; border-radius: 2px; flex: none; }
-.ac-row .ac-dot {
-  width: 28px; height: 19px; flex: none; border-radius: 2px;
-  background: repeating-linear-gradient(45deg, var(--paper-2) 0 3px, var(--paper) 3px 6px);
-}
-.ac-row b { display: block; font-size: .95rem; font-weight: 600; line-height: 1.2; }
-.ac-row small { color: #857a68; font-size: .78rem; }
-
 /* ---------- language shares ------------------------------------------- */
 .langs { display: grid; gap: 10px; max-width: 560px; }
 .lang { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: baseline; }
-.lang .meter { grid-column: 1 / -1; height: 7px; background: var(--paper-2); border-radius: 100px; }
+.lang .meter { grid-column: 1 / -1; height: 7px; background: var(--line); border-radius: 100px; }
 .lang .meter i { display: block; height: 100%; border-radius: 100px; background: var(--sea); }
-.lang .pct { font-variant-numeric: tabular-nums; color: #6b6255; font-size: .9rem; }
+.lang .pct { font-variant-numeric: tabular-nums; color: var(--ink-soft); font-size: .9rem; }
 .badge {
   display: inline-block; margin-left: 7px; padding: 1px 7px;
-  font-family: "Bricolage Grotesque", sans-serif; font-size: .68rem;
+  font-family: var(--sans); font-size: .68rem;
   font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: #6b5a33; background: rgba(224,163,60,.28);
+  color: #8a5a1c; background: rgba(224,163,60,.28);
   border-radius: 100px; vertical-align: 2px;
 }
 
 /* ---------- economy ---------------------------------------------------- */
 .econ { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
-.econ h3 { font-size: .84rem; color: #857a68; font-weight: 600; margin-bottom: 8px; }
+.econ h3 { font-size: .84rem; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
 .econ ul { margin: 0; padding-left: 18px; }
 .econ li { margin-bottom: 3px; }
 .partner { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
-.partner span:last-child { color: #857a68; font-variant-numeric: tabular-nums; }
+.partner span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* ---------- games index ------------------------------------------------ */
 .gamelist { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .game {
-  background: var(--ink-2); border-left: 3px solid var(--sea);
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--green-soft);
   border-radius: 0 var(--r-md) var(--r-md) 0; padding: 18px 20px 16px;
 }
-.game.feature { border-left-color: var(--ochre); background: #16394a; }
-.game h3 { margin: 0 0 4px; font-size: 1.12rem; }
-.game p { margin: 0 0 14px; color: var(--stage-dim); font-size: .92rem; }
+.game.feature { border-left-color: var(--orange); }
+.game h3 { margin: 0 0 4px; font-size: 1.3rem; }
+.game p { margin: 0 0 14px; color: var(--muted); font-size: .92rem; }
 .game .go { display: flex; gap: 9px; flex-wrap: wrap; }
 .play-btn {
   padding: 8px 15px; border-radius: 100px; text-decoration: none;
-  font-family: "Bricolage Grotesque", sans-serif; font-size: .87rem; font-weight: 700;
-  background: var(--ochre); color: #23180a;
+  font-family: var(--sans); font-size: .87rem; font-weight: 700;
+  background: var(--green); color: var(--surface);
 }
-.play-btn.casual { background: transparent; color: var(--stage-dim); border: 1px solid var(--ink-3); }
-.play-btn.casual:hover { color: var(--ochre); border-color: var(--ochre); }
+.play-btn.casual { background: transparent; color: var(--muted); border: 1px solid var(--line-strong); }
+.play-btn.casual:hover { color: var(--green); border-color: var(--green); }
 
 /* ---------- the answer bar: what shows when you get one right ----------
    In the flow, under the choices, so it lands where the eye already is.
@@ -534,19 +450,19 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
   display: flex; align-items: center; justify-content: center;
   gap: 8px 16px; flex-wrap: wrap;
   max-width: 640px; margin: 20px auto 0; padding: 14px 20px;
-  background: var(--paper); color: var(--graphite);
+  background: var(--surface); color: var(--ink);
   border-radius: var(--r-md); box-shadow: var(--shadow-lift);
   animation: rise .2s cubic-bezier(.2, .8, .25, 1);
 }
 .answerbar .said {
-  font-family: "Bricolage Grotesque", sans-serif; font-weight: 700;
+  font-family: var(--sans); font-weight: 700;
   font-size: 1.05rem;
 }
-.answerbar .said.right { color: #4d6b2c; }
+.answerbar .said.right { color: var(--green); }
 .answerbar .said.wrong { color: var(--oxide); }
 .answerbar .was { font-weight: 600; }
 .answerbar .gained {
-  color: #857a68; font-variant-numeric: tabular-nums; margin-right: auto;
+  color: var(--muted); font-variant-numeric: tabular-nums; margin-right: auto;
 }
 .answerbar .btn { padding: 10px 20px; }
 .answerbar .btn.big { font-size: 1rem; padding: 11px 24px; }
@@ -558,26 +474,26 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .gameover { max-width: 560px; text-align: center; padding: 34px 30px 30px; }
 .gameover h2 { font-size: 2rem; margin-bottom: .2em; }
 .gameover .final {
-  font-family: "Bricolage Grotesque", sans-serif; font-size: 3.4rem;
-  font-weight: 800; color: var(--sienna); line-height: 1; margin: 14px 0 4px;
+  font-family: var(--serif); font-size: 4rem;
+  font-weight: 500; color: var(--green); line-height: 1; margin: 14px 0 4px;
   font-variant-numeric: tabular-nums;
 }
 .gameover .tally { display: flex; justify-content: center; gap: 26px; margin: 22px 0 26px; }
 .gameover .tally b {
-  display: block; font-family: "Bricolage Grotesque", sans-serif;
+  display: block; font-family: var(--sans);
   font-size: 1.5rem; font-weight: 700;
 }
-.gameover .tally small { color: #857a68; font-size: .8rem; }
+.gameover .tally small { color: var(--muted); font-size: .8rem; }
 .gameover .sheet-actions { justify-content: center; border-top: none; }
 
 /* ---------- misc ------------------------------------------------------- */
 .sortbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
-.sortbar label { font-size: .85rem; color: #6b6255; }
+.sortbar label { font-size: .85rem; color: var(--ink-soft); }
 .sortbar select {
-  padding: 8px 11px; font: inherit; font-size: .92rem; color: var(--graphite);
-  background: #fff; border: 1px solid var(--paper-3); border-radius: var(--r-sm);
+  padding: 8px 11px; font: inherit; font-size: .92rem; color: var(--ink);
+  background: #fff; border: 1px solid var(--line-strong); border-radius: var(--r-sm);
 }
-.count { color: #857a68; font-size: .85rem; }
+.count { color: var(--muted); font-size: .85rem; }
 
 .people a.person, .leader-row a.leader { text-decoration: none; color: inherit; }
 .people a.person:hover b, .leader-row a.leader:hover b { text-decoration: underline; }
@@ -585,48 +501,48 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .figure-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 2px 26px; }
 .figure {
   display: flex; gap: 13px; align-items: flex-start;
-  padding: 13px 0; border-bottom: 1px solid var(--paper-2);
+  padding: 13px 0; border-bottom: 1px solid var(--line);
 }
 .figure img {
   width: 62px; height: 76px; object-fit: cover; object-position: 50% 18%;
-  border-radius: 3px; background: var(--paper-2); flex: none; filter: grayscale(.2);
+  border-radius: 3px; background: var(--line); flex: none; filter: grayscale(.2);
 }
 .figure b { font-size: 1rem; }
 .figure em {
-  display: block; color: #6b5a33; font-size: .84rem; font-style: normal;
-  font-family: "Bricolage Grotesque", sans-serif; margin: 1px 0 3px;
+  display: block; color: #8a5a1c; font-size: .84rem; font-style: normal;
+  font-family: var(--sans); margin: 1px 0 3px;
 }
-.figure small { display: block; color: #6b6255; font-size: .87rem; line-height: 1.45; }
+.figure small { display: block; color: var(--ink-soft); font-size: .87rem; line-height: 1.45; }
 
 .source-table td:first-child { width: 190px; font-weight: 600; }
 
 /* flag captions: revealed only after you answer */
 .choices.flags .choice { flex-direction: column; gap: 6px; }
 .choice .caption {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: var(--sans);
   font-size: .82rem; font-weight: 600; line-height: 1.15;
 }
 
 /* ---------- the browsable world map ------------------------------------ */
 .maplayout { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
 #wmap {
-  height: min(70vh, 620px); background: var(--ink);
-  border-radius: var(--r-md); border: 1px solid var(--paper-3);
+  height: min(70vh, 620px); background: #dce6e4;
+  border-radius: var(--r-md); border: 1px solid var(--line-strong);
 }
 .mapinfo {
-  background: #fff; border: 1px solid var(--paper-2); border-radius: var(--r-md);
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-md);
   padding: 18px; max-height: min(70vh, 620px); overflow-y: auto;
 }
 .mapinfo-head { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
-.mapinfo-head img { width: 52px; border-radius: 2px; border: 1px solid var(--paper-2); }
+.mapinfo-head img { width: 52px; border-radius: 2px; border: 1px solid var(--line); }
 .mapinfo-head h2 { font-size: 1.25rem; margin: 0; }
-.mapinfo-head small { color: #857a68; }
+.mapinfo-head small { color: var(--muted); }
 .mapinfo p { font-size: .93rem; line-height: 1.5; }
 .mapinfo .facts { margin: 12px 0 16px; grid-template-columns: 1fr; }
 .mapinfo .btn { width: 100%; justify-content: center; }
 .leaflet-tooltip {
-  background: var(--graphite); color: var(--paper); border: none;
-  font-family: "Bricolage Grotesque", sans-serif; font-size: .84rem;
+  background: var(--green); color: var(--surface); border: none;
+  font-family: var(--sans); font-size: .84rem;
   box-shadow: none;
 }
 .leaflet-tooltip::before { display: none; }
@@ -642,24 +558,24 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
   width: 22px; height: 22px; flex: none; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: .78rem; line-height: 1;
-  background: var(--paper-2); color: #6b5a33;
+  background: var(--line); color: #8a5a1c;
 }
-.chipset .neighbour:hover .mark { background: var(--ochre); color: #23180a; }
-.chipset small { color: #857a68; }
+.chipset .neighbour:hover .mark { background: var(--green); color: var(--surface); }
+.chipset small { color: var(--muted); }
 .studio-topic { margin: 18px 0 8px; font-size: 1rem; }
-.studio-topic small { color: #857a68; font-weight: 400; }
+.studio-topic small { color: var(--muted); font-weight: 400; }
 .chipset .yrs { font-variant-numeric: tabular-nums; }
 .chip-group { margin-bottom: 16px; }
 .chip-group > h3 {
-  font-size: .8rem; color: #857a68; font-weight: 600; margin: 0 0 8px;
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: .8rem; color: var(--muted); font-weight: 600; margin: 0 0 8px;
+  font-family: var(--sans);
   text-transform: uppercase; letter-spacing: .05em;
 }
 
 /* the locator map on a country page */
 #locator {
   height: min(46vh, 380px); border-radius: var(--r-md);
-  border: 1px solid var(--paper-3); background: var(--ink);
+  border: 1px solid var(--line-strong); background: #dce6e4;
 }
 @media (max-width: 640px) { #locator { height: 40vh; } }
 
@@ -667,16 +583,16 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .typein { display: flex; gap: 9px; max-width: 460px; margin: 0 auto; position: relative; }
 .typein input {
   flex: 1; padding: 14px 16px; font: inherit; font-size: 1.05rem;
-  background: var(--ink-2); color: var(--stage-text);
-  border: 1px solid var(--ink-3); border-radius: var(--r-md);
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: var(--r-md);
 }
-.typein input:focus { border-color: var(--ochre); outline: none; }
-.typein input::placeholder { color: #6d8d9b; }
+.typein input:focus { border-color: var(--green-soft); outline: none; box-shadow: 0 0 0 3px var(--wash); }
+.typein input::placeholder { color: var(--muted); }
 .ac-answer { top: calc(100% + 6px); left: 0; right: 0; width: auto; text-align: left; }
-.orclick { color: var(--stage-dim); font-size: .9rem; font-style: italic; margin-top: 14px; }
+.orclick { color: var(--muted); font-size: .9rem; font-style: italic; margin-top: 14px; }
 
 .play-btn.hard { background: var(--oxide); color: #fff; }
-.play-btn.hard.casual { background: transparent; color: var(--stage-dim); border: 1px solid var(--oxide); }
+.play-btn.hard.casual { background: transparent; color: var(--muted); border: 1px solid var(--oxide); }
 .play-btn.hard.casual:hover { color: #fff; background: var(--oxide); }
 
 /* ---------- the focus card: a person or a city ------------------------- */
@@ -684,15 +600,15 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .focus-head { align-items: flex-start; }
 .focus-portrait {
   width: 132px; height: 164px; object-fit: cover; object-position: 50% 18%;
-  border-radius: 3px; flex: none; background: var(--paper-2);
+  border-radius: 3px; flex: none; background: var(--line);
   box-shadow: 0 4px 14px rgba(0,0,0,.18);
 }
 .focus-blank {
   width: 132px; height: 164px; flex: none; border-radius: 3px;
-  background: var(--paper-2); color: var(--paper-3);
+  background: var(--line); color: var(--line-strong);
   display: flex; align-items: center; justify-content: center; font-size: 2.6rem;
 }
-.focus-head .from { display: flex; align-items: center; gap: 7px; color: #857a68;
+.focus-head .from { display: flex; align-items: center; gap: 7px; color: var(--muted);
   font-size: .92rem; margin: 4px 0 8px; }
 .focus-head .from img { width: 22px; height: 15px; object-fit: cover; border-radius: 2px; }
 
@@ -708,28 +624,32 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .answerbar .note {
   flex: 1 0 100%; margin: 2px 0 0; font-size: .9rem; line-height: 1.45;
-  color: #5c5449;
+  color: var(--ink-soft);
 }
 /* A compact dashboard and a consistent game setup on every screen. */
-.score-dashboard { padding: 24px; margin: 24px 0; border: 1px solid #315567; border-radius: 18px; background: #102c3a; color: #e5eff3; }
+.score-dashboard { padding: 26px 28px; margin: 24px 0; border-radius: 7px; background: var(--green); color: #f6f5eb; }
+.score-dashboard .eyebrow { color: #bdccaf; }
+.score-dashboard .btn { background: #edf0df; color: var(--green); }
+.score-dashboard .btn:hover { background: #fff; }
+.score-dashboard a { color: #edf0df; }
 .dashboard-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .dashboard-heading h2 { margin: 4px 0 20px; font-size: 1.6rem; }
-.eyebrow { font: 500 .72rem 'DM Mono', monospace; letter-spacing: .12em; color: #e8b65b; }
+.eyebrow { font: 700 10px var(--sans); letter-spacing: 2px; text-transform: uppercase; color: var(--orange); margin: 0 0 12px; }
 .score-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.score-stats b { display: block; font: 700 2rem 'Bricolage Grotesque', sans-serif; }
-.score-stats span, .save-note { font: 400 .85rem/1.5 'Bricolage Grotesque', sans-serif; color: #a9c4ce; }
-.score-dashboard details { margin-top: 14px; font: 400 .9rem/1.6 'Bricolage Grotesque', sans-serif; }
+.score-stats b { display: block; font: 500 2.1rem var(--serif); }
+.score-stats span, .save-note { font: 400 .85rem/1.5 var(--sans); color: #d0dbcb; }
+.score-dashboard details { margin-top: 14px; font: 400 .9rem/1.6 var(--sans); }
 .score-dashboard summary { cursor: pointer; }
 .game-options { display: grid; gap: 12px; margin-top: 20px; }
-.game-options label { display: grid; gap: 6px; font: 500 .8rem 'Bricolage Grotesque', sans-serif; }
-.game-options select { width: 100%; min-width: 0; padding: 12px; border: 1px solid #466372; border-radius: 8px; background: #102c3a; color: #e5eff3; font: inherit; }
+.game-options label { display: grid; gap: 6px; font: 500 .8rem var(--sans); }
+.game-options select { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; }
 .game-options .play-btn { width: 100%; cursor: pointer; text-align: center; }
 .stage .media:empty { display: none; }
 .stage .prompt { margin: 0 auto 12px; }
 .stage .hint { margin-bottom: 20px; }
 .stage #map { height: clamp(240px, 40vh, 400px); }
 .answerbar { max-width: 720px; }
-button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid #e8b65b; outline-offset: 4px; }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid #d48b47; outline-offset: 4px; }
 @media (max-width: 600px) {
   .score-dashboard { padding: 18px; }
   .score-stats { grid-template-columns: repeat(2, 1fr); gap: 18px; }
@@ -745,8 +665,6 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
   .answerbar .btn { min-height: 44px; }
   .lifelines { flex-wrap: wrap; }
   #wmap { height: 320px; min-height: 0; }
-  .nav .sitesearch { flex: 1 0 100%; width: 100%; max-width: none; margin-left: 0; }
-  .nav .sitesearch input { width: 100%; }
 }
 
 /* ---------- added with the provenance, map and dialog work ------------- */
@@ -763,13 +681,13 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 /* What the answer is measured against, where that is a convention rather than
    a fact. Quieter than the hint, because it is a footnote, not a clue. */
 .definition {
-  margin: 12px 0 4px; font-size: .82rem; line-height: 1.5;
-  color: var(--stage-dim, #8aa3ad); max-width: 62ch;
-  border-left: 2px solid var(--ink-2); padding-left: 10px;
+  margin: 14px auto 4px; font-size: .82rem; line-height: 1.5; text-align: left;
+  color: var(--muted); max-width: 640px;
+  border-left: 2px solid var(--line); padding-left: 10px;
 }
 
 .map-status {
-  margin: 10px 0 0; font-size: .9rem; color: var(--stage-dim, #8aa3ad);
+  margin: 10px 0 0; font-size: .9rem; color: var(--muted);
 }
 .map-status.error { color: var(--oxide); }
 
@@ -780,11 +698,11 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .map-reset {
   position: absolute; right: 12px; bottom: 12px; z-index: 500;
   margin: 0; padding: 7px 14px; font: inherit; font-size: .82rem;
-  background: rgba(8, 24, 32, .88); white-space: nowrap;
-  color: var(--stage-dim, #8aa3ad); cursor: pointer;
-  border: 1px solid var(--ink-2); border-radius: 999px;
+  background: rgba(255, 254, 250, .92); white-space: nowrap;
+  color: var(--muted); cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px;
 }
-.map-reset:hover { color: var(--ochre); border-color: var(--ochre); }
+.map-reset:hover { color: var(--green); border-color: var(--green); }
 
 /* A country with no polygon in this dataset, drawn as a target rather than
    left off the map entirely. */
@@ -796,7 +714,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .sheet-close {
   position: absolute; top: 10px; right: 12px; z-index: 2;
   width: 34px; height: 34px; line-height: 1; font-size: 1.5rem;
-  background: rgba(255, 255, 255, .82); color: var(--graphite);
+  background: rgba(255, 255, 255, .82); color: var(--ink);
   border: 1px solid rgba(0, 0, 0, .12); border-radius: 50%; cursor: pointer;
 }
 .sheet-close:hover { background: #fff; }
@@ -806,7 +724,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .game-menu .chip { padding: 4px 12px; font-size: .78rem; }
 
 .gap-note {
-  margin: 16px 0 0; font-size: .85rem; color: var(--stage-dim, #8aa3ad);
+  margin: 16px 0 0; font-size: .85rem; color: var(--muted);
   max-width: 66ch;
 }
 
@@ -814,7 +732,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
    own page. */
 .country-study {
   margin: 0 0 26px; padding: 22px 24px;
-  background: var(--ink-2, #14313f); border-radius: var(--r-md, 10px);
+  background: var(--surface); border-radius: var(--r-md);
   display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
 }
 .country-study h3 { flex: 1 0 100%; margin: 0; }
@@ -829,25 +747,25 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .provenance { margin-top: 8px; font-size: .85rem; }
 .provenance li { margin-bottom: 10px; line-height: 1.5; }
 .provenance .field { font-weight: 600; }
-.provenance .when { color: #857a68; }
+.provenance .when { color: var(--muted); }
 
 /* Country reading trails remain useful with scripting disabled. */
-.discovery-nav { display:flex; flex-wrap:wrap; gap:10px 20px; padding:18px 0; border-block:1px solid #cfc4ae; }
+.discovery-nav { display:flex; flex-wrap:wrap; gap:10px 20px; padding:18px 0; border-block:1px solid var(--line); }
 .discovery-nav a { font-weight:600; }
 .discovery-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:16px; }
-.study-card { border:1px solid #d8cdb8; border-radius:10px; padding:20px; background:#f8f3e8; min-width:0; }
+.study-card { border:1px solid var(--line); border-radius:6px; padding:20px; background:var(--surface); min-width:0; }
 .study-card summary { cursor:pointer; font-weight:650; line-height:1.5; }
-.study-card summary:focus-visible { outline:3px solid #28758a; outline-offset:6px; }
+.study-card summary:focus-visible { outline:3px solid #d48b47; outline-offset:6px; }
 .study-card h3 { margin:12px 0 8px; }
 .study-card h4 { margin-bottom:10px; }
 .study-card p { line-height:1.65; }
-.study-card small, .era-date { color:#665b4c; }
-.historical-flag { display:block; width:160px; height:100px; object-fit:contain; border:1px solid #b6ab98; margin:0 0 18px; background:#ede5d6; }
-.history-timeline { list-style:none; padding:0 0 0 22px; border-left:2px solid #ac7046; }
+.study-card small, .era-date { color:var(--ink-soft); }
+.historical-flag { display:block; width:160px; height:100px; object-fit:contain; border:1px solid var(--line-strong); margin:0 0 18px; background:var(--wash); }
+.history-timeline { list-style:none; padding:0 0 0 22px; border-left:2px solid var(--orange); }
 .history-timeline li { margin:0 0 22px; }
 .history-timeline p { margin:6px 0; }
 .religion-row { display:flex; justify-content:space-between; gap:16px; margin-top:16px; }
-.coverage-note { padding:14px 18px; background:#eee6d5; border-left:3px solid #ac7046; }
+.coverage-note { padding:14px 18px; background:var(--wash); border-left:3px solid var(--gold); }
 .section[id] { scroll-margin-top:24px; }
 .game-options .session-note, .game-options .style-note { flex:1 0 100%; line-height:1.5; }
 .game-options [hidden] { display:none !important; }

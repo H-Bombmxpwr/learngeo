@@ -5,7 +5,7 @@
 <div class="wrap">
   <div class="paper-page">
     <h1>{{ results | length }} match{% if results | length != 1 %}es{% endif %}</h1>
-    <p style="color:#6b6255;margin-top:0">for &ldquo;{{ q }}&rdquo;</p>
+    <p style="color:var(--ink-soft);margin-top:0">for &ldquo;{{ q }}&rdquo;</p>
 
     {% if results %}
       <div class="country-grid" style="margin-top:20px">

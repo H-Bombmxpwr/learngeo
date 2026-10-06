@@ -3,7 +3,7 @@
 
 {% block body %}
 <div class="wrap">
-  <header class="hero" style="padding:40px 0 22px">
+  <header class="hero">
     <p class="eyebrow">YOUR NEXT ADVENTURE</p>
     <h1>Pick a topic. Find your rhythm.</h1>
     <p class="lede">Choose a short quiz with three lives, or explore with unlimited practice.
@@ -55,7 +55,7 @@
 
   <div class="statline">
     <div>
-      <b>{{ stats.countries_known }}<small style="color:var(--stage-dim);font-size:1rem"> / {{ stats.countries_total }}</small></b>
+      <b>{{ stats.countries_known }}<small style="color:var(--muted);font-size:1rem"> / {{ stats.countries_total }}</small></b>
       <small>countries you know</small>
     </div>
     <div><b>{{ stats.answered }}</b><small>questions answered</small></div>

@@ -132,5 +132,51 @@ window.TriviaCore = (() => {
     out.saved = [...remote.saved]; out.hidden = [...remote.hidden];
     return out;
   }
-  return {DAY, empty, normalise, judge, review, queue, shuffle, safeURL, validateCard, validateBackup, merge};
+  // Answer suggestions. Every answer in the library is a candidate, so the
+  // list never singles out the right one: the card being asked gets no boost.
+  function wikiTitle(url) {
+    const m = /^https:\/\/en\.wikipedia\.org\/wiki\/([^#?]+)/.exec(url || "");
+    if (!m) return "";
+    try { return decodeURIComponent(m[1]).replace(/_/g, " "); } catch { return ""; }
+  }
+  function suggestIndex(cards) {
+    const byNorm = new Map();
+    // A grouped answer ("Thomas Kyd / William Shakespeare") accepts each name,
+    // so each name is its own suggestion.
+    for (const c of cards) for (const part of String(c.answer || "").split(" / ")) {
+      const label = part.trim(), norm = normalise(label);
+      if (!norm || label.length > 80) continue;
+      let entry = byNorm.get(norm);
+      if (!entry) {
+        const read = (c.reading || []).find(r => normalise(r.name) === norm);
+        entry = {label, norm, words: norm.split(" "), title: read ? wikiTitle(read.url) : label,
+          topics: {}, count: 0};
+        byNorm.set(norm, entry);
+      }
+      entry.count++;
+      entry.topics[c.topic] = (entry.topics[c.topic] || 0) + 1;
+    }
+    for (const entry of byNorm.values())
+      entry.topic = Object.entries(entry.topics).sort((a, b) => b[1] - a[1])[0][0];
+    return [...byNorm.values()];
+  }
+  function suggest(index, text, options = {}) {
+    const q = normalise(text), limit = options.limit || 6;
+    if (q.length < 2) return [];
+    const scored = [];
+    for (const entry of index) {
+      let score = 0;
+      if (entry.norm.startsWith(q)) score = 3;
+      else if (entry.words.some(w => w.startsWith(q))) score = 2;
+      else if (q.length >= 3 && entry.norm.includes(q)) score = 1;
+      if (!score) continue;
+      if (entry.norm === q) score += 2;
+      if (options.topic && entry.topics[options.topic]) score += .5;
+      scored.push([score, entry]);
+    }
+    scored.sort((a, b) => b[0] - a[0] || b[1].count - a[1].count || a[1].label.length - b[1].label.length);
+    return scored.slice(0, limit).map(s => s[1]);
+  }
+  return {DAY, empty, normalise, judge, review, queue, shuffle, safeURL, validateCard, validateBackup, merge,
+    wikiTitle, suggestIndex, suggest};
 })();

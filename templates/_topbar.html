@@ -1,0 +1,10 @@
+<header class="topbar">
+  <span class="section-name">{{ section_name }}</span>
+  <form class="sitesearch" action="{{ url_for('search_page') }}" method="get" role="search" autocomplete="off">
+    <input id="q" name="q" type="search" placeholder="Search countries, topics, people"
+           aria-label="Search" aria-expanded="false" aria-controls="acbox"
+           role="combobox" value="{{ request.args.get('q', '') if request.endpoint == 'search_page' }}">
+    <div class="ac" id="acbox" role="listbox" hidden></div>
+  </form>
+  <span id="today"></span>
+</header>

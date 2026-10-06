@@ -9,6 +9,12 @@
   let searchIndex = new Map();
   let session = null, libraryPage = 0, explorePath = [], routeToken = 0;
   let activeEntity = null, entityLimit = 48;
+  // Answer suggestions and their pictures. Pictures are a nicety: if the
+  // lookup fails the list still works, just with initials instead.
+  const SUGGEST = "commonplace.suggest";
+  let suggestions = null, suggestRows = [], suggestActive = -1;
+  const thumbs = new Map(), thumbsPending = new Set();
+  const suggestOn = () => { try { return localStorage.getItem(SUGGEST) !== "off"; } catch { return true; } };
   let libraryFilter = {q: "", topic: "", level: "", kind: "", status: ""};
   const e = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
   const fmt = n => Number(n).toLocaleString();
@@ -50,6 +56,70 @@
   function refreshIndex() {
     byId = new Map(allCards().map(c => [c.id, c]));
     searchIndex = new Map(allCards().map(c => [c.id, C.normalise(c.prompt + " " + c.answer + " " + c.explanation)]));
+    suggestions = null;
+  }
+  function suggestionIndex() { return suggestions || (suggestions = C.suggestIndex(allCards())); }
+  function answerTitle(c) {
+    const norm = C.normalise(c.answer.split(" / ")[0]);
+    return suggestionIndex().find(s => s.norm === norm)?.title || c.answer;
+  }
+  async function loadThumbs(titles) {
+    const wanted = [...new Set(titles)].filter(t => t && !thumbs.has(t) && !thumbsPending.has(t)).slice(0, 24);
+    if (!wanted.length || !document.body.dataset.thumbsUrl) return;
+    wanted.forEach(t => thumbsPending.add(t));
+    try {
+      const response = await fetch(document.body.dataset.thumbsUrl + "?" + wanted.map(t => "t=" + encodeURIComponent(t)).join("&"));
+      const data = response.ok ? await response.json() : {};
+      wanted.forEach(t => { if (t in data) thumbs.set(t, data[t]); });
+    } catch { /* initials it is */ }
+    wanted.forEach(t => thumbsPending.delete(t));
+    paintThumbs();
+  }
+  function thumbImg(title, cls) {
+    const info = thumbs.get(title), src = C.safeURL(info?.thumb || "");
+    return src ? `<img class="${cls}" src="${e(src)}" alt="" loading="lazy">` : "";
+  }
+  function paintThumbs() {
+    document.querySelectorAll("[data-thumb-title]").forEach(el => {
+      const title = el.dataset.thumbTitle, info = thumbs.get(title);
+      if (!info) return;
+      const img = thumbImg(title, "");
+      if (img && !el.querySelector("img")) el.innerHTML = img;
+      const sub = el.parentElement?.querySelector("[data-thumb-desc]");
+      if (sub && info.description && !sub.dataset.filled) { sub.textContent = info.description; sub.dataset.filled = "1"; }
+    });
+    document.querySelectorAll("[data-figure-title]").forEach(el => {
+      const info = thumbs.get(el.dataset.figureTitle), src = C.safeURL(info?.thumb || "");
+      if (!src || el.dataset.filled) return;
+      el.dataset.filled = "1"; el.hidden = false;
+      el.innerHTML = `<img src="${e(src)}" alt="">${info.description ? `<figcaption>${e(info.description)}</figcaption>` : ""}`;
+    });
+  }
+  function fillFigures() { loadThumbs([...document.querySelectorAll("[data-figure-title]")].map(el => el.dataset.figureTitle)); paintThumbs(); }
+  function closeSuggestions() {
+    const box = $("#suggest"); if (box) { box.hidden = true; box.innerHTML = ""; }
+    suggestRows = []; suggestActive = -1;
+    $("#answer")?.setAttribute("aria-expanded", "false");
+    $("#answer")?.removeAttribute("aria-activedescendant");
+  }
+  function renderSuggestions() {
+    const input = $("#answer"), box = $("#suggest");
+    if (!input || !box || !suggestOn() || session?.pending) return closeSuggestions();
+    suggestRows = C.suggest(suggestionIndex(), input.value, {topic: currentCard()?.topic});
+    suggestActive = -1;
+    if (!suggestRows.length) return closeSuggestions();
+    box.innerHTML = suggestRows.map((s, i) => `<button type="button" class="suggest-row" role="option" id="suggest-${i}" aria-selected="false" data-pick="${e(s.label)}"><span class="suggest-img" data-thumb-title="${e(s.title)}" aria-hidden="true">${thumbImg(s.title, "") || e(s.label[0].toUpperCase())}</span><span class="suggest-text"><b>${e(s.label)}</b><small data-thumb-desc>${e(thumbs.get(s.title)?.description || topicName(s.topic))}</small></span></button>`).join("");
+    box.hidden = false; input.setAttribute("aria-expanded", "true");
+    loadThumbs(suggestRows.map(s => s.title));
+  }
+  function highlightSuggestion(i) {
+    suggestActive = i;
+    document.querySelectorAll(".suggest-row").forEach((row, n) => { row.classList.toggle("on", n === i); row.setAttribute("aria-selected", String(n === i)); });
+    if (i >= 0) { $("#answer").setAttribute("aria-activedescendant", "suggest-" + i); $("#suggest-" + i)?.scrollIntoView({block: "nearest"}); }
+  }
+  function pickSuggestion(label) {
+    const input = $("#answer"); if (!input) return;
+    input.value = label; closeSuggestions(); submitAnswer();
   }
   function stats() {
     const records = activeCards().map(c => state.progress[c.id]).filter(Boolean);
@@ -118,8 +188,8 @@
     const challenge = session.mode === "challenge";
     view.innerHTML = `<div class="session-head"><button class="btn ghost" data-go="home">← Study desk</button><span class="tag">${challenge ? "Four-minute challenge" : session.mode === "review" ? "Due reviews" : "Recall & connect"}</span><span class="${challenge ? "timer" : "small muted"}" id="session-clock">${challenge ? "" : `${session.index + 1} / ${session.queue.length}`}</span></div><div class="session-meter"><span style="width:${session.index / session.queue.length * 100}%"></span></div>
     <div class="question-shell"><article class="question-card">${tags(c)}<h1 id="question-prompt">${e(c.prompt)}</h1>
-    <form class="answer-form" id="answer-form"><input id="answer" type="text" aria-labelledby="question-prompt" placeholder="Pull it from memory…" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="400"><button class="btn primary" type="submit">Check answer →</button></form>
-    <div class="question-actions"><button class="text-button" data-action="reveal">${challenge ? "Pass this question" : "I don't know — teach me"}</button>${!challenge ? '<button class="text-button" data-action="hint">A small hint</button>' : ""}</div><div id="hint" class="hint" hidden></div><div id="feedback" class="feedback" aria-live="polite" hidden></div></article>
+    <form class="answer-form" id="answer-form"><div class="answer-field"><input id="answer" type="text" aria-labelledby="question-prompt" placeholder="Pull it from memory…" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="400" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggest"><div class="suggest" id="suggest" role="listbox" aria-label="Suggested answers" hidden></div></div><button class="btn primary" type="submit">Check answer →</button></form>
+    <div class="question-actions"><button class="text-button" data-action="reveal">${challenge ? "Pass this question" : "I don't know — teach me"}</button>${!challenge ? '<button class="text-button" data-action="hint">A small hint</button>' : ""}<button class="text-button" data-action="toggle-suggest" aria-pressed="${suggestOn()}">Suggestions: ${suggestOn() ? "on" : "off"}</button></div><div id="hint" class="hint" hidden></div><div id="feedback" class="feedback" aria-live="polite" hidden></div></article>
     <p class="session-note">${challenge ? "The clock keeps running while you read feedback or leave this page." : "Enter to check. A missed answer is the beginning of learning."} <button class="text-button" data-action="finish">Finish session</button></p></div>`;
     if (session.pending) renderFeedback(); else $("#answer").focus({preventScroll: true});
     updateClock();
@@ -130,11 +200,12 @@
     const c = currentCard(), text = $("#answer").value.trim();
     if (!text && !reveal) { $("#answer").focus(); return; }
     const correct = !reveal && C.judge(text, c);
+    closeSuggestions();
     session.pending = {text, correct, recalled: correct && !session.hinted, hinted: !!session.hinted, reveal};
     saveSession(); renderFeedback();
   }
   function learningContent(c) {
-    return `<h2>${e(c.answer)}</h2><p>${e(c.explanation || "Add an explanation to this card in your notebook.")}</p>${c.hook ? `<div class="memory"><span class="tiny-label">MAKE THE CONNECTION</span>${e(c.hook)}</div>` : ""}${source(c)}${c.generated ? '<p class="small muted">Community-maintained structured fact; inspect the source if the attribution seems incomplete. Any listed answer is accepted.</p>' : ""}`;
+    return `<figure class="answer-figure" data-figure-title="${e(answerTitle(c))}" hidden></figure><h2>${e(c.answer)}</h2><p>${e(c.explanation || "Add an explanation to this card in your notebook.")}</p>${c.hook ? `<div class="memory"><span class="tiny-label">MAKE THE CONNECTION</span>${e(c.hook)}</div>` : ""}${source(c)}${c.generated ? '<p class="small muted">Community-maintained structured fact; inspect the source if the attribution seems incomplete. Any listed answer is accepted.</p>' : ""}`;
   }
   function relatedButtons(c) {
     const ids = c.entities || [];
@@ -150,6 +221,7 @@
     ${session.mode === "challenge" ? '<div class="rating-row"><button class="btn primary" data-rate="good">Next question →</button></div>' : p.recalled ? '<p class="small muted">How easily did it come back?</p><div class="rating-row"><button class="btn" data-rate="hard">With effort</button><button class="btn primary" data-rate="good">Got it</button><button class="btn" data-rate="easy">Immediately</button></div>' : '<div class="rating-row"><button class="btn primary" data-rate="again">Keep learning →</button></div>'}
     ${relatedButtons(c)}<button class="text-button delete" data-hide="${e(c.id)}">Hide a questionable card</button>`;
     f.querySelector("[data-rate]")?.focus({preventScroll: true});
+    fillFigures();
   }
   function grade(rating) {
     if (!session?.pending || session.finished) return;
@@ -217,7 +289,7 @@
   function showCard(id) {
     const c = byId.get(id); if (!c) return;
     $("#dialog-content").innerHTML = `${tags(c)}<h2 id="dialog-title">${e(c.prompt)}</h2>${learningContent(c)}${relatedButtons(c)}<div class="rating-row"><button class="btn primary" data-practice-card="${e(c.id)}">Practise this card</button></div><p class="small muted">Reading a card does not count as successful recall.</p>`;
-    $("#card-dialog").showModal();
+    $("#card-dialog").showModal(); fillFigures();
   }
   function progress() {
     view.innerHTML = `<p class="eyebrow">UNDERSTAND WHAT STICKS</p><h1>Your knowledge, growing.</h1>${statsHTML()}<p class="small muted">“Well remembered” means at least three consecutive recalls and a review interval of seven days or more. It is a study signal, not a guarantee of mastery.</p><div class="panel"><h2>A map of your practice</h2>${topics.map(t => {
@@ -300,7 +372,8 @@
   document.addEventListener("click", async ev => {
     const b = ev.target.closest("button, a"); if (!b) return;
     try {
-      if (b.dataset.view) go(b.dataset.view);
+      if (b.dataset.view) { ev.preventDefault(); go(b.dataset.view); }
+      if (b.dataset.pick !== undefined) { pickSuggestion(b.dataset.pick); return; }
       if (b.dataset.go) go(b.dataset.go);
       if (b.dataset.start) start(b.dataset.start);
       if (b.dataset.topic) start("study", {topic: b.dataset.topic});
@@ -323,6 +396,12 @@
         $("#hint").textContent = `Starts with “${answer[0]}”. ${answer.length} characters in one accepted answer. Hinted recall returns sooner.`; $("#hint").hidden=false;
       }
       if (action === "finish") finish();
+      if (action === "toggle-suggest") {
+        const on = !suggestOn();
+        try { localStorage.setItem(SUGGEST, on ? "on" : "off"); } catch { /* this tab only */ }
+        b.textContent = "Suggestions: " + (on ? "on" : "off"); b.setAttribute("aria-pressed", String(on));
+        on ? renderSuggestions() : closeSuggestions(); $("#answer")?.focus();
+      }
       if (action === "retry-missed") start("study", {ids:[...new Set(session.results.filter(r=>!r.recalled).map(r=>r.id))]});
       if (action === "practice-filter") start("study", {ids:filteredLibrary().map(c=>c.id)});
       if (action === "practice-trail") start("study", {ids:[...new Set(explorePath.flatMap(id=>entities[id].links.map(l=>l.card)))]});
@@ -343,7 +422,21 @@
       try { C.validateBackup({...C.empty(), benchmarks:[record]}); state.benchmarks.push(record); persist(); benchmarks(); notify("JetPunk score saved."); } catch(err) { notify(err.message); }
     }
   });
+  document.addEventListener("keydown", ev => {
+    if (ev.target.id !== "answer" || !suggestRows.length) return;
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+      ev.preventDefault();
+      const n = suggestRows.length, step = ev.key === "ArrowDown" ? 1 : -1;
+      highlightSuggestion(suggestActive < 0 ? (step > 0 ? 0 : n - 1) : (suggestActive + step + n) % n);
+    } else if (ev.key === "Enter" && suggestActive >= 0) {
+      ev.preventDefault(); pickSuggestion(suggestRows[suggestActive].label);
+    } else if (ev.key === "Escape") { ev.preventDefault(); closeSuggestions(); }
+  });
+  // Keep focus in the answer box while a suggestion is clicked.
+  document.addEventListener("mousedown", ev => { if (ev.target.closest(".suggest-row")) ev.preventDefault(); });
+  document.addEventListener("focusout", ev => { if (ev.target.id === "answer") setTimeout(() => { if (document.activeElement?.id !== "answer") closeSuggestions(); }, 120); });
   document.addEventListener("input", ev => {
+    if (ev.target.id === "answer") renderSuggestions();
     if (ev.target.id.startsWith("library-")) { libraryFilter={q:$("#library-search").value,topic:$("#library-topic").value,level:$("#library-level").value,kind:$("#library-kind").value,status:$("#library-status").value}; libraryPage=0; renderLibraryResults(); }
     if (ev.target.id === "entity-search") {
       const q=C.normalise(ev.target.value), matches=q?Object.values(entities).filter(n=>C.normalise(n.name+" "+n.description).includes(q)).slice(0,24):[];

@@ -1,0 +1,34 @@
+{# One sidebar for the whole site. On the study desk the practice links are
+   routed in-page by trivia.js (data-view); everywhere else they are plain
+   links back to the desk. #}
+{% set ep = request.endpoint %}
+{% macro geo(endpoint, icon, label) -%}
+  <a class="nav-item" href="{{ url_for(endpoint) }}"{% if ep == endpoint %} aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span> {{ label }}</a>
+{%- endmacro %}
+{% macro desk(view, icon, label) -%}
+  <a class="nav-item" href="{{ url_for('home') }}#{{ view }}" data-view="{{ view }}"><span aria-hidden="true">{{ icon }}</span> {{ label }}</a>
+{%- endmacro %}
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('home') }}"><span class="brand-mark" aria-hidden="true">c.</span><span>commonplace<small>A STUDIO FOR CURIOUS MINDS</small></span></a>
+  <p class="nav-label">YOUR PRACTICE</p>
+  <nav aria-label="Study desk">
+    {{ desk('home', '◈', 'Study desk') }}
+    {{ desk('explore', '⌘', 'Rabbit holes') }}
+    {{ desk('library', '▤', 'Knowledge library') }}
+    {{ desk('progress', '↗', 'Your progress') }}
+    {{ desk('notebook', '＋', 'My notebook') }}
+    {{ desk('benchmarks', '◎', 'JetPunk practice') }}
+  </nav>
+  <p class="nav-label">THE GEOGRAPHY WING</p>
+  <nav aria-label="Geography wing">
+    {{ geo('geography_home', '◍', 'Flags & countries') }}
+    {{ geo('games', '▶', 'Geography games') }}
+    {{ geo('atlas', '▦', 'Atlas') }}
+    {{ geo('world_map', '⌖', 'World map') }}
+    {{ geo('topics_index', '❖', 'Cultures & topics') }}
+    {{ geo('progress', '◔', 'Geography scores') }}
+    {{ geo('sources', '§', 'Sources') }}
+  </nav>
+  <div class="sidebar-note"><span class="tiny-label">THE IDEA</span><p>Don't just recognise the answer. <em>Learn to find it.</em></p><span class="small muted">Recall. Connect. Revisit.</span></div>
+  {% if ep in ('home', 'trivia.home') %}<p class="storage-note"><span id="sync-note">Saved in this browser.</span><br>Export a backup in Your progress.</p>{% endif %}
+</aside>

@@ -30,8 +30,8 @@
   var info = JSON.parse(document.getElementById("mapdata").textContent);
   var panel = document.getElementById("panel");
 
-  // The same elevation tints the Atlas uses: sea, lowland, ochre, sienna.
-  var TINT = ["#12303f", "#2c5f6d", "#5d7a45", "#c08d38"];
+  // The same elevation tints the Atlas uses: not met, seen, getting it right, known.
+  var TINT = ["#f6f4ee", "#b9d3d1", "#a7bf96", "#ddb36a"];
 
   var map = L.map("wmap", {
     worldCopyJump: false, attributionControl: false,
@@ -43,8 +43,8 @@
   function style(feature) {
     var d = info[feature.id];
     return {
-      color: "#23566c", weight: 0.7,
-      fillColor: d ? TINT[d.level || 0] : "#0f2836",
+      color: "#b9c2b3", weight: 0.7,
+      fillColor: d ? TINT[d.level || 0] : "#e4e3da",
       fillOpacity: 1
     };
   }
@@ -104,7 +104,7 @@
         var d = info[feature.id];
         if (d) lyr.bindTooltip(d.name, { sticky: true, direction: "top" });
         lyr.on("mouseover", function () {
-          if (lyr !== chosen) lyr.setStyle({ color: "#e0a33c", weight: 1.6 });
+          if (lyr !== chosen) lyr.setStyle({ color: "#254e3f", weight: 1.6 });
         });
         lyr.on("mouseout", function () {
           if (lyr !== chosen) layer.resetStyle(lyr);
@@ -112,7 +112,7 @@
         lyr.on("click", function () {
           if (chosen) layer.resetStyle(chosen);
           chosen = lyr;
-          lyr.setStyle({ color: "#e0a33c", weight: 2.2 });
+          lyr.setStyle({ color: "#b74729", weight: 2.4 });
           if (d) show(d);
           else panel.innerHTML = "<p class='empty'>Nothing on file for that one.</p>";
         });

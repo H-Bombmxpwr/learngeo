@@ -14,12 +14,12 @@
     {% for k in kinds %}
       <div class="section">
         <h2><a href="{{ url_for('topic_kind', kind=k.kind) }}">{{ k.label }}</a>
-          <small style="font-weight:400;color:#857a68">({{ k.count }})</small></h2>
+          <small style="font-weight:400;color:var(--muted)">({{ k.count }})</small></h2>
         <div class="neighbours">
           {% for n in k.top %}
             <a class="neighbour" href="{{ url_for('topic', kind=k.kind, key=n.key) }}">
               <span>{{ n.name }}</span>
-              <small style="color:#857a68">{{ n.countries | length }}</small>
+              <small style="color:var(--muted)">{{ n.countries | length }}</small>
             </a>
           {% endfor %}
         </div>

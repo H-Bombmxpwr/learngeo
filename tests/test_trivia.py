@@ -108,6 +108,35 @@ class TriviaTests(Base):
         self.assertIn("Q100", data["entities"])
         self.assertIsNone(data["entities"]["Q100"]["links"][0]["card"])
 
+    def test_answer_thumbnails_are_cached_and_survive_failures(self):
+        import learngeo.trivia as studio
+        from unittest import mock
+        import tempfile
+        calls = []
+
+        def fake(titles):
+            calls.append(list(titles))
+            return {t: ({"thumb": "https://upload.wikimedia.org/x.jpg", "description": "Spanish novelist"}
+                        if t == "Miguel de Cervantes" else None) for t in titles}
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(studio.store, "DATA_DIR", tmp),                 mock.patch.object(studio, "_thumbs", None), mock.patch.object(studio, "fetch_thumbs", fake):
+            client = app.test_client()
+            got = client.get("/trivia/thumbs?t=Miguel de Cervantes&t=Nope&t=a|b").json
+            self.assertEqual(got["Miguel de Cervantes"]["description"], "Spanish novelist")
+            self.assertIsNone(got["Nope"])
+            self.assertNotIn("a|b", got)
+            client.get("/trivia/thumbs?t=Miguel de Cervantes&t=Nope")
+            self.assertEqual(len(calls), 1)  # second request served from cache, misses included
+            self.assertTrue((Path(tmp) / "trivia-cache" / "wiki-thumbs.json").exists())
+
+        def broken(titles):
+            raise studio.requests.ConnectionError("offline")
+
+        with mock.patch.object(studio, "_thumbs", {}), mock.patch.object(studio, "fetch_thumbs", broken):
+            got = app.test_client().get("/trivia/thumbs?t=Homer").json
+            self.assertEqual(got, {"Homer": None})
+            self.assertNotIn("Homer", studio._thumbs)  # a failure is not remembered as "no picture"
+
 
 if __name__ == "__main__":
     unittest.main()

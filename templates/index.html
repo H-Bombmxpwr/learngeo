@@ -5,13 +5,12 @@
 <div class="wrap">
 
   <header class="hero">
-    <img src="{{ url_for('static', filename='images/logo.svg') }}" alt=""
-         width="76" height="76" style="margin-bottom:14px">
-    <h1>Learn the world,<br>one question at a time.</h1>
+    <p class="eyebrow">The geography wing</p>
+    <h1>Learn the world, <em>one place at a time.</em></h1>
     <p class="lede">
-      Build your knowledge of countries, capitals, people and everyday life.
-      Get clear feedback, explore an optional fact card, and track your points
-      as you learn.
+      Countries, capitals, flags, people and everyday life. Get clear feedback,
+      open a fact card after every answer, and watch the wall of flags below
+      fill with colour as you learn.
     </p>
   </header>
 
@@ -26,22 +25,22 @@
   </div>
 
   <div class="modes">
-    <a class="mode feature" href="{{ url_for('home') }}"><strong>&larr; Back to the study desk</strong><span>Geography is one wing of Commonplace. The study desk covers history, science, books, art, music and more, with typed recall and spaced review.</span></a>
     <a class="mode feature" href="{{ url_for('topic_kind', kind='civilization') }}"><strong>Same land, different worlds</strong><span>Follow civilizations across modern borders. Explore historical flags, ancient standards and the evidence behind them.</span></a>
     {% for key, name, blurb, modes in categories %}
-      <a class="mode{% if loop.first %} feature{% endif %}" href="{{ url_for('play', category=key) }}">
+      <a class="mode" href="{{ url_for('play', category=key) }}">
         <strong>{{ name }}</strong>
         <span>{{ blurb }}</span>
       </a>
     {% endfor %}
   </div>
   <p style="margin-top:16px">
-    <a href="{{ url_for('games') }}">All games, scored or casual</a>
+    <a href="{{ url_for('games') }}">All games, scored or casual &rarr;</a>
+    &nbsp;·&nbsp; <a href="{{ url_for('home') }}">Back to the general knowledge study desk &rarr;</a>
   </p>
 
   <div class="statline">
     <div>
-      <b>{{ stats.countries_known }}<small style="color:var(--stage-dim);font-size:1rem"> / {{ stats.countries_total }}</small></b>
+      <b>{{ stats.countries_known }}<small style="color:var(--muted);font-size:1rem"> / {{ stats.countries_total }}</small></b>
       <small>countries you know</small>
     </div>
     <div>

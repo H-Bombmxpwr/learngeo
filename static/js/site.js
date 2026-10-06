@@ -7,6 +7,11 @@
 (function () {
   "use strict";
 
+  var today = document.getElementById("today");
+  if (today && !today.textContent) {
+    today.textContent = new Date().toLocaleDateString(undefined, { weekday: "short", month: "long", day: "numeric" });
+  }
+
   var input = document.getElementById("q");
   var box = document.getElementById("acbox");
   if (!input || !box) return;

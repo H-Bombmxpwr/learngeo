@@ -230,11 +230,11 @@
       }).setView([20, 10], 2);
       mapLayer = L.geoJSON(geo, {
         style: function () {
-          return { color: "#23566c", weight: 0.8, fillColor: "#12303f", fillOpacity: 1 };
+          return { color: "#b9c2b3", weight: 0.8, fillColor: "#f6f4ee", fillOpacity: 1 };
         },
         onEachFeature: function (feature, layer) {
           layer.on("mouseover", function () {
-            if (!locked) layer.setStyle({ fillColor: "#1c4356", color: "#3e8c9e" });
+            if (!locked) layer.setStyle({ fillColor: "#e8eee3", color: "#254e3f" });
           });
           layer.on("mouseout", function () {
             if (!locked) mapLayer.resetStyle(layer);
@@ -252,7 +252,7 @@
       pointLayer = L.layerGroup();
       (geo.points || []).forEach(function (pt) {
         var dot = L.circleMarker([pt.lat, pt.lon], {
-          radius: 7, weight: 2, color: "#3e8c9e", fillColor: "#12303f",
+          radius: 7, weight: 2, color: "#254e3f", fillColor: "#f6f4ee",
           fillOpacity: 1, className: "map-point"
         });
         dot.featureId = pt.id;
@@ -552,10 +552,10 @@
     if (map && mapLayer) {
       mapLayer.eachLayer(function (layer) {
         if (layer.feature.id === res.answer_iso3) {
-          layer.setStyle({ fillColor: "#6e8b4a", color: "#9dbd6e" });
+          layer.setStyle({ fillColor: "#61816a", color: "#254e3f" });
           map.fitBounds(layer.getBounds().pad(0.4), {maxZoom: 4});
         } else if (String(layer.feature.id) === String(given)) {
-          layer.setStyle({ fillColor: "#b84a32", color: "#d4735c" });
+          layer.setStyle({ fillColor: "#b74729", color: "#8e3520" });
         }
       });
     }
@@ -602,10 +602,10 @@
     var sheet = h("div", { class: "sheet gameover",
                            "aria-label": "Run over" }, [
       h("h2", { text: out }),
-      h("p", { style: "color:#6b6255;margin:0",
+      h("p", { style: "color:var(--ink-soft);margin:0",
                text: "The answer was " + res.answer_text + "." }),
       h("div", { class: "final", text: run.score.toLocaleString() }),
-      h("div", { style: "color:#857a68;font-size:.85rem", text: "points" }),
+      h("div", { style: "color:var(--muted);font-size:.85rem", text: "points" }),
       h("div", { class: "tally" }, [
         h("div", {}, [h("b", { text: run.correct + " / " + run.asked }),
                       h("small", { text: "right" })]),
@@ -858,7 +858,7 @@
     if (external) { attrs.target = "_blank"; attrs.rel = "noopener"; }
     return h("a", attrs, [
       h("span", { text: label }),
-      sub ? h("small", { style: "color:#857a68", text: sub }) : null
+      sub ? h("small", { style: "color:var(--muted)", text: sub }) : null
     ]);
   }
 

@@ -7,7 +7,7 @@
 
     <p style="margin:0 0 6px"><a href="{{ url_for('topic_kind', kind=kind) }}">All {{ label | lower }}</a></p>
     <h1 style="margin-bottom:.1em">{{ node.name }}</h1>
-    <p style="color:#6b6255;margin-top:0">
+    <p style="color:var(--ink-soft);margin-top:0">
       {{ rows | length }}
       {%- if rows | length == 1 %} country{% else %} countries{% endif %}
       {%- if kind == 'civilization' %} have territory overlapping this historical civilization or state
@@ -69,7 +69,7 @@
               {% elif kind == 'partner' %}
                 <td>
                   {{ r.detail.detail or 'trades' }}
-                  {%- if r.detail.share %} <small style="color:#857a68">{{ r.detail.share }}%</small>{% endif %}
+                  {%- if r.detail.share %} <small style="color:var(--muted)">{{ r.detail.share }}%</small>{% endif %}
                 </td>
               {% elif kind == 'landmark' %}
                 <td>

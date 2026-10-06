@@ -60,7 +60,7 @@
       <img class="flag" src="{{ c.flag_url }}" alt="Flag of {{ c.name }}">
       <div class="blurb">
         <h1 style="margin-bottom:.15em">{{ c.name }}</h1>
-        <div class="code" style="color:#857a68;margin-bottom:14px">
+        <div class="code" style="color:var(--muted);margin-bottom:14px">
           {{ c.iso2 }} / {{ c.iso3 }}
           {%- if c.lat is not none %} &nbsp; {{ c.lat | round(1) }}&deg;, {{ c.lon | round(1) }}&deg;{% endif %}
         </div>
@@ -74,7 +74,7 @@
         {% if mastery %}
           <div style="max-width:280px;margin-top:16px">
             <div class="bar"><i style="width:{{ (mastery.accuracy * 100) | round | int }}%"></i></div>
-            <small style="color:#857a68">{{ mastery.correct }} right out of {{ mastery.seen }} questions</small>
+            <small style="color:var(--muted)">{{ mastery.correct }} right out of {{ mastery.seen }} questions</small>
           </div>
         {% else %}
           <p class="empty">You have not been asked about {{ c.name }} yet.</p>
@@ -104,7 +104,7 @@
     {% if languages %}
       <div class="section">
         <h2>Languages</h2>
-        <p style="color:#6b6255;margin-top:0">
+        <p style="color:var(--ink-soft);margin-top:0">
           Share of the population that speaks each. Click one to see every
           country that speaks it.
         </p>
@@ -130,7 +130,7 @@
     {% if economy %}
       <div class="section">
         <h2>What it sells, and to whom</h2>
-        <p style="color:#6b6255;margin-top:0">
+        <p style="color:var(--ink-soft);margin-top:0">
           Every line is a thread: click a commodity or a partner to see who
           else trades in it.
         </p>
@@ -178,7 +178,7 @@
               <tr>
                 <td><a href="{{ city.wiki }}" target="_blank" rel="noopener">{{ city.name }}</a>
                   {%- if c.capitals and city.name == c.capitals[0].name %}
-                    <small style="color:#857a68">&nbsp;capital</small>{% endif %}</td>
+                    <small style="color:var(--muted)">&nbsp;capital</small>{% endif %}</td>
                 <td class="num">{{ city.population | commas }}</td>
               </tr>
             {% endfor %}
@@ -190,7 +190,7 @@
     {% if c.wars %}
       <div class="section">
         <h2>Wars and conflicts</h2>
-        <p style="color:#6b6255;margin-top:0;max-width:64ch">
+        <p style="color:var(--ink-soft);margin-top:0;max-width:64ch">
           Conflicts this country is attached to. Click one to see the others.
           Each says what kind of claim it is: a <b>principal belligerent</b> is
           hand-checked against the modern state that succeeded the power that
@@ -207,7 +207,7 @@
               <span class="mark" aria-hidden="true">⚔</span>
               <span>{{ wr.name }}</span>
               {%- if wr.start %}<small class="yrs">{{ wr.start }}{% if wr.end and wr.end != wr.start %}&ndash;{{ wr.end }}{% elif not wr.end %}&ndash;now{% endif %}</small>{% endif %}
-              <small style="color:#857a68">{{ wr.role }}</small>
+              <small style="color:var(--muted)">{{ wr.role }}</small>
             </a>
           {% endfor %}
         </div>
@@ -242,7 +242,7 @@
           {{ chips(linked.landmarks, 'landmark', 'Landmarks and landscapes') }}
         {% endif %}
         {% if c.landlocked or c.hemisphere %}
-          <p style="color:#6b6255;font-size:.93rem">
+          <p style="color:var(--ink-soft);font-size:.93rem">
             {% if c.landlocked %}Landlocked.{% endif %}
             {% if c.hemisphere %}{{ c.hemisphere }} hemisphere.{% endif %}
           </p>
@@ -252,7 +252,7 @@
 
     {% if neighbours %}
       <div class="section">
-        <h2>Land borders <small style="font-weight:400;color:#857a68">({{ neighbours | length }})</small></h2>
+        <h2>Land borders <small style="font-weight:400;color:var(--muted)">({{ neighbours | length }})</small></h2>
         <div class="neighbours">
           {% for n in neighbours %}
             <a class="neighbour" href="{{ url_for('country', iso2=n.iso2) }}">
@@ -326,7 +326,7 @@
     {% if provenance %}
       <div class="section">
         <h2>Checked facts</h2>
-        <p style="max-width:64ch;color:#6b6255">
+        <p style="max-width:64ch;color:var(--ink-soft)">
           Most of this page is imported in bulk and carries no source of its
           own. These entries were checked by hand against the source named,
           and are reapplied after every dataset rebuild so a refetch cannot
@@ -387,8 +387,8 @@
     L.geoJSON(geo, {
       style: function (f) {
         return f.id === iso3
-          ? { color: "#e0a33c", weight: 2, fillColor: "#b8623a", fillOpacity: .92 }
-          : { color: "#23566c", weight: .6, fillColor: "#12303f", fillOpacity: 1 };
+          ? { color: "#8e3520", weight: 2, fillColor: "#b74729", fillOpacity: .92 }
+          : { color: "#b9c2b3", weight: .6, fillColor: "#f6f4ee", fillOpacity: 1 };
       },
       onEachFeature: function (f, layer) {
         if (f.id === iso3) target = layer;
