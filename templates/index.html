@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}LearnGeo{% endblock %}
+{% block title %}Geography · Commonplace{% endblock %}
 
 {% block body %}
 <div class="wrap">
@@ -26,7 +26,7 @@
   </div>
 
   <div class="modes">
-    <a class="mode feature" href="{{ url_for('trivia.home') }}"><strong>Beyond geography: the trivia studio</strong><span>Build general knowledge with typed recall, explanations and spaced reviews. History, science, books, culture and more.</span></a>
+    <a class="mode feature" href="{{ url_for('home') }}"><strong>&larr; Back to the study desk</strong><span>Geography is one wing of Commonplace. The study desk covers history, science, books, art, music and more, with typed recall and spaced review.</span></a>
     <a class="mode feature" href="{{ url_for('topic_kind', kind='civilization') }}"><strong>Same land, different worlds</strong><span>Follow civilizations across modern borders. Explore historical flags, ancient standards and the evidence behind them.</span></a>
     {% for key, name, blurb, modes in categories %}
       <a class="mode{% if loop.first %} feature{% endif %}" href="{{ url_for('play', category=key) }}">

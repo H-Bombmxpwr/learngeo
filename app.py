@@ -40,7 +40,7 @@ from learngeo.data import TOPIC_FIELDS, ent_name, slug, world
 from learngeo.data_util import wiki_url
 
 app = Flask(__name__)
-from learngeo.trivia import trivia
+from learngeo.trivia import trivia, connections as studio_connections
 app.register_blueprint(trivia)
 # Nothing about a run rides in a cookie any more -- answer keys, scores and
 # pending questions live in the database, keyed by run id -- so this only
@@ -696,6 +696,7 @@ def country(iso2):
     linked = {f: w.topics_for(iso2, f) for f in TOPIC_FIELDS}
     return render_template("country.html", c=c, card=fact_card(iso2),
                            discovery=explore.dossier(w, iso2),
+                           studio=studio_connections(c.get("qid")),
                            practice_sections=section_pools(w, iso2),
                            section_min=SECTION_MIN,
                            mastery=stats["mastery"].get(iso2),

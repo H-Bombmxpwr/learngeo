@@ -9,7 +9,7 @@
   <script defer src="{{ url_for('static', filename='js/trivia-core.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/trivia.js') }}"></script>
 </head>
-<body data-bank-url="{{ url_for('trivia.bank') }}">
+<body data-bank-url="{{ url_for('trivia.bank') }}" data-state-url="{{ url_for('trivia.load_state') }}" data-geography-url="{{ url_for('geography_home') }}" data-country-url="{{ url_for('country', iso2='XX') }}" data-atlas-url="{{ url_for('atlas') }}" data-map-url="{{ url_for('world_map') }}" data-games-url="{{ url_for('games') }}">
 <a class="skip-link" href="#content">Skip to content</a>
 <aside class="sidebar">
   <a class="brand" href="{{ url_for('trivia.home') }}"><span class="brand-mark" aria-hidden="true">c.</span><span>commonplace<small>A STUDIO FOR CURIOUS MINDS</small></span></a>
@@ -22,9 +22,15 @@
     <button data-view="notebook" class="nav-item"><span aria-hidden="true">＋</span> My notebook</button>
     <button data-view="benchmarks" class="nav-item"><span aria-hidden="true">◎</span> JetPunk practice</button>
   </nav>
+  <p class="nav-label">THE GEOGRAPHY WING</p>
+  <nav aria-label="Geography wing">
+    <a class="nav-item" href="{{ url_for('geography_home') }}"><span aria-hidden="true">◍</span> Flags &amp; countries</a>
+    <a class="nav-item" href="{{ url_for('atlas') }}"><span aria-hidden="true">▦</span> Atlas</a>
+    <a class="nav-item" href="{{ url_for('world_map') }}"><span aria-hidden="true">⌖</span> World map</a>
+    <a class="nav-item" href="{{ url_for('games') }}"><span aria-hidden="true">▶</span> Geography games</a>
+  </nav>
   <div class="sidebar-note"><span class="tiny-label">THE IDEA</span><p>Don't just recognise<br>the answer.<br><em>Learn to find it.</em></p><span class="small muted">Recall. Connect. Revisit.</span></div>
-  <a class="atlas-link" href="{{ url_for('geography_home') }}">↗ The geography wing</a>
-  <p class="storage-note">Saved in this browser.<br>Export a backup in Your progress.</p>
+  <p class="storage-note"><span id="sync-note">Saved in this browser.</span><br>Export a backup in Your progress.</p>
 </aside>
 <main id="content" tabindex="-1">
   <header class="topbar"><span>THE GENERAL KNOWLEDGE STUDIO</span><span id="today"></span></header>

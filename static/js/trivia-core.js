@@ -116,5 +116,21 @@ window.TriviaCore = (() => {
     }
     return result;
   }
-  return {DAY, empty, normalise, judge, review, queue, shuffle, safeURL, validateCard, validateBackup};
+  // Two validated copies of the same player's state -- this browser's and the
+  // server's. Each card keeps whichever record was reviewed last; notebook
+  // cards and score logs are unioned; saved/hidden follow the server.
+  function merge(local, remote) {
+    const out = empty();
+    for (const source of [local.progress, remote.progress])
+      for (const [k, p] of Object.entries(source))
+        if (!Object.prototype.hasOwnProperty.call(out.progress, k) || p.last >= out.progress[k].last)
+          Object.defineProperty(out.progress, k, {value: p, enumerable: true, writable: true, configurable: true});
+    const custom = new Map([...local.custom, ...remote.custom].map(c => [c.id, c]));
+    out.custom = [...custom.values()];
+    const runs = new Map([...local.benchmarks, ...remote.benchmarks].map(b => [b.quiz + ":" + b.at, b]));
+    out.benchmarks = [...runs.values()].sort((a, b) => a.at - b.at);
+    out.saved = [...remote.saved]; out.hidden = [...remote.hidden];
+    return out;
+  }
+  return {DAY, empty, normalise, judge, review, queue, shuffle, safeURL, validateCard, validateBackup, merge};
 })();

@@ -7,7 +7,7 @@
 <nav class="discovery-nav" aria-label="Explore this country">
   <a href="#people-name">People</a>
   <a href="#civilizations">Who lived here?</a>
-  <a href="#history">History</a><a href="#belief">Religion</a><a href="#keep-exploring">Keep exploring</a>
+  <a href="#history">History</a><a href="#belief">Religion</a>{% if studio %}<a href="#studio">Beyond the map</a>{% endif %}<a href="#keep-exploring">Keep exploring</a>
 </nav>
 
 <section class="section" id="people-name">
@@ -77,6 +77,23 @@
   {% endif %}
   {% if linked.religions %}{{ chips(linked.religions, 'religion', 'Explore recorded traditions') }}{% endif %}
 </section>
+
+{# The same country as a node in the general-knowledge studio: what its
+   graph links here, each a door into that rabbit hole. #}
+{% if studio %}
+<section class="section" id="studio">
+  <p class="eyebrow">BEYOND THE MAP</p>
+  <h2>{{ c.name }} in the study desk</h2>
+  <p>Places and things the general-knowledge library connects to {{ c.name }}. Open one to follow its connections, then practise them with typed recall.</p>
+  {% for group in studio %}
+    <h3 class="studio-topic">{{ group.topic }} <small>{{ group.total }}</small></h3>
+    <div class="chipset">
+      {% for n in group.nodes %}<a class="neighbour" href="{{ url_for('trivia.home') }}#explore/{{ n.id }}" title="{{ n.description }}">{{ n.name }}</a>{% endfor %}
+    </div>
+  {% endfor %}
+  <p><a class="btn ghost" href="{{ url_for('trivia.home') }}#explore/{{ c.qid }}">Follow {{ c.name }} into the rabbit holes &rarr;</a></p>
+</section>
+{% endif %}
 
 <section class="section" id="keep-exploring">
   <h2>Choose your next rabbit hole</h2>

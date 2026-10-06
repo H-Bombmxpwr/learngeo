@@ -64,6 +64,27 @@ class TriviaTests(Base):
                     self.assertIn(link["card"], bank)
                 self.assertTrue(all(q in data["entities"] for q in link["targets"]))
 
+    def test_progress_is_kept_on_the_server_per_player(self):
+        self.assertEqual(self.client.get("/trivia/state").json, None)
+        state = {"version": 1, "progress": {"h01": {"seen": 1, "correct": 1, "streak": 1,
+                 "interval": 1, "due": 1, "last": 1}}, "custom": [], "benchmarks": [],
+                 "saved": [], "hidden": []}
+        self.assertEqual(self.client.put("/trivia/state", json=state).status_code, 200)
+        self.assertEqual(self.client.get("/trivia/state").json, state)
+        # Another browser has its own cookie and so its own progress.
+        self.assertIsNone(app.test_client().get("/trivia/state").json)
+        self.assertEqual(self.client.put("/trivia/state", json={"version": 2}).status_code, 400)
+
+    def test_countries_bridge_the_studio_and_the_geography_wing(self):
+        bank = self.client.get("/trivia/bank").json
+        self.assertEqual(bank["countries"]["Q142"]["iso2"], "FR")
+        page = self.client.get("/country/FR")
+        self.assertIn(b'id="studio"', page.data)
+        self.assertIn(b"#explore/Q142", page.data)
+        self.assertIn(b"Mont Blanc", page.data)
+        generated = next(c for c in bank["cards"] if c.get("generated"))
+        self.assertTrue(generated["reading"][0]["url"].startswith("https://en.wikipedia.org/wiki/"))
+
     def test_multiple_attributions_are_grouped_and_all_accepted(self):
         spec = builder.SLICES[0]
         def row(target, label):

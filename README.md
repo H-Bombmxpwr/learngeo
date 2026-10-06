@@ -32,8 +32,15 @@ Commonplace progress is stored per browser origin.
 - **JetPunk practice:** links to the 92 quizzes listed in JoeRainford's
   [Extremely Hard General Knowledge series](https://www.jetpunk.com/series/228770/extremely-hard-general-knowledge)
   when reviewed. Log scores manually to measure transfer to outside quizzes.
-- **Progress:** subject recall, review counts, and JSON backup/restore. The older
-  geography games retain their separate SQLite-backed progress.
+- **Progress:** subject recall, review counts, and JSON backup/restore. Study-desk
+  progress is saved on the server in `progress.db` (the `studio_state` table),
+  under the same anonymous player cookie as the geography scores, and mirrored in
+  the browser so practice works offline; the two copies merge on load. On Railway,
+  set `LEARNGEO_DATA_DIR` to the volume's mount path so both survive deploys.
+- **Geography wing:** 173 countries are both a dossier and a rabbit hole. Country
+  pages list what the library connects to them (mountains, rivers, dishes) under
+  "Beyond the map"; a country's rabbit hole links back to its dossier. Every
+  generated card links the Wikipedia article of each subject it is about.
 
 ### Content and expansion
 

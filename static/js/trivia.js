@@ -5,7 +5,7 @@
   const $ = s => document.querySelector(s);
   const view = $("#view");
   const levels = {1: "Foundation", 2: "Connections", 3: "Deep cuts"};
-  let state = C.empty(), bank = [], byId = new Map(), topics = [], manifest = {}, entities = null;
+  let state = C.empty(), bank = [], byId = new Map(), topics = [], manifest = {}, entities = null, countries = {};
   let searchIndex = new Map();
   let session = null, libraryPage = 0, explorePath = [], routeToken = 0;
   let activeEntity = null, entityLimit = 48;
@@ -17,10 +17,32 @@
   const activeCards = () => [...bank, ...state.custom].filter(c => !state.hidden.includes(c.id));
   const allCards = () => [...bank, ...state.custom];
   function notify(text) { $("#message").textContent = text; $("#message").hidden = false; }
+  // The browser keeps a copy so practice works offline; the server's copy, in
+  // progress.db on the deploy's volume, is what survives a cleared browser.
+  let syncTimer = null;
   function persist() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); }
     catch { $("#storage-warning").hidden = false; }
+    clearTimeout(syncTimer); syncTimer = setTimeout(pushState, 1200);
   }
+  async function pushState() {
+    syncTimer = null;
+    try {
+      const r = await fetch(document.body.dataset.stateUrl, {method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify(state)});
+      setSyncNote(r.ok);
+    } catch { setSyncNote(false); }
+  }
+  function setSyncNote(ok) { const n = $("#sync-note"); if (n) n.textContent = ok ? "Saved on the server and in this browser." : "Saved in this browser; the server copy will catch up."; }
+  async function pullState() {
+    try {
+      const r = await fetch(document.body.dataset.stateUrl, {cache: "no-store"});
+      if (!r.ok) throw new Error();
+      const remote = await r.json();
+      if (remote) { state = C.merge(state, C.validateBackup(remote)); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* warned elsewhere */ } }
+      if (!remote || JSON.stringify(remote) !== JSON.stringify(state)) await pushState(); else setSyncNote(true);
+    } catch { setSyncNote(false); }
+  }
+  window.addEventListener("pagehide", () => { if (syncTimer) { clearTimeout(syncTimer); const body = JSON.stringify(state); if (body.length < 60000) fetch(document.body.dataset.stateUrl, {method: "PUT", headers: {"Content-Type": "application/json"}, body, keepalive: true}).catch(() => {}); } });
   function saveSession() {
     try { session ? sessionStorage.setItem(SESSION, JSON.stringify(session)) : sessionStorage.removeItem(SESSION); }
     catch { $("#storage-warning").hidden = false; }
@@ -45,7 +67,13 @@
     return topics.map(t => `<option value="${e(t.id)}" ${t.id === selected ? "selected" : ""}>${e(t.name)}</option>`).join("");
   }
   function tags(c) { return `<div class="tags"><span class="tag">${e(topicName(c.topic))}</span><span class="tag warm">${levels[c.level]}</span>${c.generated ? '<span class="tag">Wikidata</span>' : c.personal ? '<span class="tag">Your card</span>' : '<span class="tag">Curated</span>'}</div>`; }
-  function source(c) { const url = C.safeURL(c.source); return url ? `<a class="reference" href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(c.source_label || "Read more")} ↗</a>` : ""; }
+  function source(c) {
+    const url = C.safeURL(c.source), link = (href, text) => `<a class="reference" href="${e(href)}" target="_blank" rel="noopener noreferrer">${e(text)} ↗</a>`;
+    const reading = (c.reading || []).filter(r => C.safeURL(r.url)).map(r => link(r.url, r.name));
+    const wiki = url && /wikipedia\.org/.test(url);
+    return `<p class="reading">${wiki ? link(url, c.personal ? "Read on Wikipedia" : "Read on Wikipedia: " + String(c.source_label || "the article").replace(/^Read more: /, "")) : ""}${reading.length ? `<span class="tiny-label">READ ON WIKIPEDIA</span> ${reading.join(" · ")}` : ""}${url && !wiki ? `<br>${link(url, c.source_label || "Source")}` : ""}${(entityIds(c)).map(q => countries[q] ? ` <a class="reference" href="${e(dossierURL(q))}">${flag(q)} ${e(countries[q].name)} in the geography wing →</a>` : "").join("")}</p>`;
+  }
+  function entityIds(c) { return Array.isArray(c.entities) ? c.entities : []; }
   function go(route) { if (location.hash === "#" + route) renderRoute(); else location.hash = route; }
   function home() {
     const count = activeCards().length, s = stats();
@@ -59,8 +87,16 @@
     <div class="topics">${topics.map(t => {
       const cards = activeCards().filter(c => c.topic === t.id), learned = cards.filter(c => (state.progress[c.id]?.streak || 0) >= 3).length;
       return `<button class="topic-card" data-topic="${e(t.id)}"><div class="topic-top"><span class="topic-icon">${t.symbol}</span><span>${fmt(cards.length)} cards ↗</span></div><h3>${e(t.name)}</h3><p>${e(t.description)}</p><div class="meter"><span style="width:${cards.length ? learned / cards.length * 100 : 0}%"></span></div><div class="topic-bottom"><span>${learned ? fmt(learned) + " familiar" : "A new place to begin"}</span><span>→</span></div></button>`;
-    }).join("")}</div>`;
+    }).join("")}</div>
+    ${geoWing()}`;
   }
+  // The atlas half of the app: separate games and progress, the same countries.
+  function geoWing() {
+    const d = document.body.dataset;
+    return `<div class="geo-wing"><div><span class="tiny-label">THE GEOGRAPHY WING</span><h2>Flags, borders, capitals and maps.</h2><p>${fmt(Object.keys(countries).length)} countries here are also rabbit holes: each country page links back to its mountains, rivers and dishes in this library.</p></div><div class="actions"><a class="btn primary" href="${e(d.geographyUrl)}">Open the atlas →</a><a class="btn" href="${e(d.gamesUrl)}">Geography games</a><a class="btn ghost" href="${e(d.mapUrl)}">World map</a></div></div>`;
+  }
+  function flag(id) { const u = C.safeURL(countries[id]?.flag || ""); return u ? `<img class="flag" src="${e(u)}" alt="" width="20" height="14" loading="lazy">` : ""; }
+  function dossierURL(id) { const c = countries[id]; return c ? document.body.dataset.countryUrl.replace("XX", encodeURIComponent(c.iso2)) : ""; }
   function start(mode, options = {}) {
     let pool = activeCards();
     const kind = $("#home-kind")?.value || "";
@@ -220,7 +256,7 @@
     view.innerHTML = `<p class="eyebrow">CURIOSITY DOESN'T TRAVEL IN STRAIGHT LINES</p><h1>Find your next<br><em>rabbit hole.</em></h1><p class="lede">Start with a name you recognise. Follow a work to its creator, a creator to another work, or a place to its neighbours in knowledge.</p><div class="toolbar"><input type="search" id="entity-search" aria-label="Search connected entities" placeholder="Search a person, book, painting, film, place…"></div><div id="entity-search-results"></div><div class="section-heading"><h2>A few doors to open</h2><span>${fmt(Object.keys(entities).length)} connected entities</span></div><div class="library-grid">${starters.map(entityTile).join("") || '<p class="empty">The connected dataset is not installed yet. The knowledge library is still available.</p>'}</div><section class="panel"><h2>Keep a thread, then test it.</h2><p class="small muted">Every connection is a readable link. Your trail appears above the current page. Use “Practise this trail” to turn browsing into recall, or save individual discoveries to revisit later.</p><a class="btn" href="/geography">Explore countries, cultures & places →</a></section>`;
   }
   function entityTile(n) {
-    return `<button class="entity-tile" data-entity="${e(n.id)}"><span class="tag">${e(topicName(n.topics[0]))}</span><h3>${e(n.name)}</h3><p>${e(n.description || "Explore the works and subjects connected to this name.")}</p><span class="small">${n.links.length} connections →</span></button>`;
+    return `<button class="entity-tile" data-entity="${e(n.id)}"><span class="tag">${e(topicName(n.topics[0]))}</span>${countries[n.id] ? '<span class="tag warm">Country dossier</span>' : ""}<h3>${flag(n.id)}${e(n.name)}</h3><p>${e(n.description || "Explore the works and subjects connected to this name.")}</p><span class="small">${n.links.length} connections →</span></button>`;
   }
   function entityPage(id) {
     const n = entities[id];
@@ -234,7 +270,7 @@
     n.links.forEach(l => l.targets.forEach(target => { if (entities[target]) links.set(l.relation + target, {relation:l.relation, node:entities[target], source:l.source}); }));
     const relatedCards = [...new Set(n.links.map(l=>l.card))].map(id=>byId.get(id)).filter(Boolean);
     const trailHasCards = explorePath.some(q => entities[q].links.some(l => byId.has(l.card)));
-    view.innerHTML = `<div class="breadcrumbs"><button class="text-button" data-go="explore">Rabbit holes</button>${explorePath.map(q => `<span aria-hidden="true">/</span><button class="text-button" data-entity="${e(q)}" ${q===id?'aria-current="page"':""}>${e(entities[q].name)}</button>`).join("")}</div><div class="entity-heading"><p class="eyebrow">${e(n.topics.map(topicName).join(" · "))}</p><h1>${e(n.name)}</h1><p class="lede">${e(n.description || "A thread in your knowledge library.")}</p><a class="reference" href="https://www.wikidata.org/wiki/${e(id)}" target="_blank" rel="noopener noreferrer">Inspect Wikidata source ↗</a> ${C.safeURL(n.article) ? `<a class="reference" href="${e(n.article)}" target="_blank" rel="noopener noreferrer">Read the encyclopedia article ↗</a>` : ""}<div class="toolbar"><button class="btn primary" data-practice-entity="${e(id)}" ${relatedCards.length ? "" : "disabled"}>Practise these connections →</button><button class="btn" data-action="practice-trail" ${trailHasCards ? "" : "disabled"}>Practise this trail (${explorePath.length} stops)</button></div></div><div class="section-heading"><h2>Follow a connection</h2><span>${links.size} paths from here</span></div><div class="library-grid">${[...links.values()].slice(0, entityLimit).map(l=>`<article class="connection-tile"><span class="tiny-label">${e(l.relation.toUpperCase())}</span>${entityTile(l.node)}${C.safeURL(l.source) ? `<a class="reference edge-source" href="${e(l.source)}" target="_blank" rel="noopener noreferrer">Source for this connection ↗</a>` : ""}</article>`).join("")}</div>${links.size>entityLimit?'<button class="btn space-top" data-action="more-connections">Show more connections ↓</button>':""}<div class="section-heading space-top"><h2>Turn the connection into recall</h2><span>${relatedCards.length} practice cards</span></div>${!relatedCards.length ? '<p class="small muted">This is an exploration connection, not a scored question. Follow another path to find practice material.</p>' : ""}<div class="library-grid">${relatedCards.slice(0, 8).map(c=>`<article class="library-card"><h3>${e(c.prompt)}</h3><button class="btn ghost" data-card="${e(c.id)}">Open study card →</button></article>`).join("")}</div>`;
+    view.innerHTML = `<div class="breadcrumbs"><button class="text-button" data-go="explore">Rabbit holes</button>${explorePath.map(q => `<span aria-hidden="true">/</span><button class="text-button" data-entity="${e(q)}" ${q===id?'aria-current="page"':""}>${e(entities[q].name)}</button>`).join("")}</div><div class="entity-heading"><p class="eyebrow">${e(n.topics.map(topicName).join(" · "))}</p><h1>${e(n.name)}</h1><p class="lede">${e(n.description || "A thread in your knowledge library.")}</p>${countries[id] ? `<a class="btn dossier-link" href="${e(dossierURL(id))}">${flag(id)} Open the ${e(countries[id].name)} dossier in the geography wing →</a>` : ""}<a class="reference" href="https://www.wikidata.org/wiki/${e(id)}" target="_blank" rel="noopener noreferrer">Inspect Wikidata source ↗</a> ${C.safeURL(n.article) ? `<a class="reference" href="${e(n.article)}" target="_blank" rel="noopener noreferrer">Read the encyclopedia article ↗</a>` : ""}<div class="toolbar"><button class="btn primary" data-practice-entity="${e(id)}" ${relatedCards.length ? "" : "disabled"}>Practise these connections →</button><button class="btn" data-action="practice-trail" ${trailHasCards ? "" : "disabled"}>Practise this trail (${explorePath.length} stops)</button></div></div><div class="section-heading"><h2>Follow a connection</h2><span>${links.size} paths from here</span></div><div class="library-grid">${[...links.values()].slice(0, entityLimit).map(l=>`<article class="connection-tile"><span class="tiny-label">${e(l.relation.toUpperCase())}</span>${entityTile(l.node)}${C.safeURL(l.source) ? `<a class="reference edge-source" href="${e(l.source)}" target="_blank" rel="noopener noreferrer">Source for this connection ↗</a>` : ""}</article>`).join("")}</div>${links.size>entityLimit?'<button class="btn space-top" data-action="more-connections">Show more connections ↓</button>':""}<div class="section-heading space-top"><h2>Turn the connection into recall</h2><span>${relatedCards.length} practice cards</span></div>${!relatedCards.length ? '<p class="small muted">This is an exploration connection, not a scored question. Follow another path to find practice material.</p>' : ""}<div class="library-grid">${relatedCards.slice(0, 8).map(c=>`<article class="library-card"><h3>${e(c.prompt)}</h3><button class="btn ghost" data-card="${e(c.id)}">Open study card →</button></article>`).join("")}</div>`;
   }
   async function followRelated(id) {
     const card = byId.get(id); if (!card) return;
@@ -328,9 +364,10 @@
     $("#today").textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"long",day:"numeric"});
     try { const raw=localStorage.getItem(KEY); if(raw) state=C.validateBackup(JSON.parse(raw)); }
     catch { $("#storage-warning").hidden=false; notify("Saved data could not be loaded. Restore a backup in Your progress if needed."); }
+    await pullState();
     try {
       const response=await fetch(document.body.dataset.bankUrl); if(!response.ok) throw new Error("The question library could not be loaded.");
-      const data=await response.json(); bank=data.cards; topics=data.topics; manifest=data.manifest || {}; refreshIndex();
+      const data=await response.json(); bank=data.cards; topics=data.topics; manifest=data.manifest || {}; countries=data.countries || {}; refreshIndex();
       try { const trail=JSON.parse(sessionStorage.getItem("commonplace.trail.v1") || "[]"); if(Array.isArray(trail) && trail.length<=12 && trail.every(q=>/^Q\d+$/.test(q))) explorePath=trail; } catch { /* start a fresh trail */ }
       try { const raw=sessionStorage.getItem(SESSION), saved=raw?JSON.parse(raw):null; if(saved && Array.isArray(saved.queue) && saved.queue.length<=100 && saved.queue.every(id=>byId.has(id)) && Array.isArray(saved.results) && Number.isInteger(saved.index) && saved.index>=0 && saved.index<=saved.queue.length) session=saved; } catch { /* discard invalid tab state */ }
       await renderRoute(); setInterval(updateClock,500);

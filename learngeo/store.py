@@ -92,6 +92,15 @@ CREATE TABLE IF NOT EXISTS answer_events (
   PRIMARY KEY (player, run_id, qid)
 );
 
+-- The study desk's whole state for one player -- review schedule, notebook,
+-- saved and hidden cards -- as the JSON the browser keeps. One row each, so
+-- it lives on the same volume as the geography scores.
+CREATE TABLE IF NOT EXISTS studio_state (
+  player  TEXT PRIMARY KEY,
+  state   TEXT NOT NULL,
+  updated REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS schema_meta (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
@@ -746,3 +755,21 @@ def overview(world, player=LOCAL):
         "runs": [dict(r) for r in runs],
         "weak": [dict(r) for r in weak],
     }
+
+
+# --------------------------------------------------------------------------
+# The study desk
+# --------------------------------------------------------------------------
+def studio_state(player):
+    """The study desk's saved JSON for a player, or None."""
+    with connect() as conn:
+        row = conn.execute("SELECT state FROM studio_state WHERE player = ?",
+                           (player,)).fetchone()
+    return row["state"] if row else None
+
+
+def save_studio_state(player, state):
+    with connect() as conn:
+        conn.execute("INSERT INTO studio_state (player, state, updated) VALUES (?, ?, ?) "
+                     "ON CONFLICT(player) DO UPDATE SET state = excluded.state, "
+                     "updated = excluded.updated", (player, state, time.time()))

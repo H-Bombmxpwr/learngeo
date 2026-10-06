@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}LearnGeo{% endblock %}</title>
+<title>{% block title %}Geography · Commonplace{% endblock %}</title>
 <link rel="icon" href="{{ url_for('static', filename='images/logo.svg') }}" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +19,9 @@
       <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="" width="30" height="30">
       Common<span>place</span>
     </a>
+    <a href="{{ url_for('home') }}">Study desk</a>
+    <a href="{{ url_for('geography_home') }}">Geography</a>
     <a href="{{ url_for('games') }}">Games</a>
-    <a href="{{ url_for('trivia.home') }}">Trivia studio</a>
     <a href="{{ url_for('play', category='grand_tour') }}">Play</a>
     <a href="{{ url_for('atlas') }}">Atlas</a>
     <a href="{{ url_for('world_map') }}">Map</a>

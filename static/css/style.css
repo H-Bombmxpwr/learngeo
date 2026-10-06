@@ -646,6 +646,8 @@ table.plain td.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .chipset .neighbour:hover .mark { background: var(--ochre); color: #23180a; }
 .chipset small { color: #857a68; }
+.studio-topic { margin: 18px 0 8px; font-size: 1rem; }
+.studio-topic small { color: #857a68; font-weight: 400; }
 .chipset .yrs { font-variant-numeric: tabular-nums; }
 .chip-group { margin-bottom: 16px; }
 .chip-group > h3 {
